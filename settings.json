@@ -1,0 +1,63 @@
+{
+  "alwaysThinkingEnabled": true,
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": true
+  },
+  "permissions": {
+    "allow": [
+      "Read",
+      "Edit",
+      "Write",
+      "Bash(*)",
+      "Bash(nvcc *)",
+      "Bash(make *)",
+      "Bash(make)",
+      "Bash(cmake *)",
+      "Bash(python3 *)",
+      "Bash(python *)",
+      "Bash(pip install *)",
+      "Bash(pip3 install *)",
+      "Bash(nsys *)",
+      "Bash(ncu *)",
+      "Bash(cuobjdump *)",
+      "Bash(nvidia-smi*)",
+      "Bash(git *)",
+      "Bash(mkdir *)",
+      "Bash(mv *)",
+      "Bash(cp *)",
+      "Bash(ls *)",
+      "Bash(which *)",
+      "Bash(source *)",
+      "Bash(./*)",
+      "Bash(cd *)",
+      "Bash(wget *)",
+      "Bash(gunzip *)",
+      "Bash(tar *)",
+      "Bash(wc *)",
+      "Bash(echo *)",
+      "Bash(grep *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(cat *)",
+      "Bash(stat *)",
+      "Bash(rm *)",
+      "Bash(chmod *)",
+      "Bash(du *)",
+      "Bash(find *)",
+      "Bash(sed *)",
+      "Bash(awk *)",
+      "Bash(sort *)",
+      "Bash(touch *)",
+      "Bash(diff *)",
+      "Bash(ln *)",
+      "Bash(tee *)",
+      "Bash(xargs *)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(git push *)",
+      "Bash(git reset --hard *)",
+      "Bash(git checkout . *)"
+    ]
+  }
+}
