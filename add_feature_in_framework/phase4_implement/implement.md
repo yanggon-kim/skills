@@ -114,7 +114,40 @@ In hardware (RTL), a control signal derived combinationally from inputs may chan
 
 *Fix:* Latch control signals as registers at the start of the operation. Use the latched value throughout the operation, not the live input.
 
-For concrete examples of all four patterns with root causes, fixes, and discovery methods, see `../examples/vortex_sparse_tcu.md` — Phase 4 section.
+**Pattern: Shared/static object mutation**
+
+Frameworks often store decoded, parsed, or configured objects as static templates — one instance per unique key, shared across all uses. Setting a per-instance flag on the shared template (e.g., via `const_cast` in C++ or direct mutation of a cached object) corrupts ALL future uses of that template, even in unrelated contexts.
+
+*How to spot it:* The feature works correctly on first execution, but subsequent executions behave as if the feature is always active (or always inactive). A `const` qualifier on a pointer or an object retrieved from a cache/map is a warning sign.
+
+*Fix:* Never modify objects through `const` pointers or shared references. Set per-instance flags on the *copy* of the object after it's been duplicated from the template. If you need to pass per-instance state through an interface that only accepts the template, add a parameter to the function instead.
+
+**Pattern: Multiple resource release paths**
+
+When a resource is acquired in one place but can be released through multiple paths (fast path vs. slow path, hit vs. miss, normal vs. exceptional), missing any release path causes leaks.
+
+*How to spot it:* A counter or resource grows without bound over time, eventually hitting an assertion or exhausting capacity. The leak is intermittent — it only occurs when the operation completes through the missed path.
+
+*Fix:* Search for EVERY code path where the operation completes. Search for all places that call the "complete", "done", "finish", or "release" function for that operation type. Add the release on every path, not just the most common one.
+
+**Pattern: One-to-many operation mapping**
+
+A single high-level operation fans out to multiple low-level operations (sub-requests, packets, iterations). Per-operation accounting that runs in the per-sub-operation loop fires too many times.
+
+*How to spot it:* A counter decrement assertion fires almost immediately. The decrement count far exceeds the increment count. Logging shows the accounting code running N times per increment.
+
+*Fix:* Find the "all sub-operations complete" check (e.g., reference count reaching zero, completion flag, "all done" callback) and place accounting inside that condition, not in the per-sub-operation loop.
+
+**Pattern: Bypass creates new hazards**
+
+When you bypass a safety mechanism (dependency tracker, lock, fence, ordering queue) for performance, the hazards it was preventing can now occur. The mechanism's existing error handling (assertions, aborts) will fire on conditions it assumed were impossible.
+
+*How to spot it:* Assertion failure in the mechanism you're bypassing, with a message about a resource already being in a certain state (e.g., "already reserved", "already locked", "duplicate entry").
+
+*Fix:* Before implementing a bypass, enumerate every hazard the mechanism prevents. Add explicit handling for each: convert assertions to graceful handling (e.g., skip redundant operations), use reference counting instead of set membership, or add a "bypass active" flag that relaxes the checks.
+
+For concrete examples of the first four patterns (RTL/hardware), see `../examples/vortex_sparse_tcu.md` — Phase 4 section.
+For concrete examples of the latter four patterns (cycle-level simulator), see `../examples/gpgpusim_dae.md` — Phase 4 section.
 
 ## Cross-Layer Integration Tips
 

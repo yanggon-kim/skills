@@ -144,6 +144,8 @@ Each phase produces a persistent artifact (document or file) that you can refere
 | Feature passes with one config, silently fails with another | Phase 5 tests the full config matrix, not just the "easy" config |
 | Automated scripts override manual builds | Phase 1 documents which scripts rebuild which layers |
 | Accidental pass hides real bug until larger config exposes it | Phase 5 tests beyond minimum size |
+| Feature eliminates target stall but total speedup is modest | Phase 6 bottleneck shift analysis reveals the next bottleneck |
+| Feature parameter (buffer size, FIFO depth) is over-provisioned | Phase 6 parameter sensitivity sweep finds the binding constraint |
 
 ## Bug Pattern Catalog
 
@@ -204,11 +206,62 @@ Flag: [DATA_TYPE_WIDTH]
 
 **Prevention:** When the feature touches data indexing, verify the unit of every size/stride/count variable: is it in elements, bytes, or register slots? Add explicit scaling for sub-element types.
 
-## Reference Example
+### 6. Shared/Static Object Mutation
 
-For a concrete, end-to-end example of this 6-phase process applied to a real project, see `examples/vortex_sparse_tcu.md`. That document covers adding 2:4 structured sparsity to a RISC-V GPGPU's tensor core — touching 5 RTL modules, the instruction decoder, kernel API, and test programs across 3 data types and 2 thread counts. It includes:
+**Symptom:** Feature works correctly on first execution of a code path, but produces wrong behavior on all subsequent executions — even without the feature active.
 
+**Root cause:** Modifying a shared or static object through a pointer that appears per-instance. Frameworks often store decoded/parsed objects as static templates (one instance per unique key, shared across all uses). If you set a per-instance flag on the shared template, ALL future uses of that object see the flag — permanently corrupting the template.
+
+**Why it's dangerous:** The first execution looks correct. The corruption only manifests later, in unrelated code paths, making it appear as a completely different bug. A `const` qualifier on a pointer is a warning sign that the object shouldn't be modified.
+
+**Prevention:** Never modify objects through `const` pointers or shared references. If you need per-instance state, set the flag on the *copy* of the object after it's been duplicated from the template. Trace the lifecycle of any object you plan to modify: is it shared across invocations? Is it a template that gets copied? Is it a singleton?
+
+### 7. Multiple Resource Release Paths
+
+**Symptom:** Resource leak or double-release assertion. A counter that should balance (increments = decrements) drifts over time, eventually triggering an assertion or resource exhaustion.
+
+**Root cause:** A resource is acquired in one place but can be released through multiple code paths. If any release path is missed, the resource leaks. Common in any system where operations can complete through different mechanisms (e.g., fast path vs. slow path, hit vs. miss, normal vs. exceptional).
+
+**Prevention:** When adding resource accounting (counters, reference counts, FIFO occupancy):
+1. List ALL code paths where the resource can be released — search for every place the operation "completes"
+2. Add the release on every path
+3. Add an assertion that the counter is non-negative after each decrement
+4. Add a check at shutdown/teardown that all counters are zero
+
+### 8. One-to-Many Operation Mapping
+
+**Symptom:** Counter or accounting logic fires N times per high-level operation instead of once. Assertions about balanced increments/decrements fail because the decrement side runs more frequently than expected.
+
+**Root cause:** A single high-level operation maps to multiple low-level operations (e.g., a request fans out to multiple sub-requests, a transaction splits into multiple packets, a batch operation iterates internally). If accounting code runs per low-level operation instead of per high-level operation, it over-counts.
+
+**Prevention:** When adding per-operation accounting, find the "operation complete" signal — the point where ALL sub-operations have finished — and place the accounting there. Look for patterns like reference count reaching zero, completion callbacks, or "all done" flags. Do NOT place per-operation accounting in per-sub-operation loops.
+
+### 9. Bypass Creates New Hazards
+
+**Symptom:** Assertion or crash when the bypass mechanism encounters a situation the original ordering mechanism was preventing.
+
+**Root cause:** Safety mechanisms (scoreboards, locks, fences, ordering queues, dependency trackers) exist to prevent specific hazards (data races, deadlocks, overflow, reordering violations). When you bypass the mechanism for performance, those hazards can now occur. The mechanism's existing error handling (assertions, aborts) will fire on conditions it assumed were impossible.
+
+**Prevention:** Before implementing any bypass:
+1. List every hazard the mechanism prevents (data hazards, deadlocks, overflows, ordering violations)
+2. For each hazard, determine if it can occur under your bypass conditions
+3. For each hazard that can occur, add explicit handling (e.g., skip redundant operations, use reference counting instead of set membership, add a "bypass active" flag that relaxes checks)
+4. Test with workloads that exercise repeated access to the same resource
+
+## Reference Examples
+
+Two reference examples show this process applied to real projects:
+
+### Example 1: Vortex GPGPU Sparse Tensor Core (RTL + Software)
+See `examples/vortex_sparse_tcu.md`. Adding 2:4 structured sparsity to a RISC-V GPGPU's tensor core — touching 5 RTL modules, the instruction decoder, kernel API, and test programs across 3 data types and 2 thread counts. Includes:
 - Phase-by-phase outputs and discoveries
-- 6 real bugs mapped to the patterns above
+- 6 real bugs mapped to patterns 1-5 above
 - Performance data with Amdahl's law analysis
 - Config flag propagation maps
+
+### Example 2: GPGPU-Sim DAE Scoreboard Bypass (Cycle-Level Simulator)
+See `examples/gpgpusim_dae.md`. Adding Decoupled Access-Execute (DAE) scoreboard bypass to GPGPU-Sim — modifying 6 source files across the scheduler, scoreboard, writeback, and instruction model. Includes:
+- 3 runtime bugs mapped to patterns 6-8 above (shared object mutation, multiple release paths, one-to-many mapping)
+- 1 design bug mapped to pattern 9 (bypass creates WAW hazards)
+- Bottleneck shift analysis (97% stall reduction → 4-9% speedup)
+- Parameter sensitivity sweep proving memory subsystem is the binding constraint
