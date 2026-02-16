@@ -1,6 +1,6 @@
 # Reference Example: Adding 2:4 Structured Sparsity to the Vortex GPGPU Tensor Core
 
-This document captures lessons from a real multi-layer feature addition to the Vortex RISC-V GPGPU. It serves as a concrete reference for the general skill in `../skill.md`. Each section maps to a phase in the 6-phase process.
+This document captures lessons from a real multi-layer feature addition to the Vortex RISC-V GPGPU. It serves as a concrete reference for the general skill in `../SKILL.md`. Each section maps to a phase in the 6-phase process.
 
 ## Feature Summary
 
@@ -85,7 +85,7 @@ All control-flow parameters (m_steps, n_steps, k_steps, register counts, micro-o
 
 ## Phase 4: Implement — Bugs Encountered
 
-Each bug maps to a pattern from the Bug Pattern Catalog in `../skill.md`.
+Each bug maps to a pattern from the Bug Pattern Catalog in `../SKILL.md`.
 
 ### Bug 1: Config Flag Not Propagated (Pattern #1)
 
