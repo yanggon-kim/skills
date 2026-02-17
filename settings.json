@@ -1,8 +1,4 @@
 {
-  "alwaysThinkingEnabled": true,
-  "enabledPlugins": {
-    "superpowers@claude-plugins-official": true
-  },
   "permissions": {
     "allow": [
       "Read",
@@ -51,7 +47,8 @@
       "Bash(diff *)",
       "Bash(ln *)",
       "Bash(tee *)",
-      "Bash(xargs *)"
+      "Bash(xargs *)",
+      "WebFetch(domain:*)"
     ],
     "deny": [
       "Bash(rm -rf *)",
@@ -59,5 +56,9 @@
       "Bash(git reset --hard *)",
       "Bash(git checkout . *)"
     ]
-  }
+  },
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": true
+  },
+  "alwaysThinkingEnabled": true
 }
