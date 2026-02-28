@@ -114,6 +114,66 @@
 
 ---
 
+## 6.5. Instruction-Level Analysis
+
+### Kernel Identification
+
+| Kernel | Symbol | Registers/Thread | Shared Mem | Grid Size | Block Size |
+|--------|--------|------------------:|-----------:|----------:|-----------:|
+| [Bottleneck kernel] | [demangled name] | | | | |
+
+### Annotated SASS (Hot Loop)
+
+```
+// === Hot Loop: addresses 0xNNNN - 0xNNNN ===
+// [Paste annotated SASS here with inline comments explaining each instruction]
+// Example:
+// /*0150*/  LDG.E R6, [R10] ;           // Load col_indices[j] → DRAM ~400 cycles
+// /*0160*/  IMAD.WIDE R12, R6, 0x4, R8 ; // addr = base + col_idx * 4 (waits for R6)
+// /*0170*/  LDG.E R14, [R12] ;           // Load x[col_indices[j]] → DRAM ~400 cycles (DEPENDENT)
+// /*0180*/  FFMA R16, R14, R18, R16 ;    // acc += val * x[col] (waits for R14)
+```
+
+### Dependency Chain
+
+```
+[ASCII pipeline diagram showing critical path through the hot loop]
+
+Cycle:  0    100   200   300   400   500   600   700   800
+        |-----|-----|-----|-----|-----|-----|-----|-----|
+Warp:   [LDG col[j].............]
+                                 [IMAD addr]
+                                  [LDG x[col[j]]............]
+                                                            [FFMA]
+Critical path: ~NNN cycles per iteration (N serial DRAM round-trips)
+```
+
+### Instruction-to-Stall Mapping
+
+| SASS Instruction (Hot Loop) | NCU Stall Category | Contribution | Mechanism |
+|----------------------------|--------------------:|-------------|-----------|
+| `LDG.E Rn, [Rm]` (1st load) | Long Scoreboard | [X]% | DRAM latency ~400 cycles |
+| `LDG.E Rn, [Rm]` (dependent) | Long Scoreboard | [Y]% | Serialized after address computation |
+| `SHFL.BFLY Rn, Rm, ...` | Short Scoreboard | [Z]% | Cross-lane latency ~20 cycles |
+| `IMAD.WIDE / LEA` | Wait | [W]% | Waiting for source register from LDG |
+
+### Instruction Mix
+
+| Instruction Class | Count | % of Hot Loop | Examples |
+|------------------|------:|-------------:|---------|
+| Global Load | | | LDG.E |
+| Global Store | | | STG.E |
+| FP Arithmetic | | | FFMA, FADD |
+| Int Arithmetic | | | IMAD, IADD3, LEA |
+| Warp Shuffle | | | SHFL.BFLY |
+| Control Flow | | | BRA, ISETP, @P |
+| Other | | | S2R, MOV, NOP |
+| **Total** | | **100%** | |
+
+Compute-to-memory ratio: [X] (compute ops / memory ops)
+
+---
+
 ## 7. Roofline Analysis
 
 ![Roofline Plot](roofline.png)

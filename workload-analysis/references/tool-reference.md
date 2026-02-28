@@ -130,6 +130,42 @@ torch.cuda.cudart().cudaProfilerStart()
 torch.cuda.cudart().cudaProfilerStop()
 ```
 
+## Compiled Instruction Extraction
+
+```bash
+# Extract SASS (machine instructions) from binary or .cubin:
+cuobjdump -sass ./executable > kernel.sass
+
+# Extract PTX (virtual ISA) from binary:
+cuobjdump -ptx ./executable > kernel.ptx
+
+# Extract resource usage (registers, shared mem, stack per kernel):
+cuobjdump -res-usage ./executable
+
+# List all kernel symbols (find mangled names):
+cuobjdump -symbols ./executable
+
+# List ELF sections:
+cuobjdump -lelf ./executable
+
+# Demangle C++ kernel names:
+echo "_ZN7cutlass..." | c++filt
+cuobjdump -symbols ./executable | c++filt
+
+# Extract SASS for a specific kernel function:
+cuobjdump -sass -fun "kernel_name" ./executable
+
+# Advanced disassembly with control flow graph:
+cuobjdump -xelf all ./executable
+nvdisasm -g -sf kernel.sm_89.cubin > kernel_cfg.sass
+
+# Extract from library .so (cuSPARSE, cuBLAS):
+cuobjdump -symbols /usr/local/cuda-12.0/lib64/libcusparse.so | c++filt | grep -i "spmv"
+cuobjdump -sass -fun "kernel_name" /usr/local/cuda-12.0/lib64/libcusparse.so
+```
+
+For the full instruction-level analysis methodology, see `references/instruction-level-analysis.md`.
+
 ## File Formats
 
 | Extension | Tool | View With |

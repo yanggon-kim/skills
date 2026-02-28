@@ -38,6 +38,8 @@ Symptom:   "Achieved bandwidth = 134 GB/s (20% of peak 672 GB/s)"
 
 ## Compiled Evidence Techniques
 
+> **For systematic instruction-level analysis** (SASS extraction, annotation, dependency chain tracing, instruction-to-stall mapping), see `references/instruction-level-analysis.md`. The techniques below are quick-reference commands; the instruction-level analysis reference provides the full methodology.
+
 ### 1. Generate PTX (Virtual ISA)
 
 Shows the instruction-level dependency chain before hardware scheduling.
@@ -175,7 +177,7 @@ else:
 
 ### Analysis 4: Dependency Chain Length
 
-Find the longest chain of dependent instructions in the inner loop.
+Find the longest chain of dependent instructions in the inner loop. For the full methodology (register def-use tracing, ASCII pipeline diagrams, MLP impact), see `references/instruction-level-analysis.md` Section 5.
 
 ```
 # In SASS, look for chains like:

@@ -5,6 +5,10 @@
 > The original analysis lives at `/home/vortex/dir_yanggon/02_SpMV_SpMM/` (directories `00_synthetic_spmv/` and `01_suitesparse_spmv/`).
 > Use this as a reference when repeating the analysis on a different GPU. Adapt freely.
 
+## Companion Analysis
+
+A detailed instruction-level analysis of the cuSPARSE `csrmv_v3_kernel` SASS is available at `99_doc/00_new_feature/spmv_instruction_analysis.pdf`. It confirms the dependent load chain (`LDG col[j] → IMAD → LDG x[col[j]]`) via SASS extraction, maps each instruction class to NCU stall categories, and quantifies the MLP impact. Use this as a reference for how Step 5 (Instruction-Level Analysis) produces concrete evidence for the root cause chain.
+
 ## Workload
 
 **SpMV (y = A * x)**: Sparse CSR matrix times dense vector, via `torch.sparse.mm` (cuSPARSE `csrmv_v3_kernel` backend).

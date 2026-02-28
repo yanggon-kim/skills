@@ -78,11 +78,27 @@ Use this checklist to track progress through a profiling session.
 - [ ] Note how latency and memory scale with each config
 - [ ] Identify which phases scale well and which don't
 
+## Phase 9.25: Instruction-Level Analysis
+- [ ] Identify bottleneck kernel(s) from Phase 8/9 profiling results
+- [ ] Extract SASS: `cuobjdump -sass ./executable > kernel.sass`
+- [ ] Extract resource usage: `cuobjdump -res-usage ./executable`
+- [ ] Demangle kernel names: `cuobjdump -symbols ./executable | c++filt`
+- [ ] Annotate the hot loop: map each SASS instruction to high-level operation
+- [ ] Identify kernel phases (setup, main loop, reduction, epilogue)
+- [ ] Trace register dependency chain through hot loop (def-use analysis)
+- [ ] Draw ASCII pipeline diagram showing critical path latency
+- [ ] Map SASS instructions to NCU stall categories (LDG → Long Scoreboard, etc.)
+- [ ] Compute instruction mix statistics (count instruction classes, compute-to-memory ratio)
+- [ ] Verify dependency chain length matches theoretical prediction
+- [ ] Document all findings — these feed directly into root cause analysis
+
+Reference: `references/instruction-level-analysis.md`
+
 ## Phase 9.5: Root Cause Deep-Dive
 - [ ] Take the #1 bottleneck from profiling analysis
 - [ ] Follow the symptom → cause chain (ask "WHY?" at least 3 times)
-- [ ] Extract compiled evidence if needed (PTX with `nvcc -ptx`, SASS with `cuobjdump -sass`)
-- [ ] Extract register counts with `nvcc --ptxas-options=-v`
+- [ ] Use instruction-level evidence from Phase 9.25 (dependency chains, stall mappings, instruction mix)
+- [ ] Extract additional compiled evidence if needed (PTX with `nvcc -ptx`)
 - [ ] Verify each claim in the causal chain with quantitative data from ncu
 - [ ] Compute occupancy budget: regs/thread → blocks/SM → warps/SM
 - [ ] Check grid saturation: grid_size / num_SMs → is the GPU fully loaded?

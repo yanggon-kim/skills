@@ -45,16 +45,29 @@ Scripts: `scripts/profile_workload.py`, `scripts/ncu_profile_workload.py`, `scri
 Reference: `references/analysis-and-visualization.md`
 Scripts: `scripts/parse_ncu_results.py`, `scripts/parse_ncu_detailed.py`
 
-### Step 5: Root Cause Deep-Dive
+### Step 5: Instruction-Level Analysis
+
+1. Extract SASS/PTX for bottleneck kernels identified in Step 4
+2. Annotate the hot loop: map each SASS instruction to its high-level operation
+3. Identify kernel phases (setup, main loop, reduction, epilogue)
+4. Trace register dependency chains through the hot loop
+5. Map SASS instructions to NCU stall categories (Long Scoreboard ← LDG, etc.)
+6. Compute instruction mix statistics (compute-to-memory ratio)
+
+CRITICAL: Complete this step BEFORE root cause analysis. The dependency chains and stall mappings are the concrete evidence that root cause chains build on.
+
+Reference: `references/instruction-level-analysis.md`, `references/tool-reference.md`
+
+### Step 6: Root Cause Deep-Dive
 
 1. Take the #1 bottleneck from analysis
 2. Follow the symptom-to-cause chain -- ask "WHY?" at least 3 times
-3. Extract compiled evidence if needed (PTX/SASS/register counts)
+3. Use instruction-level evidence from Step 5 (dependency chains, stall mappings)
 4. Verify each claim with quantitative data
 
-Reference: `references/root-cause-analysis.md`, `references/first-principles-analysis.md`
+Reference: `references/root-cause-analysis.md`, `references/first-principles-analysis.md`, `references/instruction-level-analysis.md`
 
-### Step 6: Visualize and Report
+### Step 7: Visualize and Report
 
 1. Generate roofline plot, execution timeline, kernel breakdown
 2. Include first-principles gap analysis (physical floor vs actual)
@@ -70,7 +83,7 @@ This skill uses **subagent-driven execution** with **validation-first developmen
 
 ### Dispatching Subagents
 
-For each task in Steps 2-6:
+For each task in Steps 2-7:
 
 1. Read the template from `prompts/` (implementer, spec-reviewer, or quality-reviewer)
 2. Fill in all `[PLACEHOLDERS]` with actual values
@@ -117,6 +130,7 @@ project_root/
 - ALWAYS run 3+ warmup iterations before profiling
 - NEVER profile all kernels with ncu `--set full` -- filter first
 - ALWAYS compute the physical floor before analyzing profiling results
+- ALWAYS extract SASS for bottleneck kernels before claiming root cause
 - ALWAYS follow bottleneck symptoms to root causes with compiled evidence
 - ALWAYS prefer publicly available, citable benchmark suites over synthetic data
 
@@ -152,6 +166,7 @@ See `examples/vla_case_study.md` for a complete GR00T N1.6 VLA profiling walkthr
 - `references/tool-reference.md` -- Copy-paste command reference
 - `references/benchmark-suites.md` -- Benchmark catalog by domain with citations
 - `references/first-principles-analysis.md` -- Physical floor estimation methodology
+- `references/instruction-level-analysis.md` -- SASS/PTX extraction, dependency chains, stall mapping
 - `references/root-cause-analysis.md` -- Symptom-to-cause chains, compiled evidence
 - `references/pitfalls.md` -- 30+ pitfalls with symptoms and solutions
 - `references/gpu-workload-profiling-guide.md` -- Complete worked example (GR00T N1.6)
