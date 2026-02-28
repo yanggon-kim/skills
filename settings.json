@@ -48,7 +48,8 @@
       "Bash(ln *)",
       "Bash(tee *)",
       "Bash(xargs *)",
-      "WebFetch(domain:*)"
+      "WebFetch(domain:*)",
+      "WebSearch"
     ],
     "deny": [
       "Bash(rm -rf *)",
