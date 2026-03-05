@@ -1,6 +1,6 @@
 # Codebase Exploration Protocol
 
-Systematic approach to understanding a codebase before interviewing about a feature. Use Glob, Read, and Grep — no Bash commands for exploration.
+Systematic approach to understanding a codebase before interviewing about a feature. Use Glob, Read, and Grep for static exploration. Bash may also be used to run frameworks, simulators, or target applications when the codebase includes them (see SKILL.md rule 10).
 
 ## Decision Tree
 

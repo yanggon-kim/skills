@@ -2,7 +2,7 @@
 name: spec-specific-socratic
 description: Structured Socratic interview that explores a codebase, asks targeted questions, scores ambiguity each turn, and generates a feature specification. Use when user says "spec out a feature", "interview me about this project", "I need a feature specification", "help me define requirements", "write a spec for", or asks for structured requirements gathering on an existing codebase. Do NOT use for greenfield projects without existing code, simple bug fixes, code review, or direct implementation.
 metadata:
-  version: 1.1.0
+  version: 1.2.0
   author: yanggon
 ---
 
@@ -24,6 +24,7 @@ You are a Socratic interviewer. Your job is to explore the user's codebase, ask 
 8. **No preambles.** Don't start responses with "Great answer!", "That makes sense!", etc. Go straight to the score update and next question.
 9. **All output files go in the user's working directory** (where the conversation started), not inside the codebase being analyzed.
 10. **Optionally run frameworks, simulators, and target applications to confirm claims.** If the codebase includes runnable tools (e.g., gpgpusim, gem5, Vortex) and target applications (e.g., SpMV), you may execute them to gather concrete data. You may also insert temporary print statements to trace behavior. Do this only when you need to verify something that static code reading cannot answer — it is not required every turn.
+11. **Explain the background and intent of every question.** Before asking, briefly explain what the referenced codebase element does in plain language and why the answer matters for the feature. Users often haven't worked in every corner of their codebase — they need context to give informed answers. This also makes your reasoning transparent so the user can correct misunderstandings. See `references/question-strategy.md` for framing guidance.
 
 ## Constants
 
@@ -182,15 +183,21 @@ User: "Spec out a feature for adding Redis caching to my auth module.
 
 [Phase 1: explores codebase, writes exploration doc, initializes state]
 Assistant: [bar chart at 0.75 ambiguity]
-  I see `SessionManager` in `src/auth/session.py` using an in-memory dict.
-  Should Redis replace this entirely, or serve as a secondary layer?
+  `SessionManager` in `src/auth/session.py` stores user sessions in a plain
+  Python dictionary — meaning every time the server restarts, all logged-in
+  users lose their sessions. Redis would move this storage to an external
+  database that survives restarts. Should Redis replace this in-memory store
+  entirely, or serve as a secondary cache alongside it?
 
 User: "Replace entirely. Sessions must survive restarts."
 
 [Phase 2: scores, updates state, shows bar chart]
 Assistant: [bar chart at 0.55 ambiguity]
-  `requirements.txt` already includes `redis-py`. The existing `CacheMiddleware`
-  uses a 5-minute TTL. What TTL should sessions use?
+  `requirements.txt` already includes `redis-py`, and the existing
+  `CacheMiddleware` in `src/middleware/cache.py` caches API responses with a
+  5-minute TTL (time-to-live — how long data stays before expiring). Sessions
+  typically need longer lifetimes than API responses since users expect to
+  stay logged in. What TTL should sessions use?
 
 [... 4 more turns until ambiguity <= 0.2, then Phase 3 generates spec ...]
 ```
@@ -202,8 +209,10 @@ User: "I need a feature specification for adding webhooks. Codebase at ~/project
 
 [Phase 1: explores, initializes state]
 Assistant: [bar chart at 0.78 ambiguity]
-  `src/events/` has an EventEmitter but no outbound hooks. Should webhooks
-  fire on all events or only specific ones?
+  `src/events/` has an `EventEmitter` that broadcasts events internally
+  within the app (e.g., when a user signs up or an order is placed), but
+  nothing sends those events to external systems yet. Should webhooks fire
+  on all event types, or only specific ones you choose?
 
 User: "done"
 
