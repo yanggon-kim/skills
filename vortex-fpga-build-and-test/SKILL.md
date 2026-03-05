@@ -132,7 +132,7 @@ If any tool is missing, stop and report the issue.
 
 ## Step 4: Quick DUT Synthesis (Sanity Check)
 
-Before committing to the 2-hour full build, run a quick standalone synthesis of VX_core_top to catch RTL errors and get early timing/utilization estimates. This takes about 10-15 minutes.
+Before committing to the 2-hour full build, run a quick standalone synthesis of VX_afu_wrap (the full top-level design including AFU wrapper) to catch RTL errors across the entire design and get early timing/utilization estimates. This takes about 45-90 minutes but catches bugs that a core-only synthesis would miss (e.g., AFU wrapper issues, memory interface mismatches).
 
 ```bash
 cd $VORTEX_DIR/hw/syn/xilinx/dut
@@ -140,13 +140,25 @@ cd $VORTEX_DIR/hw/syn/xilinx/dut
 
 If there are CONFIGS, include them:
 ```bash
-CONFIGS="$USER_CONFIGS" make core 2>&1 | tee dut_core.log
+CONFIGS="$USER_CONFIGS" make top 2>&1 | tee dut_top.log
 ```
 
 If no CONFIGS:
 ```bash
-make core 2>&1 | tee dut_core.log
+make top 2>&1 | tee dut_top.log
 ```
+
+Note: The build runs in the background (the DUT Makefile appends `&`). Monitor progress with:
+```bash
+tail -f top/build/build.log
+```
+
+### Alternative DUT targets (for faster iteration)
+
+If the user wants a quicker sanity check, these narrower targets are available:
+- `make core` — VX_core_top only (~20 min) — catches core RTL errors but misses AFU/memory interface issues
+- `make vortex` — Vortex without AFU wrapper (~30-45 min) — catches core + memory/cache issues
+- `make top` — VX_afu_wrap full design (~45-90 min) — **recommended**, catches all RTL issues before full FPGA build
 
 ### Interpret DUT results
 
@@ -154,9 +166,9 @@ After DUT synthesis completes, check:
 
 1. **Did it succeed?** Look for errors in the log. Synthesis errors here mean the RTL has issues — fix them before proceeding to the full build.
 
-2. **Timing estimate:** Check the DUT timing report for the Vortex core. This gives an early signal of whether the design will meet timing at 300 MHz.
+2. **Timing estimate:** Check the DUT timing report for VX_afu_wrap. This gives an early signal of whether the design will meet timing at 300 MHz.
 
-3. **Utilization estimate:** Note the LUT/FF/BRAM usage for the core. The baseline clean Vortex 1-core uses about 12% of U55C LUTs (159K / 1.3M).
+3. **Utilization estimate:** Note the LUT/FF/BRAM usage. The baseline clean Vortex 1-core uses about 12% of U55C LUTs (159K / 1.3M).
 
 Tell the user the DUT results and ask if they want to proceed with the full build. If there are synthesis errors, help fix them first.
 
