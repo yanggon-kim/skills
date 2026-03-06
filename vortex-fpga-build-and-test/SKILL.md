@@ -52,6 +52,7 @@ Before doing anything, ask the user for these three things. Use defaults if they
 2. **CONFIGS** (optional, default: none) — extra RTL defines to pass to the build.
    Ask: "Do you have any CONFIGS to pass? (e.g., `CONFIGS=\"-DVM_ENABLE\"`) If not, I'll build with the default configuration."
    If user says no or doesn't specify, use no CONFIGS (basic build).
+   If the user mentions sparse TCU or sparsity, suggest: `CONFIGS="-DNUM_THREADS=8 -DEXT_TCU_ENABLE -DTCU_TYPE_DSP -DTCU_SPARSE_ENABLE"` and note that NUM_THREADS>=8 is required (NT=4 causes static_assert failures in tensor_cfg.h).
 
 3. **Test application** (optional, default: `demo`) — which app to run after the bitstream is ready.
    Ask: "Which test application should I run on the FPGA? (e.g., demo, vecadd, sgemm) If you don't have a preference, I'll use `demo`."
@@ -112,6 +113,7 @@ Every shell session needs these environment variables set. Source them all and v
 
 ```bash
 source /opt/xilinx/xrt/setup.sh
+export PATH=$PATH:/usr/bin:/usr/local/bin:/bin  # XRT setup.sh can clobber PATH, losing basic commands like tee/tail
 source /tools/Xilinx/Vivado/2024.1/settings64.sh
 source /tools/Xilinx/Vitis/2024.1/settings64.sh
 source $VORTEX_DIR/ci/toolchain_env.sh
@@ -152,6 +154,10 @@ Note: The build runs in the background (the DUT Makefile appends `&`). Monitor p
 ```bash
 tail -f top/build/build.log
 ```
+
+### DUT top synthesis fixes (if needed)
+
+If `make top` fails with `'VX_gbar_bus_if' is not declared` or `'master' is not declared`, see `references/dut-top-synthesis-fixes.md` for the VX_bar_unit.sv and gen_sources.sh fixes required for DUT top target.
 
 ### Alternative DUT targets (for faster iteration)
 
@@ -331,6 +337,20 @@ export FPGA_BIN_DIR=$VORTEX_DIR/hw/syn/xilinx/xrt/${BUILD_PREFIX}_xilinx_u55c_ge
 TARGET=hw ./ci/blackbox.sh --driver=xrt --app=$TEST_APP 2>&1
 ```
 
+### Running sparse TCU tests
+
+For sparse tests, rebuild the test binary with matching CONFIGS, then run via `make run-xrt`:
+```bash
+CONFIGS="$USER_CONFIGS" make -C tests/regression/sgemm_tcu_struct_sparse clean
+CONFIGS="$USER_CONFIGS" make -C tests/regression/sgemm_tcu_struct_sparse
+export FPGA_BIN_DIR=$VORTEX_DIR/hw/syn/xilinx/xrt/${BUILD_PREFIX}_xilinx_u55c_gen3x16_xdma_3_202210_1_hw/bin
+OPTS="-m16 -n16 -k32" TARGET=hw make -C tests/regression/sgemm_tcu_struct_sparse run-xrt
+```
+
+**Important:** The DSP FEDP (`VX_tcu_fedp_dsp.sv`) only supports FP16 and BF16 data types. INT8 and INT4 will produce NaN (0x7fc00000) on FPGA because the DSP MAC has no integer path — see `references/dsp-type-limitations.md`. The test defaults (`common.h`) are already fp16/fp32, so no extra ITYPE/OTYPE flags are needed unless you changed them.
+
+For performance sweeps, increase the `-m`, `-n`, `-k` OPTS. Sparse speedup emerges at K>=256 — see `references/sparse-fpga-performance.md`.
+
 ### Interpret results
 
 - **PASSED!** — The application ran correctly on the FPGA. Report the performance stats (instructions, cycles, IPC) shown in the output.
@@ -380,3 +400,8 @@ If timing is violated, emphasize this and suggest next steps (simplify logic, ad
 | `No devices found` | `xbutil examine` to check; may need `xbutil reset` |
 | Build dir already exists | Use different PREFIX or delete old build dir |
 | DUT synthesis errors | Fix RTL errors before attempting full build |
+| Build succeeds + timing MET + FPGA hangs | Likely BRAM inference issue — see `references/fpga-hang-bram-inference.md` |
+| `tee: command not found` after sourcing XRT | XRT setup.sh clobbers PATH — append `:/usr/bin:/usr/local/bin:/bin` to PATH |
+| All outputs are NaN (0x7fc00000) on FPGA | DSP FEDP only supports FP16/BF16 — INT8/INT4 have no DSP MAC path. Use FP16 or see `references/dsp-type-limitations.md` |
+| `static_assert` failure with NUM_THREADS=4 | Sparse TCU requires NUM_THREADS>=8. Use `-DNUM_THREADS=8` in CONFIGS |
+| `'VX_gbar_bus_if' is not declared` in DUT top | Remove `output` keyword from VX_bar_unit.sv interface port. See `references/dut-top-synthesis-fixes.md` |
