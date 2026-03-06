@@ -4,6 +4,8 @@
       "Read",
       "Edit",
       "Write",
+      "Glob",
+      "Grep",
       "Bash(*)",
       "Bash(nvcc *)",
       "Bash(make *)",
@@ -59,7 +61,9 @@
     ]
   },
   "enabledPlugins": {
-    "superpowers@claude-plugins-official": true
+    "superpowers@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": true
   },
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": true,
+  "effortLevel": "high"
 }

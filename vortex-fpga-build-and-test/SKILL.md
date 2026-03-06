@@ -337,19 +337,13 @@ export FPGA_BIN_DIR=$VORTEX_DIR/hw/syn/xilinx/xrt/${BUILD_PREFIX}_xilinx_u55c_ge
 TARGET=hw ./ci/blackbox.sh --driver=xrt --app=$TEST_APP 2>&1
 ```
 
-### Running sparse TCU tests
+### Running TCU tests (dense, sparse, integer types)
 
-For sparse tests, rebuild the test binary with matching CONFIGS, then run via `make run-xrt`:
-```bash
-CONFIGS="$USER_CONFIGS" make -C tests/regression/sgemm_tcu_struct_sparse clean
-CONFIGS="$USER_CONFIGS" make -C tests/regression/sgemm_tcu_struct_sparse
-export FPGA_BIN_DIR=$VORTEX_DIR/hw/syn/xilinx/xrt/${BUILD_PREFIX}_xilinx_u55c_gen3x16_xdma_3_202210_1_hw/bin
-OPTS="-m16 -n16 -k32" TARGET=hw make -C tests/regression/sgemm_tcu_struct_sparse run-xrt
-```
-
-**Important:** The DSP FEDP (`VX_tcu_fedp_dsp.sv`) only supports FP16 and BF16 data types. INT8 and INT4 will produce NaN (0x7fc00000) on FPGA because the DSP MAC has no integer path — see `references/dsp-type-limitations.md`. The test defaults (`common.h`) are already fp16/fp32, so no extra ITYPE/OTYPE flags are needed unless you changed them.
-
-For performance sweeps, increase the `-m`, `-n`, `-k` OPTS. Sparse speedup emerges at K>=256 — see `references/sparse-fpga-performance.md`.
+For TCU tests beyond the basic `demo`, see `references/tcu-fpga-test-guide.md` which covers:
+- Dense and sparse TCU test commands
+- Integer type tests (INT8, INT4) — requires ITYPE/OTYPE flags
+- Performance sweep methodology and expected results
+- The DSP FEDP integer pipeline design (also in `references/dsp-integer-pipeline.md`)
 
 ### Interpret results
 
@@ -402,6 +396,6 @@ If timing is violated, emphasize this and suggest next steps (simplify logic, ad
 | DUT synthesis errors | Fix RTL errors before attempting full build |
 | Build succeeds + timing MET + FPGA hangs | Likely BRAM inference issue — see `references/fpga-hang-bram-inference.md` |
 | `tee: command not found` after sourcing XRT | XRT setup.sh clobbers PATH — append `:/usr/bin:/usr/local/bin:/bin` to PATH |
-| All outputs are NaN (0x7fc00000) on FPGA | DSP FEDP only supports FP16/BF16 — INT8/INT4 have no DSP MAC path. Use FP16 or see `references/dsp-type-limitations.md` |
+| All outputs are NaN (0x7fc00000) on FPGA | Check `fmt_s` routing in `VX_tcu_fedp_dsp.sv` — if using an older bitstream without integer support, rebuild with the v3 integer pipeline. See `references/dsp-integer-pipeline.md` |
 | `static_assert` failure with NUM_THREADS=4 | Sparse TCU requires NUM_THREADS>=8. Use `-DNUM_THREADS=8` in CONFIGS |
 | `'VX_gbar_bus_if' is not declared` in DUT top | Remove `output` keyword from VX_bar_unit.sv interface port. See `references/dut-top-synthesis-fixes.md` |
