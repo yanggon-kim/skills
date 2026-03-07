@@ -42,6 +42,84 @@ These paths are fixed on this server and do not change:
 
 ---
 
+## Status Document
+
+The FPGA build-and-test workflow takes 2+ hours. During this time, context can be compressed or the conversation interrupted. To survive this, maintain a persistent markdown status document that tracks goals, configs, progress, and decisions.
+
+### Getting the path
+
+The user provides a `STATUS_DIR` — the directory where the status document goes. If they don't provide one, ask:
+> "Where should I save the build status document? (e.g., `/path/to/workspace/vortex_fpga_status`)"
+
+### Naming convention
+
+Generate the filename with the current timestamp:
+```bash
+date +%y%m%d-%H%M
+```
+Result: `YYMMDD-HHMM-vortex-fpga.md` (e.g., `260306-1909-vortex-fpga.md`)
+
+### Creating the document
+
+Create the directory if needed (`mkdir -p $STATUS_DIR`) and write the initial document in Step 1 after gathering all user inputs. Use this template:
+
+```markdown
+# Vortex FPGA Build — YYMMDD-HHMM
+
+## User Request
+<what the user asked for, verbatim or paraphrased>
+
+## Configuration
+- Vortex repo: <path>
+- CONFIGS: <configs>
+- Test app: <app>
+- Build prefix: <prefix>
+- XLEN: <32|64>
+
+## Plan
+1. Check prerequisites
+2. Source environment
+3. DUT synthesis (optional)
+4. Full bitstream build
+5. Analyze timing & utilization
+6. Build kernel & run test
+
+## Progress
+| Step | Status | Notes |
+|------|--------|-------|
+| Prerequisites | planned | |
+| Environment | planned | |
+| DUT Synthesis | planned | |
+| Full Build | planned | |
+| Timing Analysis | planned | |
+| Test Run | planned | |
+
+## Problems & Decisions
+<empty — entries added as issues arise>
+```
+
+### Updating the document
+
+At the end of every step, update the status document:
+- Set the current step to `done` and add any relevant notes
+- Set the next step to `doing`
+- If problems or decisions occurred, append them to the "Problems & Decisions" section with a timestamp (e.g., `- 19:15 DUT timing violated at -0.5ns → proceeding anyway, will check full build`)
+
+---
+
+## Context Recovery
+
+If you are resuming mid-workflow — after context compression, conversation restart, or any uncertainty about the current state — **read the status document first**. It is the single source of truth for this build session.
+
+Recovery procedure:
+1. Read the status document at `STATUS_DIR/YYMMDD-HHMM-vortex-fpga.md`
+2. Identify the step marked `doing` — that's where you left off
+3. Check the "Problems & Decisions" section for any context about blockers or choices made
+4. Re-source the environment (Step 3) since shell state doesn't persist
+5. Update the status document to reflect that you've resumed, then continue
+
+---
+
 ## Step 1: Gather Information from User
 
 Before doing anything, ask the user for these three things. Use defaults if they don't specify:
@@ -60,11 +138,26 @@ Before doing anything, ask the user for these three things. Use defaults if they
 
 Also ask the user what PREFIX name they want for the build directory. Suggest a descriptive name based on their CONFIGS (e.g., `build_vm_1c` for VM_ENABLE, `build_clean_1c` for no configs). Default to `build_1c`.
 
+4. **Status document directory** (optional, default: `$VORTEX_DIR/00_workspace/vortex_fpga_status`) — where to save the persistent status document.
+   Ask: "Where should I save the build status document? Press enter for the default (`$VORTEX_DIR/00_workspace/vortex_fpga_status`)."
+
 Store these as variables for the rest of the workflow:
 - `VORTEX_DIR` — absolute path to Vortex repo root
 - `USER_CONFIGS` — the CONFIGS string, or empty
 - `TEST_APP` — the test application name
 - `BUILD_PREFIX` — the PREFIX for the build directory
+- `STATUS_DIR` — directory for the status document
+
+### Create the status document
+
+After gathering all inputs, create the status document:
+```bash
+mkdir -p $STATUS_DIR
+TIMESTAMP=$(date +%y%m%d-%H%M)
+STATUS_FILE=$STATUS_DIR/${TIMESTAMP}-vortex-fpga.md
+```
+
+Write the initial content using the template from the "Status Document" section above, populated with the user's actual values. Set "Prerequisites" to `doing`.
 
 ---
 
@@ -95,7 +188,7 @@ grep TOOLDIR $VORTEX_DIR/config.mk
 grep "^XLEN" $VORTEX_DIR/config.mk
 ```
 
-Confirm it matches expectations (64 for SV39 VM work, 32 for SV32).
+Confirm it matches expectations (64 for SV39 VM work, 32 for SV32). Add the XLEN value to the status document's Configuration section.
 
 ### 2c. Check FPGA device is accessible
 
@@ -104,6 +197,8 @@ source /opt/xilinx/xrt/setup.sh 2>/dev/null && xbutil examine 2>&1 | head -20
 ```
 
 The U55C should appear in the device list. If not, the FPGA may need a reset (`xbutil reset`).
+
+> **Status doc**: Update Prerequisites to `done` with notes on XLEN and FPGA status. Set Environment to `doing`.
 
 ---
 
@@ -129,6 +224,8 @@ which v++         # /tools/Xilinx/Vitis/2024.1/bin/v++
 ```
 
 If any tool is missing, stop and report the issue.
+
+> **Status doc**: Update Environment to `done`. Set DUT Synthesis to `doing` (or Full Build if skipping DUT).
 
 ---
 
@@ -177,6 +274,8 @@ After DUT synthesis completes, check:
 3. **Utilization estimate:** Note the LUT/FF/BRAM usage. The baseline clean Vortex 1-core uses about 12% of U55C LUTs (159K / 1.3M).
 
 Tell the user the DUT results and ask if they want to proceed with the full build. If there are synthesis errors, help fix them first.
+
+> **Status doc**: Update DUT Synthesis to `done` with timing estimate and any errors. Log any fixes applied in "Problems & Decisions". Set Full Build to `doing`.
 
 ---
 
@@ -234,6 +333,8 @@ Common failures:
 - **Out of memory**: Reduce `MAX_JOBS` (add `MAX_JOBS=4` to the make command)
 - **Build directory exists**: Use a different PREFIX or delete the old build directory
 
+> **Status doc**: Update Full Build to `done` (or `failed` with error details). Log any build failures and fixes in "Problems & Decisions". Set Timing Analysis to `doing`.
+
 ---
 
 ## Step 6: Analyze Timing & Utilization
@@ -288,6 +389,8 @@ head -50 $BUILD_DIR/bin/hier_utilization.rpt
 
 This shows which modules consume the most resources — useful for understanding where added RTL is costing resources.
 
+> **Status doc**: Update Timing Analysis to `done`. Record WNS, utilization summary, and build time. Set Test Run to `doing`.
+
 ### 6d. Report to User
 
 Summarize the results clearly:
@@ -325,6 +428,8 @@ Verify it was created:
 ls -la $VORTEX_DIR/kernel/libvortex.a
 ```
 
+> **Status doc**: Note kernel library status (already existed or freshly built).
+
 ---
 
 ## Step 8: Run Test Application on FPGA
@@ -354,6 +459,8 @@ For TCU tests beyond the basic `demo`, see `references/tcu-fpga-test-guide.md` w
   - Timeout: The design may be too slow or hung (timing violations can cause this)
   - Wrong results: The RTL modification may have a functional bug
 
+> **Status doc**: Update Test Run to `done` with PASSED/FAILED and performance stats (instructions, cycles, IPC). Log any test failures in "Problems & Decisions".
+
 ---
 
 ## Step 9: Final Report
@@ -378,6 +485,8 @@ Test App:     $TEST_APP → PASSED
 ```
 
 If timing is violated, emphasize this and suggest next steps (simplify logic, add pipeline stages, reduce NUM_CORES).
+
+> **Status doc**: Append the final summary to the status document. All steps should now show `done` (or `skipped`/`failed`). This document serves as a permanent record of the build session.
 
 ---
 
