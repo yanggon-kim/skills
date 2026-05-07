@@ -52,7 +52,7 @@
       "Bash(xargs *)",
       "Bash(git push *)",
       "Bash(git checkout . *)",
-      "WebFetch(domain:*)",
+      "WebFetch",
       "WebSearch"
     ],
     "deny": [
