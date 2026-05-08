@@ -2,7 +2,7 @@
 name: workload-analysis
 description: Profile GPU workloads, identify bottlenecks with quantitative evidence, and produce research-quality reports. Use when the user asks to "profile GPU workload", "analyze GPU bottleneck", "run nsys", "run ncu", "roofline analysis", "kernel profiling", or discusses CUDA kernel performance, occupancy, or inference latency. Do NOT use for general Python profiling (cProfile), CPU-only workloads, or ML training hyperparameter tuning.
 metadata:
-  version: 4.0.0
+  version: 4.1.0
   author: yanggon
 ---
 
@@ -58,14 +58,56 @@ CRITICAL: Complete this step BEFORE root cause analysis. The dependency chains a
 
 Reference: `references/instruction-level-analysis.md`, `references/tool-reference.md`
 
+### Step 5.5: Kernel SASS Forensics (Optional Deep-Dive)
+
+Run between Step 5 and Step 6 when the dominant-time kernel deserves research-grade scrutiny — the workload's headline kernel will be reported on, you want to *understand* it (not just bound it), or you need stall/latency evidence at instruction granularity to back a root-cause claim.
+
+**When to skip**: launch-bound workloads (kernel runtime < kernel-launch overhead), trivially memory-bound kernels where DRAM saturation is already the answer, or workloads where Step 5's dependency-chain analysis already pinpoints the bottleneck.
+
+The phase produces a per-kernel `kernel_sass_analysis.md` artefact. Sub-tasks:
+
+1. **Identify target kernel + mangled symbol** from Step 4's ncu output (full kernel name including template specialisation).
+2. **Dump SASS for the runtime architecture**:
+   ```
+   cuobjdump --list-text <library.so>          # find the symbol
+   cuobjdump --dump-sass -arch=sm_<XXX> --function <MANGLED> <library.so> > k.sass
+   ```
+   For custom-compiled kernels, point at the binary or .cubin instead of a vendor library.
+3. **Build TWO instruction-count tables** with `scripts/build_inst_inventory.py`:
+   - **Total kernel inventory** — every opcode categorised by pipe family (LSU split into Load / Store / Atomic; FMA / ALU / Shuffle / XU / Uniform / Branch / Reduce).
+   - **Inner-loop inventory** — same categorisation filtered to the SASS PC range that executes most frequently per warp. Identify the inner loop by enumerating backward `BRA` instructions (long-span = real outer loop; short-span = bisection / spin / barrier wait).
+4. **Decompile the kernel into C-like pseudocode** with annotated phases (setup → main loop → reduction → epilogue) and SASS PC ranges per phase. Identify the algorithm class (merge-path / row-split / persistent-CTA / wave-warp / tile-based GEMM / flash-attention / etc.) — `references/kernel-sass-forensics.md` §7 has structural fingerprints for common patterns.
+5. **Map each instruction class to ncu pipe metrics**: `pipe_lsu`, `pipe_fma`, `pipe_alu`, `pipe_xu`, `pipe_cbu`, `pipe_adu`, `pipe_fp16`. Reference table in `references/kernel-sass-forensics.md` §8.
+6. **Apportion `pipe_lsu_active_pct` into Load% / Store% / Atomic%** using per-op LSU request counts (`l1tex__t_requests_pipe_lsu_mem_*_op_*.sum`). Writes count `op_st + op_red + op_atom` (cuSPARSE-style kernels write via `RED.E.ADD`, not `STG`, on boundary rows). The updated `scripts/parse_ncu_results.py` emits this in the JSON's `pipe_lsu_split` block.
+7. **Static-vs-dynamic cross-check** with `scripts/crosscheck_sass.py`: explain why static SASS counts predict the *direction* of pipe utilisation but not the *magnitude* (predication, looped vs unrolled execution counts, per-pipe peak issue rates, per-instruction issue cost).
+8. **Map ncu warp-stall reasons to instruction classes** (table in `references/kernel-sass-forensics.md` §11):
+   - `long_scoreboard`  ← global LDG dependent chain
+   - `short_scoreboard` ← shared LDS dependent chain
+   - `mio_throttle`     ← LSU pipe overflow (too many in-flight LDGs)
+   - `lg_throttle`      ← address-calc / shared-mem bank conflict
+   - `barrier`          ← `BAR.SYNC`, `WARPSYNC.COLLECTIVE`
+   - `wait`             ← fixed-latency ops (transcendental, integer divide)
+9. **Latency budget for the inner loop**: per-instruction cycle cost (LDG-DRAM ~400-500, LDG-L2 ~150-200, LDS ~30, FFMA/FADD/FMUL/IMAD ~4, SHFL ~5, RED.E.ADD atomic-contended). Sum dependent-chain instructions per inner-loop iteration; compare against ncu's `gpc__cycles_active.avg.per_warp`. The gap reveals how much latency the SM is actually hiding via warp-level parallelism.
+
+**Outputs** under `<project>/analysis/`:
+- `kernel_sass_analysis.md` (the synthesis doc — methodology + findings)
+- `<kernel>_<arch>.sass` (raw cuobjdump dump, archived for reproducibility)
+- `<kernel>_<arch>_inst_inventory.csv` (total + inner-loop tables)
+- `static_vs_dynamic_crosscheck.md`
+
+CRITICAL: feed the findings from Step 5.5 into Step 6's why-chain. The inner-loop instruction table + stall mapping + latency budget *are* the compiled evidence Step 6 needs.
+
+Reference: `references/kernel-sass-forensics.md` (full methodology, 13 sections, with `01_suitesparse_spmv/analysis/kernel_sass_analysis.md` as the worked example)
+Scripts: `scripts/build_inst_inventory.py`, `scripts/crosscheck_sass.py`, `scripts/parse_ncu_results.py` (emits `pipe_lsu_split`)
+
 ### Step 6: Root Cause Deep-Dive
 
 1. Take the #1 bottleneck from analysis
 2. Follow the symptom-to-cause chain -- ask "WHY?" at least 3 times
-3. Use instruction-level evidence from Step 5 (dependency chains, stall mappings)
+3. Use instruction-level evidence from Step 5 (dependency chains, stall mappings) and, when available, Step 5.5 (per-pipe utilisation, LSU load/store split, inner-loop latency budget)
 4. Verify each claim with quantitative data
 
-Reference: `references/root-cause-analysis.md`, `references/first-principles-analysis.md`, `references/instruction-level-analysis.md`
+Reference: `references/root-cause-analysis.md`, `references/first-principles-analysis.md`, `references/instruction-level-analysis.md`, `references/kernel-sass-forensics.md`
 
 ### Step 7: Visualize and Report
 
@@ -133,6 +175,7 @@ project_root/
 - ALWAYS extract SASS for bottleneck kernels before claiming root cause
 - ALWAYS follow bottleneck symptoms to root causes with compiled evidence
 - ALWAYS prefer publicly available, citable benchmark suites over synthetic data
+- WHEN the dominant-bottleneck kernel will be reported on at research depth, run Step 5.5 (Kernel SASS Forensics) before Step 6 to produce the per-pipe utilisation, LSU load/store split, and inner-loop latency budget that the root-cause analysis consumes
 
 ## Troubleshooting
 
@@ -166,7 +209,8 @@ See `examples/vla_case_study.md` for a complete GR00T N1.6 VLA profiling walkthr
 - `references/tool-reference.md` -- Copy-paste command reference
 - `references/benchmark-suites.md` -- Benchmark catalog by domain with citations
 - `references/first-principles-analysis.md` -- Physical floor estimation methodology
-- `references/instruction-level-analysis.md` -- SASS/PTX extraction, dependency chains, stall mapping
+- `references/instruction-level-analysis.md` -- SASS/PTX extraction, dependency chains, stall mapping (Step 5)
+- `references/kernel-sass-forensics.md` -- Two-table instruction inventory, decompiled C-like pseudocode, LSU load/store split, pipe-to-instruction mapping, stall-reason-to-instruction-class mapping, per-instruction latency budget (Step 5.5)
 - `references/root-cause-analysis.md` -- Symptom-to-cause chains, compiled evidence
 - `references/pitfalls.md` -- 30+ pitfalls with symptoms and solutions
 - `references/gpu-workload-profiling-guide.md` -- Complete worked example (GR00T N1.6)

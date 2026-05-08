@@ -100,3 +100,85 @@ Task tool (general-purpose):
     - Self-review findings (if any)
     - Any issues or concerns
 ```
+
+---
+
+## Step 5.5 dispatch addendum (Kernel SASS Forensics)
+
+When dispatching for Step 5.5 specifically, fill in these additional placeholders inside the prompt's "Context" and "Task Description" sections:
+
+```
+## Step 5.5 inputs
+
+- TARGET_KERNEL_SHORT: [e.g. csrmv_v3_kernel — the short name reported by ncu]
+- TARGET_KERNEL_SYMBOL: [the full mangled symbol from `cuobjdump --list-text`,
+                        e.g. _ZN8cusparse15csrmv_v3_kernelISt17integral_constantI...]
+- GPU_ARCH: [e.g. sm_120 — must match the runtime GPU's compute capability]
+- LIBRARY_PATH: [e.g. /usr/local/cuda/lib64/libcusparse.so.X.Y.Z for vendor
+                kernels, or path to compiled .so / .cubin for custom kernels]
+- NCU_REPORT: [path to .ncu-rep file from Step 4]
+- INNER_LOOP_PC_RANGE: [optional, e.g. 0x0240-0x1300 — leave empty to discover
+                       via backward-BRA enumeration in this task]
+- OUTPUT_DIR: [e.g. <project>/analysis/ — directory for the synthesis doc and
+              archived SASS dumps]
+
+## Step 5.5 deliverables
+
+Produce these files (paths relative to OUTPUT_DIR):
+
+  <kernel>_<arch>.sass                 - raw cuobjdump dump (archive)
+  <kernel>_<arch>_inst_inventory.csv   - total-kernel inventory
+  <kernel>_<arch>_inner_inventory.csv  - inner-loop inventory (after BRA enum)
+  static_vs_dynamic_crosscheck.md      - output of crosscheck_sass.py
+  kernel_sass_analysis.md              - synthesis doc, 13-section template
+                                         per references/kernel-sass-forensics.md
+                                         (cite kernel_sass_analysis.md from
+                                          01_suitesparse_spmv/analysis/ as the
+                                          gold-standard reference)
+
+## Step 5.5 method
+
+Use these scripts in this order:
+
+  1. cuobjdump --list-text LIBRARY_PATH | grep <kernel-name> | grep <arch>
+     -> confirm the symbol matches TARGET_KERNEL_SYMBOL
+  2. cuobjdump --dump-sass -arch=GPU_ARCH --function TARGET_KERNEL_SYMBOL \\
+        LIBRARY_PATH > OUTPUT_DIR/<kernel>_<arch>.sass
+  3. python scripts/build_inst_inventory.py <kernel>.sass --csv \\
+        > <kernel>_<arch>_inst_inventory.csv
+     (also emit the markdown form for the synthesis doc)
+  4. Enumerate backward BRAs in the SASS to identify inner-loop PC range
+     (see references/kernel-sass-forensics.md §3 for the recipe).
+  5. python scripts/build_inst_inventory.py <kernel>.sass \\
+        --inner-loop-range 0xPC_lo-0xPC_hi --csv \\
+        > <kernel>_<arch>_inner_inventory.csv
+  6. python scripts/parse_ncu_results.py NCU_REPORT \\
+        --target-kernel TARGET_KERNEL_SHORT \\
+        --output OUTPUT_DIR/ncu_<kernel>.json
+  7. python scripts/crosscheck_sass.py \\
+        --inventory <kernel>_<arch>_inst_inventory.csv \\
+        --ncu-json OUTPUT_DIR/ncu_<kernel>.json \\
+        --target-kernel TARGET_KERNEL_SHORT \\
+        --single-run --gpu-arch GPU_ARCH \\
+        > static_vs_dynamic_crosscheck.md
+  8. Synthesise kernel_sass_analysis.md with the 13-section template from
+     references/kernel-sass-forensics.md, populated with the data from steps
+     3-7. Decompiled C-like pseudocode (§6) is the most-cited section —
+     spend time on the phase walkthrough with annotated PC ranges.
+
+## Step 5.5 validation
+
+Before reporting complete, verify:
+
+  - inventory CSV total instruction count matches `wc -l <kernel>.sass / 2` (±1).
+  - inner-loop inventory has < total inventory (filter actually applied).
+  - parse_ncu_results.py output JSON contains pipe_lsu_split with
+    load_pct + write_pct ≈ pipe_utilization.lsu_active_pct.
+  - crosscheck_sass.py output has both static counts and dynamic ncu rows.
+  - kernel_sass_analysis.md has all 13 sections from
+    references/kernel-sass-forensics.md.
+  - The algorithm identification in §3 matches one of the patterns in §7
+    of references/kernel-sass-forensics.md (or you have explicit evidence
+    for a new pattern).
+```
+

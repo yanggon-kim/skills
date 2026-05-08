@@ -243,3 +243,20 @@ All scripts at `01_suitesparse_spmv/scripts/`:
 | `run_nsys_profile.sh` | nsys wrapper | Traces cuda,nvtx,osrt |
 | `run_ncu_profile.sh` | ncu wrapper | `--set full`, regex kernel filter, per-matrix |
 | `export_ncu_csv.sh` | Export ncu-rep to CSV | For programmatic parsing |
+| `build_inst_inventory.py` | Step 5.5 — categorise SASS opcodes by pipe family with Load/Store/Atomic split | total + inner-loop (`--inner-loop-range`) |
+| `crosscheck_sass.py` | Step 5.5 — static SASS counts vs dynamic ncu pipe utilisation | reconciliation paragraph + per-matrix table |
+
+## Step 5.5 worked example
+
+The SpMV subproject was the testbed for Step 5.5 (Kernel SASS Forensics). The full synthesis doc is at `01_suitesparse_spmv/analysis/kernel_sass_analysis.md` (519 lines, 13 sections) — diff your own Step 5.5 output against it to see what the methodology produces in practice.
+
+Headline findings from the worked example (Blackwell sm_120, cuSPARSE `csrmv_v3_kernel`):
+
+- **Algorithm**: merge-path SpMV (Merrill-Garland PPoPP'16). Identified by 256-nnz/warp equal-tile decomposition, companion `csr_partition_kernel` preprocess, shared-mem staging, warp-level `SHFL.DOWN` reduction, boundary `RED.E.ADD` writes.
+- **Total inventory**: LSU 206 / FMA 137 / ALU 334 / Branch 159 / Shuffle 25 / Reduce 1 / Uniform 10 (out of 872 total). LSU split: Load 129 / Store 68 / Atomic 9.
+- **Inner-loop (per-nonzero unrolled block)**: 4 loads + 1 store + 3 FMA + 0 ALU per nonzero. Static load:store = 4:1.
+- **Static-vs-dynamic gap**: static LSU/FMA = 1.50x across all kernels; dynamic LSU/FMA = 8.7-11.8x across 6 matrices. Static counts predict the LSU-heavy character; dynamic ratio amplifies because per-pipe peak issue rates differ (LSU has its own issue slot; FMA shares with ALU).
+- **LSU split per matrix**: dense-row (cant/pwtk/ldoor) LD:WR ~ 3.5:1; webbase-1M LD:WR ~ 1.05:1 (anomalous — short rows mean per-row writes dominate). The split is invisible without `pipe_lsu_split`.
+- **Stall attribution**: `long_scoreboard` 30-71% across matrices — global-LDG-dependent FFMA pipeline stalls. DRAM at 87-96% saturation. Memory-latency-bound + memory-bandwidth-bound coexistence.
+
+Reproduce this analysis on a new kernel with the dispatch addendum in `prompts/implementer-prompt.md`. The reference data files (`csrmv_v3_sm120.sass`, `csrmv_v3_sm120_inst_inventory.csv`, `static_vs_dynamic_crosscheck.md`, `suitesparse_ncu_parsed_blackwell.json`) are kept under `01_suitesparse_spmv/analysis/` as a regression test target.
