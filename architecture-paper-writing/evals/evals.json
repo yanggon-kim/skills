@@ -1,0 +1,53 @@
+{
+  "skill_name": "architecture-paper-writing",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm writing the motivation section of an ISCA-style paper on a two-tier KV cache for sparse-attention LLM serving. I have these measurements from our traces (DeepSeek-style model, 64K context, 61 layers, top-2048 selection per query): the hottest 10% of cache entries serve 89% of all selections; an entry selected at one step is selected again at the next step with probability 0.79, still 0.64 after 64 steps, 0.48 after 512 and 0.35 after 1024; over any 64 consecutive steps a layer touches about 7,700 distinct entries, 12% of the pool; keeping the most recent 2,048 positions resident would cover only 0.47 of a selection. Prior work (two systems) builds LRU caches on the step-to-step overlap alone. Write the characterization paragraph(s) for this, with run-in heads, in the register of a top-tier architecture paper. The figure that plots these is Figure 4 (panel a = coverage vs hot-region size, panel b = retention vs lag). Our system is called TIERKV; don't oversell it.",
+      "expected_output": "One to three paragraphs with run-in heads; roughly one sentence in three carries a number; each measurement is followed by a mechanism sentence and by what it forces on placement (decay, laziness, content-not-position) rather than by 'therefore TIERKV'; TIERKV mentioned at most once, at the end; the prior-work contrast is stated as what lag-1 overlap does not measure, not as a put-down; no rhetorical questions; numbers cited via Figure 4 where the figure carries them; no 'up to', 'clearly', 'interesting to note'.",
+      "files": [],
+      "assertions": [
+        "no questions to the reader",
+        "banned words absent",
+        "the claim-bearing measurements are printed; mid-curve points may be left to the figure",
+        "run-in heads present",
+        "no sentence carries more than two numbers",
+        "run-in heads are general (no digit in a head)",
+        "Figure 4 is cited",
+        "own system named at most once, only in the final paragraph",
+        "number density 0.30–0.55",
+        "prior work framed by what lag-1 does not measure"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Draft the abstract for our ASPLOS submission. Contributions: (1) custom HBM's logic base die can attach LPDDR as a stack-local capacity tier whose aggregate bandwidth scales with stack count, unlike host offload over PCIe; on the sparse-attention gather, placement between the tiers — not the LPDDR wire rate — sets the delivered bandwidth. (2) We characterize the selection statistics of DeepSeek Sparse Attention beyond the step-to-step overlap prior work uses: the hottest 10% of entries serve 89% of selections; an entry selected once is selected again with probability 0.64 after 64 steps and 0.35 after 1024. (3) TIERKV, the first KV-cache tier on LPDDR-extended custom HBM: hot entries re-indexed to the low indices of each layer's cache so tier steering is one index comparison, and a base-die migration engine that keeps the hot region current under a fixed swap budget. (4) On eight GPUs across three models, 7.8–21.2x lower time-per-output-token than PCIe offload, within 2% of an infinite-HBM oracle; six TIERKV GPUs deliver 1.52–2.79x the peak throughput of an eight-GPU HBM-only node at 0.79x the energy per token. Keep it under 200 words.",
+      "expected_output": "An abstract of at most 200 words following the seven-move order (context, problem, gap in prior work, insight/characterization, system in one sentence, results with numbers, significance); every number from the prompt present and none invented; 'first' appears at most once; no rhetorical questions; no 'up to'; the two-tier insight stated as placement-not-wire-rate; results as concrete multiples with both ends of each range.",
+      "files": [],
+      "assertions": [
+        "no questions to the reader",
+        "banned words absent",
+        "200 words or fewer",
+        "every headline number printed",
+        "'first' at most once",
+        "ranges with both ends, no 'up to'",
+        "placement stated as what sets bandwidth; no negated unintroduced alternative"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Write the design paragraph that introduces our migration engine for the paper. Facts: it is a DMA block with its own small control core, placed on the HBM base die; it moves KV-cache entries between the HBM pool and the LPDDR pool by exchanging the contents of two slots (a latent of 656 B plus its 132 B indexer key move together); the GPU gives it work through a descriptor ring (16 B descriptors naming sequence, layer, step, slot, score), a doorbell, and it posts a completion word the GPU stream waits on before the layer's next attention; the swaps are capped at 32 per sequence per layer per decode step; its deadline is one full decode step (tens of milliseconds) against microseconds of swap work; it costs 0.40 mm2 at a 12 nm-class node, 0.33% of a 121 mm2 base die, 424 KB of SRAM, 0.16 mW idle and at most 7.7 mW active. The reader has already seen the re-indexing idea (hot entries live in the low slots). Do not invent any API names or registers beyond what I listed.",
+      "expected_output": "A paragraph (or two) that names the engine, defines it in one sentence, states why the swap is safe/valid (attention is invariant to entry order; key and latent move together), gives the payoff, then the interface and the cost — in that order; every number from the prompt present, none added; no invented API/register/function names; no 'we believe', no hedges; the familiar precedent (a DMA engine) mentioned only as a comparison, not leading the paragraph; no rhetorical questions.",
+      "files": [],
+      "assertions": [
+        "no questions to the reader",
+        "banned words absent",
+        "every given cost/interface number printed",
+        "no invented API/function/register names",
+        "no hedges",
+        "first sentence names and defines the engine",
+        "mechanism → interface → cost order"
+      ]
+    }
+  ]
+}
