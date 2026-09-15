@@ -135,6 +135,17 @@ def main():
         for doc in ("ONBOARDING.md", "HANDOFF.md"):
             if not os.path.isfile(os.path.join(root, doc)):
                 W(f"owner '{owner}': {root}/{doc} is missing")
+        ob = os.path.join(root, "ONBOARDING.md")
+        if os.path.isfile(ob):
+            text = open(ob, errors="replace").read()
+            m = re.search(r"^#+\s*(?:\d+\.\s*)?Open questions\s*$", text, re.M | re.I)
+            if m:
+                tail = text[m.end():]
+                nxt = re.search(r"^#+\s", tail, re.M)
+                body = tail[: nxt.start()] if nxt else tail
+                n = len([l for l in body.splitlines() if l.strip().startswith(("-", "*", "1.", "2.", "3."))])
+                if n:
+                    W(f"owner '{owner}': registration is provisional — {n} open question(s) in ONBOARDING.md await the user")
 
     for name in agent_files:
         if name not in roots:
@@ -153,6 +164,10 @@ def main():
                     W(f"'{a_owner}' root is nested in '{b_owner}' root, but {b_owner} does not exclude '{rel}'")
 
     remote_cells = " ".join(" ".join(r) for r in remotes)
+    for row in remotes:
+        joined = " ".join(row)
+        if re.search(r"unconfirmed|unknown|\bTBD\b|\?\?", joined, re.I):
+            W(f"remotes table row '{row[0][:40]}' has an unconfirmed field — ask the user who writes it")
     seen_tops = set()
     for owner, (root, _) in roots.items():
         top = repo_top(root) if os.path.isdir(root) else None

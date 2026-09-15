@@ -44,8 +44,10 @@ Write exactly two files into the project, plus one memory note. Nothing else.
      and keep the result under the budget in `references/context-layers.md`.
 2. **`scripts/start-main.sh`** from `assets/start-main.sh.tmpl`, executable, with an **empty**
    `SUBPROJECTS` list. It launches the main session with `--add-dir` for every registered root.
-3. **A memory note** recording that this project runs in main-agent mode and why (the reason
-   above), so later sessions start in the right role.
+3. **A memory note** in *main's own* memory (the session's memory directory, not the project),
+   recording that this project runs in main-agent mode and why — so a later session starts in the
+   right role. If the session has no memory tool, print the line for the user to keep instead, and
+   say so.
 
 On an existing codebase, finish by reporting the **candidate** sub-projects the inventory found —
 one line each: path, what it appears to be, its remote, other likely writers — and **create no

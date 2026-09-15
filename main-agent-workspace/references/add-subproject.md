@@ -53,6 +53,9 @@ guidance, traps, and a proposed scope. The prompt is `assets/onboarding-prompt.m
 - **From main**, with a read-only agent given the same prompt — when the project has no history of
   its own (a fresh clone, a directory of scripts). Do not let that agent edit anything but
   `ONBOARDING.md`.
+- **By main itself**, reading the files directly — for a small root (a few dozen files), or when
+  spawning is unavailable. The survey is read-only either way; what matters is that every claim
+  comes from a file and unknowns go to "open questions" rather than being guessed.
 
 **Keep the survey out of the project's git by default.** `ONBOARDING.md` and `HANDOFF.md` describe the
 agent system, not the project, and other people may use the repository. Add both to

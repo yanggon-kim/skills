@@ -53,7 +53,7 @@ def repo_info(path):
         "remotes": remotes,
         "uncommitted": len(status.splitlines()) if status else 0,
         "submodules": submodules,
-        "markers": markers(path),
+        "markers": markers(path), "readme": has_readme(path),
     }
 
 
@@ -66,9 +66,11 @@ def markers(path):
     if os.path.isdir(agents):
         n = len([f for f in os.listdir(agents) if f.endswith(".md") and not f.startswith("_")])
         m.append(f".claude/agents ({n} owner files)")
-    if any(f.lower().startswith("readme") for f in os.listdir(path)):
-        m.append("README")
     return m
+
+
+def has_readme(path):
+    return any(f.lower().startswith("readme") for f in os.listdir(path))
 
 
 def size_of(path):
@@ -117,7 +119,7 @@ def main():
 
     print(f"# Inventory of `{root}`\n")
     print(f"**Suggested mode:** {mode}\n")
-    print(f"**Agent-system files at the root:** {', '.join(root_markers) or 'none'}\n")
+    print(f"**Agent-system files at the root:** {', '.join(root_markers) or 'none'}" + ("  ·  a README is present\n" if has_readme(root) else "\n"))
     print("## Top level\n\n| entry | type | size |\n|---|---|---|")
     for t in top:
         print(f"| `{t['name']}` | {t['type']} | {t['size']} |")
@@ -135,8 +137,10 @@ def main():
             print("- no remotes")
         if r["submodules"]:
             print(f"- submodules: {', '.join(r['submodules'])}")
+        if r["readme"]:
+            print("- has a README")
         if r["markers"]:
-            print(f"- has: {', '.join(r['markers'])}")
+            print(f"- agent-system files: {', '.join(r['markers'])}")
         print()
     if nesting:
         print("## Nesting (inner inside outer)\n")

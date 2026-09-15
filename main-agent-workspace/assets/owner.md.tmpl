@@ -19,7 +19,8 @@ under it. <EXCLUSIONS — if the root nests another owner's root or is nested in
    `references/context-layers.md` before restructuring `HANDOFF.md`.
 
 ## Rules specific to this root
-- Use absolute paths and `git -C <ABSOLUTE_ROOT>`; the working directory does not persist.
+- Address files and git by absolute path (`git -C` the root above); the working directory does not
+  persist between calls. Write the path out where it matters; elsewhere say "the root".
 - <WRITERS RULE — e.g. "The user also pushes this remote: fetch, rebase and re-read before editing;
   report conflicts, do not resolve them." Delete if the owner is the only writer.>
 - <PROVENANCE OR QUALITY RULE PARTICULAR TO THIS ROOT, if any.>
