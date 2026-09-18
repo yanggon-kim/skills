@@ -24,12 +24,13 @@ quoted from an earlier draft. When the two disagree, the lessons file is the lat
 | task | read, in this order |
 |---|---|
 | any edit, any section | `01` first — the sentence test on every changed sentence |
+| any sentence that cites prior work | `12` — placement decides what each reference is held responsible for |
 | abstract | `01` → `03` → `04` §A (the abstract is the introduction's arc in miniature) |
 | Introduction | `01` → `02` §1–2 → `04` |
 | Background / Motivation & Observation | `01` → `02` §1–2 (the narrative spine, L1) → `09` (the section anatomy, the six paragraph skeletons, the number-density and design-implication caps; the reader test in `09` §I runs before the commit) |
 | Design (any mechanism paragraph anywhere) | `01` → `02` §1 → `05` → `08` (the checklist in `08` §4 runs before the commit) → `11` |
 | Methodology / Evaluation | `01` → `02` §1–2 → `06` |
-| Related Work | `01` → `02` §1–2; every claim about prior work gets a row in the paper's fact-check table |
+| Related Work | `01` → `02` §1–2 → `12` (category-level citation grouping); every claim about prior work gets a row in the paper's fact-check table |
 | Conclusion | `01` → `03` → `07` |
 | a figure, a caption, a table's look | `02` §3 (F1–F7, the LazyDP visual system) → the header of the figure's generator script |
 
@@ -54,6 +55,8 @@ quoted from an earlier draft. When the two disagree, the lessons file is the lat
   habits that failed, and the ten-line pre-commit checklist.
 - `10_production_and_verification.md` — how much checking an edit needs, where every number must come from, how floats actually move,
   how to prove a page is what the build says it is.
+- `12_citation_placement.md` — where a citation goes inside a sentence: entity at its name, claim at the smallest clause,
+  one group per category or example; the LaTeX tie and line-breaking consequences of moving one.
 - `11_writing_lessons.md` — the author's corrections on the rendered page, one rule per entry (rule, why, example); the later word
   when it disagrees with a per-section guide.
 

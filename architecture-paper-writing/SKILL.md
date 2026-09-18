@@ -30,7 +30,8 @@ each is self-contained and ends with a worked example and a set of guard checks.
    ranges of each section, so you can open four pages rather than fourteen. Mind the page-number
    trap described there before citing a page.
 4. **Write, then run the checks.** `python3 scripts/check_prose.py --system NAME file.tex`
-   reports interrogatives, banned words, number density, own-system mentions and range forms —
+   reports interrogatives, banned words, number density, own-system mentions and range forms; add `--cite`
+   for citation-placement suspects —
    the mechanical half of the guides' guards. It is a report, not a gate; read it, then apply the
    section's reader test by hand.
 5. **Apply the reader test.** Each section guide ends with one. They exist because prose that
@@ -54,6 +55,7 @@ each is self-contained and ends with a worked example and a set of guard checks.
 | Conclusion | `references/07_conclusion.md` | five moves; claim → key idea → what was done → one number → outlook; no result clause; ~115 words | PACT'20 vision, Tensor Casting |
 | Figures, captions, colour | `references/02_structure_and_figures.md` §3 | luminance ramp for what exists, one tint for what you add, red only for small marks, four-spine charts, no hatches | LazyDP Fig. 9(b) and Fig. 11 |
 | The paper's spine (which section carries which claim) | `references/02_structure_and_figures.md` §1–2 and `references/00_reading_order.md` | L1–L7 | all five Set-A papers |
+| Citations — where the brackets go in a sentence | `references/12_citation_placement.md` | cite an entity at its name, a claim at the smallest clause expressing it; no trailing cluster on a multi-claim sentence | SmartSAGE, LazyDP (related-work landscapes) |
 | Any build, float, page-limit, number-bearing or structural edit; adding a reference | `references/10_production_and_verification.md` | the edit-class matrix; floats fixed by moving source blocks; every cited page must *print* the number | — |
 
 There is no dedicated related-work guide; the two references named cover what the reference
@@ -95,6 +97,10 @@ list to hold in mind while drafting.
   the system in the same sentence.
 - **Numbers the figure carries are printed at their endpoints;** every figure citation names the thing to
   look at. Roles are stated positively — what a part does, never what it does not.
+- **Citation scope is placement.** Cite an entity immediately after its name and a claim immediately after the
+  smallest clause expressing it; split the references when one sentence carries two claims, and give each category
+  or example in a landscape sentence its own group. A cluster at the end of a long sentence claims support for
+  everything in it. Full rules in `12_citation_placement.md`.
 - **Terminology discipline.** One canonical name per concept, defined once, with the synonyms you
   are *not* using listed somewhere you will see them. Readers notice a system called three things.
 - **The banned list**, verified as absent from all six reference papers in the relevant

@@ -239,6 +239,102 @@ def has_number(sentence):
     return bool(re.search(r"\d", s))
 
 
+
+# --------------------------------------------------------------------------- citation placement
+# Heuristics for references/12_citation_placement.md. These report SUSPECTS, not errors: the rule
+# ("cite an entity at its name, a claim at the smallest clause expressing it") needs a reader, and
+# a trailing group is correct whenever the whole sentence is the borrowed claim. What a machine can
+# see is a sentence that carries several claims or a list and puts every reference at the end.
+CITE_CMD_RE = re.compile(r"\\(?:cite[a-zA-Z]*|autocite)\s*(?:\[[^\]]*\])*\s*\{([^}]*)\}")
+NUM_CITE_RE = re.compile(r"\[\s*\d+(?:\s*[-–,]\s*\d+)*\s*\]")
+CLAUSE_BREAK_RE = re.compile(r",\s+(?:while|whereas|but|although|though|which|and|or)\b|;\s")
+LIST3_RE = re.compile(r"[^,]{2,60},[^,]{2,60},\s+(?:and|or)\s")
+
+
+def citations_in(sentence):
+    """[(start, end, nkeys)] for every citation group, LaTeX or bracketed-number."""
+    out = []
+    for m in CITE_CMD_RE.finditer(sentence):
+        keys = [k.strip() for k in m.group(1).split(",") if k.strip()]
+        out.append((m.start(), m.end(), len(keys), tuple(keys)))
+    for m in NUM_CITE_RE.finditer(sentence):
+        body = m.group(0).strip("[] ")
+        n = sum((3 if "-" in part or "–" in part else 1)
+                for part in (x.strip() for x in body.split(",")) if part)
+        out.append((m.start(), m.end(), n, (m.group(0),)))
+    return sorted(out)
+
+
+def cite_flags(sentence):
+    """Return a list of one-line suspicions about this sentence's citation placement."""
+    cites = citations_in(sentence)
+    if not cites:
+        return []
+    flags = []
+    words = len(sentence.split())
+    tail = sentence.rstrip()
+    while tail and tail[-1] in ".,;:!?)\"'”’":
+        tail = tail[:-1].rstrip()
+    last_end = cites[-1][1]
+    trailing = last_end >= len(tail) - 1
+    one_group = len(cites) == 1
+    before = sentence[: cites[0][0]]
+    if trailing and one_group:
+        if LIST3_RE.search(before):
+            flags.append("list of three or more items with a single group at the end "
+                         "-> cite each item or category (12 §E, §F)")
+        elif CLAUSE_BREAK_RE.search(before) and words >= 18:
+            flags.append("clause break before the only citation group, %d words "
+                         "-> check both halves are one claim (12 §D)" % words)
+        if cites[0][2] >= 4 and words >= 25:
+            flags.append("%d keys in one trailing group on a %d-word sentence (12 §I)"
+                         % (cites[0][2], words))
+    seen = {}
+    for _, _, _, keys in cites:
+        for k in keys:
+            seen[k] = seen.get(k, 0) + 1
+    dup = [k for k, c in seen.items() if c > 1]
+    if dup:
+        flags.append("repeated in one sentence: %s -> keep the second only for a distinct "
+                     "empirical claim (12 §H)" % ", ".join(sorted(dup)[:4]))
+    return flags
+
+
+def citation_report(raw, quiet):
+    """Report citation-placement suspects over the RAW source (\cite survives preprocessing)."""
+    lines = [strip_comment(l) for l in raw.splitlines()]
+    paras, cur = [], None
+    for n, t in enumerate(lines, 1):
+        if not t.strip():
+            if cur:
+                paras.append(cur)
+                cur = None
+            continue
+        if cur is None:
+            cur = {"start": n, "lines": []}
+        cur["lines"].append(t)
+    if cur:
+        paras.append(cur)
+
+    out, n_cites, n_trailing, n_flagged = [], 0, 0, 0
+    for p in paras:
+        text = " ".join(x.strip() for x in p["lines"])
+        for sent in split_sentences(text):
+            cites = citations_in(sent)
+            if not cites:
+                continue
+            n_cites += len(cites)
+            tail = sent.rstrip(".,;:!?)\"'”’ ")
+            if cites[-1][1] >= len(tail) - 1:
+                n_trailing += 1
+            for f in cite_flags(sent):
+                n_flagged += 1
+                if not quiet:
+                    out.append("  near line %d: %s" % (p["start"], f))
+                    out.append("      \"%s\"" % (sent[:150] + ("..." if len(sent) > 150 else "")))
+    return out, n_cites, n_trailing, n_flagged
+
+
 # --------------------------------------------------------------------------- report
 def main():
     ap = argparse.ArgumentParser(
@@ -249,6 +345,8 @@ def main():
     ap.add_argument("--system", default=None, metavar="NAME",
                     help="the paper's own system name; \\SYS is mapped to it and check (4) counts it (default: none)")
     ap.add_argument("--quiet", action="store_true", help="print only the TOTAL block")
+    ap.add_argument("--cite", action="store_true",
+                    help="also report citation-placement suspects (see references/12_citation_placement.md)")
     args = ap.parse_args()
 
     if args.file == "-":
@@ -352,6 +450,14 @@ def main():
         print("  (4) own-system mentions  : skipped (pass --system NAME)")
     print("  (5) we/our               : %d" % tot["we"])
     print("  (6) ranges N--M          : %d  versus 'up to N': %d" % (tot["ranges"], tot["upto"]))
+    if args.cite:
+        cout, n_cites, n_trailing, n_flagged = citation_report(raw, args.quiet)
+        print("  (7) citation placement   : %d groups, %d at a sentence end, %d suspect%s" % (
+            n_cites, n_trailing, n_flagged, "" if n_flagged == 1 else "s"))
+        if cout:
+            print()
+            print("CITATION PLACEMENT (suspects, not errors - read each one)")
+            print("\n".join(cout))
     return 0
 
 
