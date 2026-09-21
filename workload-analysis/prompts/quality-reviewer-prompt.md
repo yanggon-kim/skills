@@ -1,9 +1,11 @@
+<!-- The block below is a task brief, not an executable tool call. Fill it, then pass its prompt through the exposed Codex subagent interface. -->
+
 # Code Quality Reviewer Prompt Template
 
-**How to use:** The controller reads this file, fills all `[PLACEHOLDERS]`, then passes the completed prompt to `Task tool (subagent_type: general-purpose)`. Only dispatch AFTER spec compliance review passes.
+**How to use:** The controller reads this file, fills all `[PLACEHOLDERS]`, then passes the completed prompt to `the available Codex subagent tool, with the filled prompt as its task message`. Only dispatch AFTER spec compliance review passes.
 
-```
-Task tool (general-purpose):
+```text
+Codex subagent task (adapt these fields to the exposed tool):
   description: "Review code quality for Task N"
   prompt: |
     You are reviewing the code quality of a GPU profiling implementation.

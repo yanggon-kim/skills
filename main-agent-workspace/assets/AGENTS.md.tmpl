@@ -1,0 +1,47 @@
+# AGENTS.md
+
+<PROJECT_NAME>: <ONE_SENTENCE_WHAT_THIS_PROJECT_IS>.
+
+## Roles
+
+The interactive parent session is the coordinator: route work under registered roots to their
+owners, and edit coordinator files outside those roots. A delegated owner is an implementer:
+follow its agent definition and assigned scope, and edit its own root. This coordinator-only
+restriction does not prevent owners from implementing their assigned tasks.
+
+Generic procedures live in the installed `main-agent-workspace` skill; open them on demand.
+
+## Layout
+
+- `scripts/start-main.sh` starts Codex; `scripts/start-main.sh resume --last` resumes a session.
+- `.codex/agents/<name>-owner.toml` defines each owner.
+- Each owner root holds `ONBOARDING.md` (facts) and `HANDOFF.md` (current state).
+
+## Owners
+
+| owner | root (absolute) | owns | excludes | notes |
+|---|---|---|---|---|
+
+## Remotes and writers
+
+Serialize commits to a shared Git index. Push only within the user's authorized scope.
+
+| repository | remote to push | never push | branch | writers | committing agent |
+|---|---|---|---|---|---|
+
+## Work coordination
+
+- Use Codex subagents for owner tasks; read each owner's TOML instructions if a named role
+  is unavailable. Never run two writers for the same root at once.
+- Pass the goal, paths, existing decisions, boundaries, acceptance criteria, and report shape.
+- Owners read across roots as permitted and edit only their assigned paths. Report cross-owner
+  changes to the coordinator, which routes them in dependency order.
+- Rebuild context from `ONBOARDING.md` and `HANDOFF.md`; do not assume private agent memory.
+- Track long-running jobs by session/job ID, logs, and exit status. An owner can hand monitoring
+  to the parent, but the parent continues until requested results are collected or a user
+  checkpoint is reached. A launched build is not a completed build.
+- Honor user instructions and existing authorization; ask only for missing material decisions.
+
+## Shared resources
+
+<RESOURCE_CAP>

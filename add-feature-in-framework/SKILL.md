@@ -13,7 +13,7 @@ A structured process for adding new features to multi-layer systems (software, h
 ## Critical Rules
 
 - NEVER implement without exploring the framework first (Phase 1)
-- NEVER start coding without user-approved plan (Phase 3)
+- Resolve material design choices before coding; use the implementation authorization already supplied
 - NEVER move to the next step until the current step compiles and passes its test
 - ALWAYS trace config flags through ALL layers before testing
 - ALWAYS test with at least two config sizes (minimum and 2x minimum)
@@ -52,11 +52,11 @@ Reference: `references/phase2-requirements.md`
 1. Break the feature into ordered steps, each independently verifiable
 2. For each step: list files to modify and expected behavior change
 3. Identify test/verification method for each step
-4. Present plan to user -- revise until approved
+4. Present the plan and resolve material open decisions; honor explicit review checkpoints
 
-CRITICAL: Do not proceed to Phase 4 without user approval.
+If the user requested planning only, stop with the plan. Otherwise proceed within existing implementation authorization once material choices are resolved.
 
-**Output:** Implementation plan document approved by user.
+**Output:** Implementation plan aligned with the authorized scope.
 
 Reference: `references/phase3-plan.md`
 

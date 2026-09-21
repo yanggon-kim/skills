@@ -30,7 +30,7 @@ Every framework has some subset of these layers. Identify which ones exist:
 
 Find the build instructions. Try building from scratch:
 
-- Read README, INSTALL, CLAUDE.md, Makefile, configure scripts
+- Read README, INSTALL, AGENTS.md, Makefile, configure scripts
 - Execute the build commands — does it succeed?
 - Note any environment setup required (toolchains, env vars, paths)
 - Note the clean-build process (what must be cleaned when switching configs)

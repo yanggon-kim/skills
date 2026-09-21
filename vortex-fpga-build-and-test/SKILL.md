@@ -48,7 +48,7 @@ The FPGA build-and-test workflow takes 2+ hours. During this time, context can b
 
 ### Getting the path
 
-The user provides a `STATUS_DIR` — the directory where the status document goes. If they don't provide one, ask:
+The user provides a `STATUS_DIR` — the directory where the status document goes. If they do not provide one, use `$VORTEX_DIR/00_workspace/vortex_fpga_status` and report it. Ask only if that location is unsuitable:
 > "Where should I save the build status document? (e.g., `/path/to/workspace/vortex_fpga_status`)"
 
 ### Naming convention
@@ -122,7 +122,7 @@ Recovery procedure:
 
 ## Step 1: Gather Information from User
 
-Before doing anything, ask the user for these three things. Use defaults if they don't specify:
+Use supplied values and the documented defaults. Ask only for missing required information; do not repeat questions the user has answered:
 
 1. **Vortex repo path** (required, no default) — the root directory of the Vortex repository to build.
    Ask: "What is the path to your Vortex repository?"
@@ -247,9 +247,9 @@ If no CONFIGS:
 make top 2>&1 | tee dut_top.log
 ```
 
-Note: The build runs in the background (the DUT Makefile appends `&`). Monitor progress with:
+Note: The DUT Makefile may append `&`, so its exit status alone does not prove synthesis completed. Track the actual child job and inspect final reports/errors. Monitor bounded log excerpts with:
 ```bash
-tail -f top/build/build.log
+tail -n 40 top/build/build.log
 ```
 
 ### DUT top synthesis fixes (if needed)
@@ -273,7 +273,7 @@ After DUT synthesis completes, check:
 
 3. **Utilization estimate:** Note the LUT/FF/BRAM usage. The baseline clean Vortex 1-core uses about 12% of U55C LUTs (159K / 1.3M).
 
-Tell the user the DUT results and ask if they want to proceed with the full build. If there are synthesis errors, help fix them first.
+Report the DUT results and proceed if the requested scope includes the full build. Ask only if results introduce a material choice or the user requested a checkpoint. If there are synthesis errors, help fix them first.
 
 > **Status doc**: Update DUT Synthesis to `done` with timing estimate and any errors. Log any fixes applied in "Problems & Decisions". Set Full Build to `doing`.
 
@@ -295,17 +295,17 @@ If CONFIGS are specified:
 PREFIX=$BUILD_PREFIX NUM_CORES=1 TARGET=hw \
   PLATFORM=xilinx_u55c_gen3x16_xdma_3_202210_1 \
   CONFIGS="$USER_CONFIGS" \
-  make > ${BUILD_PREFIX}.log 2>&1 &
+  make > ${BUILD_PREFIX}.log 2>&1
 ```
 
 If no CONFIGS:
 ```bash
 PREFIX=$BUILD_PREFIX NUM_CORES=1 TARGET=hw \
   PLATFORM=xilinx_u55c_gen3x16_xdma_3_202210_1 \
-  make > ${BUILD_PREFIX}.log 2>&1 &
+  make > ${BUILD_PREFIX}.log 2>&1
 ```
 
-Run this in the background. The build directory will be:
+Run through the Codex execution tool and retain its running session ID; poll that session at reasonable intervals while providing progress updates. For survival across a session exit, use tmux with durable logs and an exit-status file. Do not assume a bare shell background job will survive. The build directory will be:
 ```
 ${BUILD_PREFIX}_xilinx_u55c_gen3x16_xdma_3_202210_1_hw/
 ```

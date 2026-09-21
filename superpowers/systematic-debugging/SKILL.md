@@ -94,7 +94,7 @@ You MUST complete each phase before proceeding to the next.
 
    # Layer 2: Build script
    echo "=== Env vars in build script: ==="
-   env | grep IDENTITY || echo "IDENTITY not in environment"
+   test -n "${IDENTITY:-}" && echo "IDENTITY is set" || echo "IDENTITY is unset"
 
    # Layer 3: Signing script
    echo "=== Keychain state: ==="
@@ -175,8 +175,8 @@ You MUST complete each phase before proceeding to the next.
    - Simplest possible reproduction
    - Automated test if possible
    - One-off test script if no framework
-   - MUST have before fixing
-   - Use the `superpowers:test-driven-development` skill for writing proper failing tests
+   - Reproduce before fixing when practical; preserve existing user code
+   - Use the `test-driven-development` skill for writing proper failing tests
 
 2. **Implement Single Fix**
    - Address the root cause identified
@@ -194,7 +194,7 @@ You MUST complete each phase before proceeding to the next.
    - Count: How many fixes have you tried?
    - If < 3: Return to Phase 1, re-analyze with new information
    - **If ≥ 3: STOP and question the architecture (step 5 below)**
-   - DON'T attempt Fix #4 without architectural discussion
+   - Reassess before further changes; ask the user if a consequential architectural decision is required
 
 5. **If 3+ Fixes Failed: Question Architecture**
 
@@ -208,7 +208,7 @@ You MUST complete each phase before proceeding to the next.
    - Are we "sticking with it through sheer inertia"?
    - Should we refactor architecture vs. continue fixing symptoms?
 
-   **Discuss with your human partner before attempting more fixes**
+   **Explain the evidence and continue investigation; involve the user when a material architectural choice is needed**
 
    This is NOT a failed hypothesis - this is a wrong architecture.
 
@@ -284,8 +284,8 @@ These techniques are part of systematic debugging and available in this director
 - **`condition-based-waiting.md`** - Replace arbitrary timeouts with condition polling
 
 **Related skills:**
-- **superpowers:test-driven-development** - For creating failing test case (Phase 4, Step 1)
-- **superpowers:verification-before-completion** - Verify fix worked before claiming success
+- **test-driven-development** - For creating failing test case (Phase 4, Step 1)
+- **verification-before-completion** - Verify fix worked before claiming success
 
 ## Real-World Impact
 

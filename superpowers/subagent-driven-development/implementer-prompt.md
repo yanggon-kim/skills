@@ -1,9 +1,11 @@
+<!-- The block below is a task brief, not an executable tool call. Fill it, then pass its prompt through the exposed Codex subagent interface. -->
+
 # Implementer Subagent Prompt Template
 
 Use this template when dispatching an implementer subagent.
 
-```
-Task tool (general-purpose):
+```text
+Codex subagent task (adapt these fields to the exposed tool):
   description: "Implement Task N: [task name]"
   prompt: |
     You are implementing Task N: [task name]
@@ -32,7 +34,7 @@ Task tool (general-purpose):
     1. Implement exactly what the task specifies
     2. Write tests (following TDD if task says to)
     3. Verify implementation works
-    4. Commit your work
+    4. Commit only if the task brief authorizes it; otherwise leave a reviewable diff
     5. Self-review (see below)
     6. Report back
 

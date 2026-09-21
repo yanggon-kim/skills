@@ -18,7 +18,7 @@ This skill excels at bugs that resist conventional debugging:
 ## Workflow
 
 ```
-1. Ask user where to save the investigation context file
+1. Use the user's context-file path or a sensible project-local default
 2. Create context file with problem statement, facts, and constraints
 3. Round N (repeat until root cause found):
    a. Write 10 hypotheses based on current facts
@@ -39,7 +39,7 @@ This skill excels at bugs that resist conventional debugging:
 
 ## Step 1: Create the Investigation Context File
 
-Ask the user where to save it. Use naming convention: `YYMMDD-brief-description.md`
+Use a supplied path; otherwise save under the project's investigation/docs directory and report it. Use naming convention: `YYMMDD-brief-description.md`
 
 Write the initial file using this template:
 

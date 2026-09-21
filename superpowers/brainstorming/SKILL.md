@@ -1,54 +1,24 @@
 ---
 name: brainstorming
-description: "You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation."
+description: Clarify an underspecified feature or design and compare meaningful approaches before implementation. Use when the user requests ideation or consequential design choices remain unresolved.
 ---
 
-# Brainstorming Ideas Into Designs
+# Brainstorming ideas into designs
 
-## Overview
+Read the project context and relevant instructions first. Use the user's existing constraints
+and decisions rather than asking for them again. A clear small change does not need a design
+interview.
 
-Help turn ideas into fully formed designs and specs through natural collaborative dialogue.
+Ask concise questions about genuinely missing requirements, with code/project context and
+why the answer changes the design. Prefer one focused question at a time; use the available
+question interface when appropriate. Continue independent investigation while waiting.
 
-Start by understanding the current project context, then ask questions one at a time to refine the idea. Once you understand what you're building, present the design in small sections (200-300 words), checking after each section whether it looks right so far.
+For a consequential design choice, present plausible approaches, their tradeoffs, and a
+recommendation. Describe the selected design's interfaces, data flow, failure behavior, and
+verification. Do not force a fixed number of options when the evidence supports one.
 
-## The Process
-
-**Understanding the idea:**
-- Check out the current project state first (files, docs, recent commits)
-- Ask questions one at a time to refine the idea
-- Prefer multiple choice questions when possible, but open-ended is fine too
-- Only one question per message - if a topic needs more exploration, break it into multiple questions
-- Focus on understanding: purpose, constraints, success criteria
-
-**Exploring approaches:**
-- Propose 2-3 different approaches with trade-offs
-- Present options conversationally with your recommendation and reasoning
-- Lead with your recommended option and explain why
-
-**Presenting the design:**
-- Once you believe you understand what you're building, present the design
-- Break it into sections of 200-300 words
-- Ask after each section whether it looks right so far
-- Cover: architecture, components, data flow, error handling, testing
-- Be ready to go back and clarify if something doesn't make sense
-
-## After the Design
-
-**Documentation:**
-- Write the validated design to `docs/plans/YYYY-MM-DD-<topic>-design.md`
-- Use elements-of-style:writing-clearly-and-concisely skill if available
-- Commit the design document to git
-
-**Implementation (if continuing):**
-- Ask: "Ready to set up for implementation?"
-- Use superpowers:using-git-worktrees to create isolated workspace
-- Use superpowers:writing-plans to create detailed implementation plan
-
-## Key Principles
-
-- **One question at a time** - Don't overwhelm with multiple questions
-- **Multiple choice preferred** - Easier to answer than open-ended when possible
-- **YAGNI ruthlessly** - Remove unnecessary features from all designs
-- **Explore alternatives** - Always propose 2-3 approaches before settling
-- **Incremental validation** - Present design in sections, validate each
-- **Be flexible** - Go back and clarify when something doesn't make sense
+Record a substantial design in `docs/plans/YYYY-MM-DD-<topic>-design.md` or the user's chosen
+location. Keep unverified assumptions explicit. If design-only was requested, stop at the
+design. If implementation is already authorized, continue once material decisions are resolved.
+Use `writing-plans` for complex implementation and `using-git-worktrees` when isolation helps.
+Commit or publish the design only within the authorized scope.

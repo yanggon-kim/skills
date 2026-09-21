@@ -3,7 +3,7 @@
 
 Reports: git repositories (nested ones and submodules included) with remotes, branch and
 uncommitted-change count; which repositories nest inside others; existing agent-system files
-(CLAUDE.md, .claude/agents, ONBOARDING.md, HANDOFF.md); top-level entries with sizes; and the
+(AGENTS.md, .codex/agents, ONBOARDING.md, HANDOFF.md); top-level entries with sizes; and the
 suggested skill mode. Changes nothing.
 
 Usage: inventory.py <dir> [--max-depth N] [--json]
@@ -59,13 +59,13 @@ def repo_info(path):
 
 def markers(path):
     m = []
-    for name in ("CLAUDE.md", "ONBOARDING.md", "HANDOFF.md"):
+    for name in ("AGENTS.md", "ONBOARDING.md", "HANDOFF.md"):
         if os.path.isfile(os.path.join(path, name)):
             m.append(name)
-    agents = os.path.join(path, ".claude", "agents")
+    agents = os.path.join(path, ".codex", "agents")
     if os.path.isdir(agents):
-        n = len([f for f in os.listdir(agents) if f.endswith(".md") and not f.startswith("_")])
-        m.append(f".claude/agents ({n} owner files)")
+        n = len([f for f in os.listdir(agents) if f.endswith("-owner.toml") and not f.startswith("_")])
+        m.append(f".codex/agents ({n} owner files)")
     return m
 
 
@@ -92,7 +92,7 @@ def main():
     if not os.path.isdir(root):
         sys.exit(f"not a directory: {root}")
 
-    entries = sorted(e for e in os.listdir(root) if not e.startswith(".") or e == ".claude")
+    entries = sorted(e for e in os.listdir(root) if not e.startswith(".") or e == ".codex")
     top = [{"name": e, "type": "dir" if os.path.isdir(os.path.join(root, e)) else "file",
             "size": size_of(os.path.join(root, e))} for e in entries]
     repos = [repo_info(p) for p in find_repos(root, a.max_depth)]
@@ -100,10 +100,10 @@ def main():
                if inner["path"] != outer["path"] and inner["path"].startswith(outer["path"] + os.sep)]
     root_markers = markers(root)
 
-    has_setup = os.path.isdir(os.path.join(root, ".claude", "agents")) or (
-        os.path.isfile(os.path.join(root, "CLAUDE.md"))
-        and "| owner |" in open(os.path.join(root, "CLAUDE.md"), errors="replace").read())
-    code_like = [t for t in top if t["name"] not in (".claude", "CLAUDE.md")]
+    has_setup = os.path.isdir(os.path.join(root, ".codex", "agents")) or (
+        os.path.isfile(os.path.join(root, "AGENTS.md"))
+        and "| owner |" in open(os.path.join(root, "AGENTS.md"), errors="replace").read())
+    code_like = [t for t in top if t["name"] not in (".codex", "AGENTS.md")]
     if has_setup:
         mode = "Audit (an owner table or owner agent files already exist)"
     elif not code_like:

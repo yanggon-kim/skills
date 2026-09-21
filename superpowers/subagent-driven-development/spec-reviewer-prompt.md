@@ -1,11 +1,13 @@
+<!-- The block below is a task brief, not an executable tool call. Fill it, then pass its prompt through the exposed Codex subagent interface. -->
+
 # Spec Compliance Reviewer Prompt Template
 
 Use this template when dispatching a spec compliance reviewer subagent.
 
 **Purpose:** Verify implementer built what was requested (nothing more, nothing less)
 
-```
-Task tool (general-purpose):
+```text
+Codex subagent task (adapt these fields to the exposed tool):
   description: "Review spec compliance for Task N"
   prompt: |
     You are reviewing whether an implementation matches its specification.

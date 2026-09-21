@@ -5,6 +5,11 @@ description: Writes, rewrites, shortens and reviews computer-architecture and sy
 
 # Architecture paper writing
 
+## Codex execution
+
+Resolve bundled paths relative to this skill's directory from the installed catalog. Invoke scripts by their full paths with the working directory set to the user's project (or research workspace for tracker updates). Write results there, not into the skill. Use the tools actually exposed by the current Codex client.
+
+
 A skill for producing prose that an architecture reviewer reads without friction: every sentence
 carries a fact, a number or a necessary forward reference; every mechanism is defined before it is
 elaborated; every number can be traced to its source; and each section follows the move order the

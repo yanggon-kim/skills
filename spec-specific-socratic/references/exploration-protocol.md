@@ -13,7 +13,7 @@ Start
   │         └─ No  → Continue manually
   │
   ├─ 2. Read bootstrapping files
-  │    └─ Found README/CLAUDE.md/config?
+  │    └─ Found README/AGENTS.md/config?
   │         ├─ Yes → Extract build commands, conventions, architecture
   │         └─ No  → Infer from directory names and file extensions
   │
@@ -34,7 +34,7 @@ Start
 ```
 Glob: **/*           → top-level overview (limit depth if huge)
 Glob: **/README*     → documentation files
-Glob: **/CLAUDE.md   → Claude Code instructions
+Glob: **/AGENTS.md   → Codex project instructions
 Glob: **/*.config.*  → configuration files
 Glob: **/test*/**    → test structure
 ```
@@ -47,7 +47,7 @@ Glob: **/test*/**    → test structure
 ## Step 2: Read Bootstrapping Files
 
 **Priority order:**
-1. `CLAUDE.md` — if present, this is the most authoritative source
+1. `AGENTS.md` — if present, read the applicable instruction hierarchy; user and higher-priority runtime instructions still take precedence
 2. `README.md` / `README.rst` — setup, architecture overview
 3. `pyproject.toml` / `package.json` / `Cargo.toml` — dependencies, scripts, entry points
 4. `Makefile` / `justfile` / `taskfile.yml` — build commands

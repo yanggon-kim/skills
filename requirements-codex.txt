@@ -1,0 +1,4 @@
+# Authoring, installation, and workspace validation only.
+# GPU/FPGA/LaTeX dependencies remain documented in the individual skills.
+PyYAML>=6.0,<7
+tomli>=2.0,<3; python_version < "3.11"

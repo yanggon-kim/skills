@@ -1,6 +1,6 @@
-# GPU Workload Profiling Guide — A Toy Example for Claude Code Agents
+# GPU Workload Profiling Guide — A Worked Profiling Example
 
-> **What this is**: A step-by-step reference showing how a Claude Code agent set up an environment, loaded a large ML model (NVIDIA GR00T N1.6 VLA, 3.3B params), profiled it with PyTorch Profiler / NSight Systems / NSight Compute, analyzed bottlenecks, and generated publication-quality visualizations — all from the command line.
+> **What this is**: A step-by-step reference showing how an agent set up an environment, loaded a large ML model (NVIDIA GR00T N1.6 VLA, 3.3B params), profiled it with PyTorch Profiler / NSight Systems / NSight Compute, analyzed bottlenecks, and generated publication-quality visualizations — all from the command line.
 >
 > **Use this as**: A template when you need to profile any GPU workload. Adapt the model-specific parts; the profiling methodology is general.
 

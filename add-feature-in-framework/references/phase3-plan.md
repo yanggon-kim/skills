@@ -1,8 +1,12 @@
+## Authorization in Codex
+
+The plan-review procedure below applies when a review checkpoint is requested or a material decision is unresolved. Existing authorization to implement is sufficient for routine steps; do not ask for repeated permission. Planning-only requests stop at the plan.
+
 # Phase 3: Plan the Implementation
 
 ## Goal
 
-Create a concrete, step-by-step implementation plan where each step is independently verifiable. Get user approval before implementing.
+Create a concrete, step-by-step implementation plan where each step is independently verifiable. Proceed when implementation is already authorized; pause for a requested review checkpoint or an unresolved material choice.
 
 ## Why This Phase Exists
 
@@ -160,7 +164,7 @@ When this happens:
 1. Stop implementing
 2. Update the plan document
 3. Briefly inform the user of the change and why
-4. Get approval to continue
+4. Get approval only if the change exceeds existing authorization or a checkpoint was requested
 5. Resume implementing
 
 ## Checklist Before Moving to Phase 4
@@ -171,4 +175,4 @@ When this happens:
 - [ ] Have you hand-computed parameters for at least two configurations?
 - [ ] Have you identified which parameters are config-sensitive vs config-invariant?
 - [ ] Is the plan document written and saved?
-- [ ] Has the user approved the plan?
+- [ ] Is implementation within the user's authorization, with requested checkpoints satisfied?

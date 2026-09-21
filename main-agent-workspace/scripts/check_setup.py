@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Consistency check for a main-agent workspace.
 
-Cross-checks the four registries that must agree — the owner table in CLAUDE.md, the owner agent
-files in .claude/agents/, the SUBPROJECTS list in scripts/start-main.sh, and the remotes-and-writers
-table in CLAUDE.md — and reports missing ONBOARDING.md / HANDOFF.md, nested roots without
+Cross-checks the four registries that must agree — the owner table in AGENTS.md, the owner agent
+files in .codex/agents/, the SUBPROJECTS list in scripts/start-main.sh, and the remotes-and-writers
+table in AGENTS.md — and reports missing ONBOARDING.md / HANDOFF.md, nested roots without
 exclusions, repositories with no recorded writer, unfilled placeholders, and files over budget.
 
 Exit status: 0 when there are no errors (warnings allowed), 1 otherwise. Changes nothing.
@@ -11,8 +11,15 @@ Exit status: 0 when there are no errors (warnings allowed), 1 otherwise. Changes
 Usage: check_setup.py <project dir>
 """
 import os, re, subprocess, sys
+try:
+    import tomllib
+except ModuleNotFoundError:
+    try:
+        import tomli as tomllib
+    except ModuleNotFoundError:
+        sys.exit("Use Python 3.11+ or install tomli for Python 3.10: python3 -m pip install tomli")
 
-CLAUDE_BUDGET, AGENT_BUDGET = 80, 50
+GUIDANCE_BUDGET, AGENT_BUDGET = 80, 60
 PLACEHOLDER = re.compile(r"<[A-Z][A-Z0-9_]{2,}(?:[ ,:\u2014-][^>]*)?>")
 
 
@@ -49,13 +56,25 @@ def launcher_paths(path):
     return out
 
 
-def frontmatter(path):
-    text = open(path, errors="replace").read()
-    m = re.match(r"^---\n(.*?)\n---", text, re.S)
-    fm = m.group(1) if m else ""
-    name = re.search(r"^name:\s*(\S+)", fm, re.M)
-    return {"name": name.group(1) if name else None, "has_description": "description:" in fm,
-            "lines": text.count("\n") + 1, "text": text}
+def agent_definition(path):
+    text = open(path, encoding="utf-8").read()
+    result = {"name": None, "has_description": False, "lines": len(text.splitlines()),
+              "text": text, "error": None}
+    try:
+        data = tomllib.loads(text)
+        for key in ("name", "description", "developer_instructions"):
+            if not isinstance(data.get(key), str) or not data[key].strip():
+                raise ValueError(f"missing non-empty string {key}")
+        if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*-owner", data["name"]):
+            raise ValueError("owner name must be a lowercase hyphenated name ending in -owner")
+        if data.get("model") == "inherit":
+            raise ValueError("omit model to inherit; 'inherit' is not a model identifier")
+        if "memory" in data or "effort" in data:
+            raise ValueError("use explicit project state and model_reasoning_effort, not Claude memory/effort fields")
+        result.update(name=data["name"], has_description=True)
+    except (ValueError, tomllib.TOMLDecodeError) as exc:
+        result["error"] = str(exc)
+    return result
 
 
 def repo_top(path):
@@ -73,36 +92,38 @@ def main():
     errors, warns = [], []
     E, W = errors.append, warns.append
 
-    cpath = os.path.join(proj, "CLAUDE.md")
+    cpath = os.path.join(proj, "AGENTS.md")
     if not os.path.isfile(cpath):
-        print(f"ERROR  no CLAUDE.md in {proj} — run the base setup first")
+        print(f"ERROR  no AGENTS.md in {proj} — run the base setup first")
         sys.exit(1)
     ctext = open(cpath, errors="replace").read()
     clines = ctext.count("\n") + 1
-    if clines > CLAUDE_BUDGET:
-        W(f"CLAUDE.md is {clines} lines (budget {CLAUDE_BUDGET}) — move detail to ONBOARDING.md files or an archive")
+    if clines > GUIDANCE_BUDGET:
+        W(f"AGENTS.md is {clines} lines (budget {GUIDANCE_BUDGET}) — move detail to ONBOARDING.md files or an archive")
     for ph in sorted(set(PLACEHOLDER.findall(ctext))):
-        W(f"CLAUDE.md still contains the placeholder {ph[:60]}")
+        W(f"AGENTS.md still contains the placeholder {ph[:60]}")
 
     owners = table_after(ctext, "Owners")
     remotes = table_after(ctext, "Remotes and writers")
     if owners is None:
-        E("CLAUDE.md has no '## Owners' table")
+        E("AGENTS.md has no '## Owners' table")
         owners = []
     if remotes is None:
-        W("CLAUDE.md has no '## Remotes and writers' table")
+        W("AGENTS.md has no '## Remotes and writers' table")
         remotes = []
 
-    agents_dir = os.path.join(proj, ".claude", "agents")
+    agents_dir = os.path.join(proj, ".codex", "agents")
     agent_files = {}
     if os.path.isdir(agents_dir):
         for f in sorted(os.listdir(agents_dir)):
-            if f.endswith(".md") and not f.startswith("_"):
-                agent_files[f[:-3]] = frontmatter(os.path.join(agents_dir, f))
+            if f.endswith("-owner.toml") and not f.startswith("_"):
+                agent_files[f[:-5]] = agent_definition(os.path.join(agents_dir, f))
+                if agent_files[f[:-5]]["error"]:
+                    E(f"invalid .codex/agents/{f}: {agent_files[f[:-5]]['error']}")
 
     launcher = launcher_paths(os.path.join(proj, "scripts", "start-main.sh"))
     if launcher is None:
-        W("no scripts/start-main.sh — roots outside the project directory need it (or /add-dir each session)")
+        W("no scripts/start-main.sh — roots outside the project directory need it (or --add-dir when launching a workspace-limited session)")
         launcher = []
 
     roots = {}
@@ -115,16 +136,16 @@ def main():
 
         af = agent_files.get(owner)
         if af is None:
-            E(f"owner '{owner}' is in the table but .claude/agents/{owner}.md does not exist")
+            E(f"owner '{owner}' is in the table but .codex/agents/{owner}.toml does not exist")
         else:
             if af["name"] != owner:
-                E(f".claude/agents/{owner}.md has frontmatter name '{af['name']}', expected '{owner}'")
+                E(f".codex/agents/{owner}.toml has name '{af['name']}', expected '{owner}'")
             if not af["has_description"]:
-                E(f".claude/agents/{owner}.md has no description — main cannot route to it")
+                E(f".codex/agents/{owner}.toml has no description — main cannot route to it")
             if af["lines"] > AGENT_BUDGET:
-                W(f".claude/agents/{owner}.md is {af['lines']} lines (budget {AGENT_BUDGET})")
+                W(f".codex/agents/{owner}.toml is {af['lines']} lines (budget {AGENT_BUDGET})")
             for ph in sorted(set(PLACEHOLDER.findall(af["text"]))):
-                W(f".claude/agents/{owner}.md still contains the placeholder {ph[:60]}")
+                W(f".codex/agents/{owner}.toml still contains the placeholder {ph[:60]}")
 
         if not os.path.isdir(root):
             E(f"owner '{owner}': root {root} is not a directory")
@@ -149,7 +170,7 @@ def main():
 
     for name in agent_files:
         if name not in roots:
-            E(f".claude/agents/{name}.md exists but '{name}' is not in the CLAUDE.md owner table")
+            E(f".codex/agents/{name}.toml exists but '{name}' is not in the AGENTS.md owner table")
     listed = {r for r, _ in roots.values()}
     for p in launcher:
         if p not in listed:

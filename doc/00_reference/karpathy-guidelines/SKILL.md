@@ -129,10 +129,10 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 **Cause:** Applying these rules to trivial one-liner tasks
 **Solution:** Use judgment. These guidelines matter most for multi-file changes and complex features. For a typo fix, just fix it.
 
-### Claude still overcomplicates
+### Codex still overcomplicates
 **Cause:** Instructions buried or not emphasized enough
-**Solution:** Remind Claude: "Keep it simple. Only change what's needed. No extra features."
+**Solution:** Remind Codex: "Keep it simple. Only change what's needed. No extra features."
 
-### Claude doesn't surface assumptions
+### Codex doesn't surface assumptions
 **Cause:** Task seems unambiguous (but may not be)
-**Solution:** Ask Claude: "What assumptions are you making?" before it starts coding.
+**Solution:** Ask Codex: "What assumptions are you making?" before it starts coding.

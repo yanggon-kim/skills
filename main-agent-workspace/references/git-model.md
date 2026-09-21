@@ -5,7 +5,7 @@ owners, the user, and outside tools all touch repositories.
 
 ## The remotes-and-writers table
 
-`CLAUDE.md` holds one row per repository:
+`AGENTS.md` holds one row per repository:
 
 | repository | remote to push | never push | branch | writers | committing agent |
 |---|---|---|---|---|---|
@@ -29,8 +29,7 @@ owners, the user, and outside tools all touch repositories.
   275-file commit in the wrong repository.
 - **Stage only your own paths: `git add <paths>`, never `git add -A` or `git add .`** in a repository
   another owner also writes.
-- **Commit message:** a summary line, a body saying what changed and why, and the attribution
-  trailers the harness provides. Do not hard-code a model name.
+- **Commit message:** a summary line, a body saying what changed and why, and any attribution trailers explicitly required by project policy. Do not invent trailers or hard-code a model name.
 
 ## A git index shared by several owners
 
@@ -49,7 +48,7 @@ artifacts, the user's laptop):
 
 1. **Before editing:** `git -C <repo> fetch`, check `HEAD..origin/<branch>`, `pull --rebase` if the
    other writer pushed, then **re-read** every file about to change.
-2. **Push right after committing**, to shorten the window for a conflict.
+2. **When a push is authorized, push after committing**, to shorten the window for a conflict. Otherwise leave the commit local and report it.
 3. **A conflict involving the other writer's change is reported, not resolved.** The other writer's
    edit wins by default; show both sides and let the user decide.
 4. The other writer's push may not reach git immediately (an editor syncs on demand). If "pull"
@@ -67,5 +66,5 @@ A submodule is its own repository with its own writer.
 ## Sub-project files the agent system adds
 
 `ONBOARDING.md` and `HANDOFF.md` describe the agent system, not the project. Keep them untracked by
-default via `<repo>/.git/info/exclude` (local only, never pushed). Commit them only on the user's
+default via the path returned by `git -C <repo> rev-parse --git-path info/exclude` (local only, never pushed; resolve relative output from the repository). Commit them only on the user's
 request — useful for a private repository the user alone works in.

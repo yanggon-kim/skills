@@ -1,9 +1,11 @@
+<!-- The block below is a task brief, not an executable tool call. Fill it, then pass its prompt through the exposed Codex subagent interface. -->
+
 # Implementer Subagent Prompt Template
 
-**How to use:** The controller reads this file, fills all `[PLACEHOLDERS]`, reads `tdd-for-profiling.md` and pastes the TDD rules into the marked section below, then passes the completed prompt to `Task tool (subagent_type: general-purpose)`. The subagent does NOT read skill files — it receives everything inline.
+**How to use:** The controller reads this file, fills all `[PLACEHOLDERS]`, reads `tdd-for-profiling.md` and pastes the TDD rules into the marked section below, then passes the completed prompt to `the available Codex subagent tool, with the filled prompt as its task message`. The subagent does NOT read skill files — it receives everything inline.
 
-```
-Task tool (general-purpose):
+```text
+Codex subagent task (adapt these fields to the exposed tool):
   description: "Implement Task N: [task name]"
   prompt: |
     You are implementing Task N: [task name]
@@ -62,14 +64,14 @@ Task tool (general-purpose):
     - "All timing values are positive"
     - "SM throughput percentages are between 0 and 100"
 
-    If you write code before the validation check, delete it and start over.
+    If code already exists, preserve it and add a meaningful validation check; do not delete user work to enforce test order.
 
     ## Your Job
 
     1. Implement exactly what the task specifies
     2. Write validation checks first (TDD)
     3. Verify implementation works
-    4. Commit your work
+    4. Commit only if the task brief authorizes it; otherwise leave a reviewable diff
     5. Self-review (see below)
     6. Report back
 

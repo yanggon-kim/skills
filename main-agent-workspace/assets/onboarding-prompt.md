@@ -1,12 +1,12 @@
 # Onboarding survey prompt
 
-Give this prompt, with `<ROOT>` replaced by the absolute path, either to a Claude session opened in
-the project (preferred when the project has its own `CLAUDE.md`, memory or history) or to a
-read-only agent spawned by main. The survey writes one file and changes nothing else.
+Give this prompt, with `<ROOT>` replaced by the absolute path, either to a Codex session opened in
+the project (preferred when the project has its own `AGENTS.md`, memory or history) or to a
+survey agent spawned by main. It may write only ONBOARDING.md. If its sandbox is read-only, return the document text for main to save.
 
 ---
 
-Survey the project at `<ROOT>` **read-only** and write `<ROOT>/ONBOARDING.md`, so that a new agent can
+Inspect the project at `<ROOT>` without modifying its source and write `<ROOT>/ONBOARDING.md`, so that a new agent can
 take ownership of this project without any other context. Do not modify, create, delete, build or
 commit anything else. Cite file paths as evidence for every claim; where you infer rather than read,
 say so.
@@ -23,7 +23,7 @@ Write these sections:
    remotes, which remote is a personal fork and which is an upstream that must never be pushed, the
    branch in use, uncommitted changes, and **every writer** of each remote you can find evidence for
    (the user, CI, an editor that syncs to git, other clones).
-5. **Existing guidance** — `CLAUDE.md`, READMEs, design docs, contribution guides, memory: list each
+5. **Existing guidance** — `AGENTS.md`, READMEs, design docs, contribution guides, memory: list each
    with one line on what it covers. Point at them; do not restate them.
 6. **Conventions and traps** — naming rules, provenance rules for results, things that break
    silently, slow or expensive operations, anything a newcomer would get wrong.

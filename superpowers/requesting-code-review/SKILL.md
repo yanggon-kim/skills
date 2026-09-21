@@ -1,105 +1,24 @@
 ---
 name: requesting-code-review
-description: Use when completing tasks, implementing major features, or before merging to verify work meets requirements
+description: Review a completed change against its requirements and assess correctness, regressions, and test coverage; use a separate Codex reviewer when independent review is requested or materially useful.
 ---
 
-# Requesting Code Review
+# Requesting code review
 
-Dispatch superpowers:code-reviewer subagent to catch issues before they cascade.
+Review the actual change against the requested behavior. Use a separate Codex subagent for
+substantial independent review when available; this workflow requests that delegation. For a
+small change or unavailable delegation, review locally and identify it as a local review.
 
-**Core principle:** Review early, review often.
+1. Establish scope: requirements, modified paths, and base/head revisions if committed.
+   For uncommitted work include staged and unstaged diffs and relevant untracked files;
+   `HEAD~1..HEAD` alone may not contain the work.
+2. Fill `code-reviewer.md` with the requirements and scope. Pass the filled prompt through
+   the available subagent interface. Do not assume a `code-reviewer` agent type is installed.
+3. Ask the reviewer to inspect files without editing, prioritize actionable bugs and test gaps,
+   and return file/line evidence, impact, and verification limits.
+4. Verify findings. Fix actual blockers, recheck affected behavior, and record remaining issues.
+   Disagree with evidence when a proposed change is unnecessary or incorrect.
 
-## When to Request Review
-
-**Mandatory:**
-- After each task in subagent-driven development
-- After completing major feature
-- Before merge to main
-
-**Optional but valuable:**
-- When stuck (fresh perspective)
-- Before refactoring (baseline check)
-- After fixing complex bug
-
-## How to Request
-
-**1. Get git SHAs:**
-```bash
-BASE_SHA=$(git rev-parse HEAD~1)  # or origin/main
-HEAD_SHA=$(git rev-parse HEAD)
-```
-
-**2. Dispatch code-reviewer subagent:**
-
-Use Task tool with superpowers:code-reviewer type, fill template at `code-reviewer.md`
-
-**Placeholders:**
-- `{WHAT_WAS_IMPLEMENTED}` - What you just built
-- `{PLAN_OR_REQUIREMENTS}` - What it should do
-- `{BASE_SHA}` - Starting commit
-- `{HEAD_SHA}` - Ending commit
-- `{DESCRIPTION}` - Brief summary
-
-**3. Act on feedback:**
-- Fix Critical issues immediately
-- Fix Important issues before proceeding
-- Note Minor issues for later
-- Push back if reviewer is wrong (with reasoning)
-
-## Example
-
-```
-[Just completed Task 2: Add verification function]
-
-You: Let me request code review before proceeding.
-
-BASE_SHA=$(git log --oneline | grep "Task 1" | head -1 | awk '{print $1}')
-HEAD_SHA=$(git rev-parse HEAD)
-
-[Dispatch superpowers:code-reviewer subagent]
-  WHAT_WAS_IMPLEMENTED: Verification and repair functions for conversation index
-  PLAN_OR_REQUIREMENTS: Task 2 from docs/plans/deployment-plan.md
-  BASE_SHA: a7981ec
-  HEAD_SHA: 3df7661
-  DESCRIPTION: Added verifyIndex() and repairIndex() with 4 issue types
-
-[Subagent returns]:
-  Strengths: Clean architecture, real tests
-  Issues:
-    Important: Missing progress indicators
-    Minor: Magic number (100) for reporting interval
-  Assessment: Ready to proceed
-
-You: [Fix progress indicators]
-[Continue to Task 3]
-```
-
-## Integration with Workflows
-
-**Subagent-Driven Development:**
-- Review after EACH task
-- Catch issues before they compound
-- Fix before moving to next task
-
-**Executing Plans:**
-- Review after each batch (3 tasks)
-- Get feedback, apply, continue
-
-**Ad-Hoc Development:**
-- Review before merge
-- Review when stuck
-
-## Red Flags
-
-**Never:**
-- Skip review because "it's simple"
-- Ignore Critical issues
-- Proceed with unfixed Important issues
-- Argue with valid technical feedback
-
-**If reviewer wrong:**
-- Push back with technical reasoning
-- Show code/tests that prove it works
-- Request clarification
-
-See template at: requesting-code-review/code-reviewer.md
+In `subagent-driven-development`, perform specification review before quality review. Preserve
+that sequence when it is the selected workflow; do not impose multiple reviews on every typo.
+A local review request does not authorize posting GitHub comments or publishing changes.

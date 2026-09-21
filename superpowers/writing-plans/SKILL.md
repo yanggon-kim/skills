@@ -1,116 +1,44 @@
 ---
 name: writing-plans
-description: Use when you have a spec or requirements for a multi-step task, before touching code
+description: Write an actionable implementation plan for a multi-step change with known requirements. Use for planning requests or changes that need an explicit dependency and verification sequence.
 ---
 
-# Writing Plans
+# Writing implementation plans
 
-## Overview
+Read the relevant project instructions and existing code, then write a plan scaled to the
+change. Resolve consequential unknowns; do not ask again about decisions already supplied.
 
-Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commits.
+A useful plan states:
+- Goal, non-goals, constraints, and any unresolved decisions.
+- Architecture and the existing interfaces the change affects.
+- Ordered tasks, concrete file paths, dependencies, and acceptance criteria.
+- Verification commands and expected behavior; record hardware or tool limitations.
 
-Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
+Use `docs/plans/YYYY-MM-DD-<feature>.md` unless the user or repository specifies another path.
+Do not create a worktree merely to write a plan. Use `using-git-worktrees` when isolation is
+needed for implementation and the current workspace does not already provide it.
 
-**Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
-
-**Context:** This should be run in a dedicated worktree (created by brainstorming skill).
-
-**Save plans to:** `docs/plans/YYYY-MM-DD-<feature-name>.md`
-
-## Bite-Sized Task Granularity
-
-**Each step is one action (2-5 minutes):**
-- "Write the failing test" - step
-- "Run it to make sure it fails" - step
-- "Implement the minimal code to make the test pass" - step
-- "Run the tests and make sure they pass" - step
-- "Commit" - step
-
-## Plan Document Header
-
-**Every plan MUST start with this header:**
+Example plan header:
 
 ```markdown
-# [Feature Name] Implementation Plan
+# Feature implementation plan
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+For Codex: follow the installed `executing-plans` skill for execution when relevant.
 
-**Goal:** [One sentence describing what this builds]
+Goal: ...
+Architecture: ...
+Constraints: ...
 
-**Architecture:** [2-3 sentences about approach]
-
-**Tech Stack:** [Key technologies/libraries]
-
----
+## Task 1: ...
+Files: ...
+Change: ...
+Verify: command and observable expected behavior
 ```
 
-## Task Structure
+Make tasks independently verifiable where possible. Include code only when it resolves a
+specific ambiguity; avoid prescribing every keystroke or a commit for every small action.
+Use `test-driven-development` for behavior changes where a regression test is useful.
 
-```markdown
-### Task N: [Component Name]
-
-**Files:**
-- Create: `exact/path/to/file.py`
-- Modify: `exact/path/to/existing.py:123-145`
-- Test: `tests/exact/path/to/test.py`
-
-**Step 1: Write the failing test**
-
-```python
-def test_specific_behavior():
-    result = function(input)
-    assert result == expected
-```
-
-**Step 2: Run test to verify it fails**
-
-Run: `pytest tests/path/test.py::test_name -v`
-Expected: FAIL with "function not defined"
-
-**Step 3: Write minimal implementation**
-
-```python
-def function(input):
-    return expected
-```
-
-**Step 4: Run test to verify it passes**
-
-Run: `pytest tests/path/test.py::test_name -v`
-Expected: PASS
-
-**Step 5: Commit**
-
-```bash
-git add tests/path/test.py src/path/file.py
-git commit -m "feat: add specific feature"
-```
-```
-
-## Remember
-- Exact file paths always
-- Complete code in plan (not "add validation")
-- Exact commands with expected output
-- Reference relevant skills with @ syntax
-- DRY, YAGNI, TDD, frequent commits
-
-## Execution Handoff
-
-After saving the plan, offer execution choice:
-
-**"Plan complete and saved to `docs/plans/<filename>.md`. Two execution options:**
-
-**1. Subagent-Driven (this session)** - I dispatch fresh subagent per task, review between tasks, fast iteration
-
-**2. Parallel Session (separate)** - Open new session with executing-plans, batch execution with checkpoints
-
-**Which approach?"**
-
-**If Subagent-Driven chosen:**
-- **REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development
-- Stay in this session
-- Fresh subagent per task + code review
-
-**If Parallel Session chosen:**
-- Guide them to open new session in worktree
-- **REQUIRED SUB-SKILL:** New session uses superpowers:executing-plans
+If the user requested planning only, return the plan without implementation. If implementation
+is already authorized and no material decision is missing, continue using the plan. Record
+explicit user checkpoints and honor them; do not invent a new approval gate at every task.

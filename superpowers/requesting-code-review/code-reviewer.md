@@ -15,9 +15,15 @@ You are reviewing code changes for production readiness.
 
 ## Requirements/Plan
 
-{PLAN_REFERENCE}
+{PLAN_OR_REQUIREMENTS}
 
-## Git Range to Review
+## Changes to Review
+
+Review read-only. The brief must state whether the scope is committed changes, working-tree
+changes, or both. For working-tree scope inspect `git diff`, `git diff --cached`, and relevant
+untracked files from `git status --short`. A commit range alone does not include these files.
+
+### Optional committed range
 
 **Base:** {BASE_SHA}
 **Head:** {HEAD_SHA}

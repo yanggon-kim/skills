@@ -27,7 +27,7 @@ WHEN receiving code review feedback:
 ## Forbidden Responses
 
 **NEVER:**
-- "You're absolutely right!" (explicit CLAUDE.md violation)
+- "You're absolutely right!" (explicit AGENTS.md violation)
 - "Great point!" / "Excellent feedback!" (performative)
 - "Let me implement that now" (before verification)
 
@@ -41,8 +41,8 @@ WHEN receiving code review feedback:
 
 ```
 IF any item is unclear:
-  STOP - do not implement anything yet
-  ASK for clarification on unclear items
+  ASK for clarification on the unclear items
+  CONTINUE independent, understood work when it does not depend on those answers
 
 WHY: Items may be related. Partial understanding = wrong implementation.
 ```
@@ -52,8 +52,8 @@ WHY: Items may be related. Partial understanding = wrong implementation.
 your human partner: "Fix 1-6"
 You understand 1,2,3,6. Unclear on 4,5.
 
-❌ WRONG: Implement 1,2,3,6 now, ask about 4,5 later
-✅ RIGHT: "I understand items 1,2,3,6. Need clarification on 4 and 5 before proceeding."
+✅ If independent: implement 1,2,3,6 while clarification on 4,5 is pending
+✅ If dependent: "I understand items 1,2,3,6. Need clarification on 4 and 5 before dependent changes."
 ```
 
 ## Source-Specific Handling
@@ -170,7 +170,7 @@ State the correction factually and move on.
 | Batch without testing | One at a time, test each |
 | Assuming reviewer is right | Check if breaks things |
 | Avoiding pushback | Technical correctness > comfort |
-| Partial implementation | Clarify all items first |
+| Partial understanding | Clarify dependencies; continue independent work |
 | Can't verify, proceed anyway | State limitation, ask for direction |
 
 ## Real Examples
@@ -202,7 +202,7 @@ You understand 1,2,3,6. Unclear on 4,5.
 
 ## GitHub Thread Replies
 
-When replying to inline review comments on GitHub, reply in the comment thread (`gh api repos/{owner}/{repo}/pulls/{pr}/comments/{id}/replies`), not as a top-level PR comment.
+When the user has authorized replying to inline review comments on GitHub, reply in the comment thread (`gh api repos/{owner}/{repo}/pulls/{pr}/comments/{id}/replies`), not as a top-level PR comment.
 
 ## The Bottom Line
 

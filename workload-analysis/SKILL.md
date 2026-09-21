@@ -8,6 +8,11 @@ metadata:
 
 # GPU Workload Analysis
 
+## Codex execution
+
+Resolve bundled paths relative to this skill's directory from the installed catalog. Invoke scripts by their full paths with the working directory set to the user's project (or research workspace for tracker updates). Write results there, not into the skill. Use the tools actually exposed by the current Codex client.
+
+
 ## Instructions
 
 ### Step 1: Understand the Workload
@@ -130,9 +135,9 @@ For each task in Steps 2-7:
 1. Read the template from `prompts/` (implementer, spec-reviewer, or quality-reviewer)
 2. Fill in all `[PLACEHOLDERS]` with actual values
 3. Inline TDD rules from `prompts/tdd-for-profiling.md` into implementer prompts
-4. Pass the completed prompt to the Task tool (subagent_type: general-purpose)
+4. Pass the completed prompt to the the available Codex subagent tool, with the filled prompt as its task message
 
-The subagent receives the full prompt text -- it does NOT read skill files itself.
+The controller supplies the relevant prompt and profiling constraints. The subagent may read explicit supporting files when needed; do not assume it inherited this skill or prior conversation. This workflow requests delegation for substantial tasks. If subagents are unavailable, perform implementation, specification review, and quality review locally in order and disclose that independent review was unavailable.
 
 ### Review Cycle (per task)
 
@@ -146,7 +151,7 @@ The subagent receives the full prompt text -- it does NOT read skill files itsel
    Pass -> mark task complete, next task
 ```
 
-Never skip reviews. Never proceed with unfixed issues. Never dispatch parallel implementers.
+Retain specification and quality checks. Scale review effort to the change; do not spawn several agents for a trivial edit. Resolve material findings before dependent work. Never dispatch overlapping implementers or concurrent measurements on the same GPU. Track agent IDs and wait for required results; preserve the parent model unless explicitly configured otherwise.
 
 ## Machine Specs
 
