@@ -15,7 +15,6 @@ every session context it does not need.
 | `<root>/HANDOFF.md` | **changing state**: status, key numbers with sources, recent decisions, open issues, next steps, interfaces | that owner; main for detail | at spawn; when main needs detail |
 | owner agent memory | lessons and gotchas learned in that root | that owner | at spawn |
 | main's memory | why decisions were taken; the user's standing preferences | main | every session |
-| `*.history.md` archives | superseded or dated material moved out of a live file | nobody automatically | only when someone looks |
 
 Rules of thumb:
 - A rule that applies to every project → this skill. A fact about this project → the project.
@@ -28,20 +27,20 @@ Rules of thumb:
 
 | file | budget | when it grows past it |
 |---|---|---|
-| project `CLAUDE.md` | ≤ 80 lines | move reference detail to `ONBOARDING.md` files or this skill; history to `CLAUDE.history.md` |
+| project `CLAUDE.md` | ≤ 80 lines | move reference detail to `ONBOARDING.md` files or this skill; delete what is superseded |
 | owner agent file | ≤ 50 lines | the extra is usually state (→ `HANDOFF.md`) or stable facts (→ `ONBOARDING.md`) |
-| `HANDOFF.md` "Recent decisions" | newest ~10 entries | older entries → `HANDOFF.history.md` |
-| `HANDOFF.md` "Key numbers" | one block, the current one | superseded blocks → `HANDOFF.history.md` with their label |
+| `HANDOFF.md` | ≤ 80 lines | delete superseded text |
+| `HANDOFF.md` "Recent decisions" | newest ~10 entries | delete older entries |
+| `HANDOFF.md` "Key numbers" | one block, the current one | delete superseded blocks |
 
-## Archives
+## No archives
 
-- Name: `CLAUDE.history.md`, `HANDOFF.history.md`, `<file>.history.md` beside the live file; the agent
-  directory shares one `.claude/agents/_HISTORY.md`.
-- An archive opens with one line saying what it is and where the live file is, then entries oldest
-  first.
-- **Move, never delete.** Every number or decision that leaves a live file must be findable in
-  exactly one other place.
-- Archives are inert: no agent loads them unless it is looking for history.
+- **Delete, never archive.** Superseded text is deleted from the live file; git history is the
+  archive. Do not create `*.history.md` files or a `_HISTORY.md`.
+- Before deleting a number or decision, check whether another file or a check cites it; if one does,
+  keep it in the live file or update the citation.
+- Point from one file to another only when that is the sole route to a fact the reader needs; no
+  "see also" chains.
 
 ## Writing live files
 

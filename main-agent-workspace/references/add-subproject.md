@@ -117,6 +117,5 @@ owners never run in parallel on work that commits; see `git-model.md`.
 
 ## Removing or retiring an owner
 
-Move its agent file's text into `.claude/agents/_HISTORY.md` with the date and reason, delete the
-agent file, remove its rows from both tables and its launcher line, and leave `ONBOARDING.md` and
+Record the date and reason in the commit message, delete the agent file, remove its rows from both tables and its launcher line, and leave `ONBOARDING.md` and
 `HANDOFF.md` in the root for whoever takes the work next.

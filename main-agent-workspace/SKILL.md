@@ -40,8 +40,8 @@ Write exactly two files into the project, plus one memory note. Nothing else.
 1. **`CLAUDE.md`** from `assets/CLAUDE.md.tmpl`: the main agent's role, the delegation rules in
    brief, an **empty** owner table, an **empty** remotes-and-writers table, a resource-cap line.
    - If a `CLAUDE.md` already exists, **do not overwrite it.** Show the user what it contains, move
-     its content under a heading in the new file or into `CLAUDE.history.md` with their agreement,
-     and keep the result under the budget in `references/context-layers.md`.
+     its content under a heading in the new file with their agreement (drop what is superseded; git
+     keeps it), and keep the result under the budget in `references/context-layers.md`.
 2. **`scripts/start-main.sh`** from `assets/start-main.sh.tmpl`, executable, with an **empty**
    `SUBPROJECTS` list. It launches the main session with `--add-dir` for every registered root.
 3. **A memory note** in *main's own* memory (the session's memory directory, not the project),
