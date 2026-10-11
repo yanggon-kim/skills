@@ -4,19 +4,25 @@
     {
       "id": 1,
       "prompt": "I'm a backend engineer and I keep hearing 'warp divergence' when people talk about why some CUDA kernels are slow. I've never written CUDA. Can you explain what it is and why it costs performance?",
-      "expected_output": "One self-contained HTML page in English for a smart non-expert: short answer under the title, warps of 32 threads in lockstep introduced by example before the term, an SVG diagram of both branch paths running one after the other with idle lanes, an interaction that varies how many threads take the branch and shows passes/idle lanes, a misconception (e.g. 'any if-statement is slow' or 'threads diverge independently'), recap, terms, limits (e.g. independent thread scheduling on Volta+). Plain active short sentences.",
+      "expected_output": "One self-contained HTML page whose 'What you already know' section gives the background and defines every term the page uses (dl.terms, no glossary at the end); in English for a smart non-expert: short answer under the title, warps of 32 threads in lockstep introduced by example before the term, an SVG diagram of both branch paths running one after the other with idle lanes, an interaction that varies how many threads take the branch and shows passes/idle lanes, a misconception (e.g. 'any if-statement is slow' or 'threads diverge independently'), recap, limits (e.g. independent thread scheduling on Volta+). Plain active short sentences.",
       "files": []
     },
     {
       "id": 2,
       "prompt": "의료 검사에서 양성이 나왔는데 실제로 병에 걸렸을 확률이 생각보다 훨씬 낮을 수 있다는 얘기를 들었어. 베이즈 정리로 이게 왜 그런지 이해할 수 있게 설명해줘.",
-      "expected_output": "One self-contained HTML page written in Korean: natural-frequency example (e.g. 10,000 people) before the formula, a diagram splitting the population into true/false positives, an interaction that changes the base rate (or false-positive rate) and recomputes P(disease | positive) from Bayes' rule, misconception (confusing P(+|D) with P(D|+)), recap, terms, limits. Short active Korean sentences without translationese passives.",
+      "expected_output": "One self-contained HTML page whose 'What you already know' section gives the background and defines every term the page uses (dl.terms, no glossary at the end); written in Korean: natural-frequency example (e.g. 10,000 people) before the formula, a diagram splitting the population into true/false positives, an interaction that changes the base rate (or false-positive rate) and recomputes P(disease | positive) from Bayes' rule, misconception (confusing P(+|D) with P(D|+)), recap, limits. Short active Korean sentences without translationese passives.",
       "files": []
     },
     {
       "id": 3,
       "prompt": "explain git rebase vs merge to me. i always get confused about what actually happens to my commits when i rebase",
-      "expected_output": "One self-contained HTML page in English: a commit-graph diagram contrasting merge (a merge commit, original commits kept) with rebase (commits copied with new IDs onto the new base), a step-through or toggle interaction, the misconception that rebase 'moves' commits, the trade-off (linear history vs rewriting shared history), recap, terms, limits.",
+      "expected_output": "One self-contained HTML page whose 'What you already know' section gives the background and defines every term the page uses (dl.terms, no glossary at the end); in English: a commit-graph diagram contrasting merge (a merge commit, original commits kept) with rebase (commits copied with new IDs onto the new base), a step-through or toggle interaction, the misconception that rebase 'moves' commits, the trade-off (linear history vs rewriting shared history), recap, limits.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Walk me through how a classic 5-stage CPU pipeline runs a few instructions, and what happens when one instruction needs a result the previous one hasn't written back yet.",
+      "expected_output": "One self-contained HTML page whose 'What you already know' section gives the background and defines every term the page uses (dl.terms, no glossary at the end); in English. Because the concept changes over time, the mechanism is a timeline: a storyboard of 3-12 frames on one fixed pipeline layout (stages IF ID EX MEM WB vs clock cycles), one caption sentence per frame, the same data-key elements in every frame, plus the player built by the template script; a stall/bubble or forwarding shown across frames; a prediction before playing and a transfer question after; misconception, recap, limits.",
       "files": []
     }
   ]

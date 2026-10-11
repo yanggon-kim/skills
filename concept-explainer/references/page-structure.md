@@ -17,21 +17,41 @@ limits box (this is what `check_page.py` counts; it warns outside 400–1,500). 
 | # | section | job | length |
 |---|---|---|---|
 | 0 | **Title + one-sentence answer** | The title names the concept. Under it: the reader's question as an `h1`-adjacent line, then a one-sentence answer that states the central idea. A skimmer gets the idea here in under 20 seconds. | 1 question, 1–2 sentences |
-| 1 | **What you already know** | Anchor in something familiar: a daily experience or a concept the reader surely has. This is the bridge, not an analogy that later breaks. | 2–4 sentences |
+| 1 | **What you already know** | Two parts. First, the background: anchor in something familiar, a daily experience or a concept the reader surely has. This is the bridge, not an analogy that later breaks. Second, the words this page uses: a definition list (`dl.terms`) with every term the rest of the page relies on, one plain line each. Background words come first, then the words this page introduces, in the order they appear. | 2–4 sentences + 4–8 terms |
 | 2 | **The problem** | What goes wrong, or what is hard, without the mechanism. Make the reader feel the cost with a concrete case and, if possible, a number. | 1 short paragraph |
 | 3 | **The mechanism** | How it works, step by step, with the diagram beside it. Show each step working before you name it. | 2–4 short paragraphs + diagram |
 | 4 | **Try it** | The interaction: predict, act, compare, explain. | widget + 2–3 sentences |
 | 5 | **The result** | What the mechanism buys, and what it costs. Every mechanism has a trade-off; name it. | 1 paragraph |
 | 6 | **A common misconception** | One wrong belief people hold, why it is tempting, and what is true instead. | 3–5 sentences |
 | 7 | **Recap** | Three to five lines, one idea each, in the order the page taught them. | 3–5 bullets |
-| 8 | **Terms** | The three terms the page taught, each with a one-line plain definition. | 3 entries |
-| 9 | **Assumptions and limits** | What the page simplified, what it left out, and anything not verified. | 2–5 bullets |
+| 8 | **Assumptions and limits** | What the page simplified, what it left out, and anything not verified. | 2–5 bullets |
+
+### The words this page uses
+
+The term list sits inside "What you already know" so that the reader meets every word before the
+page uses it, instead of finding the definitions after the reading is done. Rules for the list:
+
+- **Complete for this page.** Any term that a smart non-expert might not know, and that appears
+  later on the page, is in the list. Check this after the page is written: scan the prose, the
+  diagram labels and the widget for words that are missing.
+- **One plain line each.** A definition says what the thing is or does, in plain words, with a
+  number where it helps ("A warp is 32 threads that run the same instruction together.").
+- **Background first.** Words the reader needs to follow the problem come first. Words the concept
+  itself introduces come after them, in the order the page uses them.
+- **One name per concept.** The list fixes the name. The prose, the diagram and the widget use that
+  name and no synonym. If the field has a common synonym, give it once in the definition ("also
+  called ...").
+- **Defined here, shown later.** The definition is a map, not the explanation. The mechanism
+  section still shows each new term working before it relies on it.
 
 Headings are plain statements or the plain section names above; avoid clever headings. Number the
 sections only when the order is a real sequence the reader follows (it usually is not — the page is
 read top to bottom anyway).
 
 ## 2. Diagram
+
+If the concept changes over time, the diagram is a timeline (a storyboard plus a player); follow
+`references/timeline.md`. Each of its frames follows the rules below.
 
 ### Choose the type that matches the idea
 
@@ -113,9 +133,10 @@ turns the page into a quiz.
 Some concepts have no variable to slide (a definition, a historical idea, a proof). Use one of these
 instead, in this order of preference:
 
-- **Step-through.** "Next step" / "Previous step" buttons walk the mechanism one state at a time,
-  highlighting the active part of the diagram. Good for algorithms and protocols (git rebase, a
-  cache lookup, TCP handshake).
+- **Step-through.** Walk the mechanism one state at a time. Good for algorithms and protocols (git
+  rebase, a cache lookup, TCP handshake). Build it as a timeline (`references/timeline.md`): its
+  player already has previous, next, play and a scrubber, and its storyboard keeps every state
+  readable without JavaScript.
 - **Predict-then-reveal questions.** Two or three questions in `<details>` that test transfer to a
   case the page did not show. Each answer explains why. This needs no JavaScript at all.
 - **Sort or match.** The reader assigns a few cases to categories, then checks.

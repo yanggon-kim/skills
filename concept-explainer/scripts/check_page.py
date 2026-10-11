@@ -26,7 +26,7 @@ ALLOWED_SCRIPT_HOSTS = (
     "https://code.jquery.com/",
 )
 ALLOWED_STYLE_HOSTS = ("https://fonts.googleapis.com/",)
-EXPECTED_SECTIONS = ["familiar", "problem", "mechanism", "try", "result", "misconception", "recap", "terms"]
+EXPECTED_SECTIONS = ["familiar", "problem", "mechanism", "try", "result", "misconception", "recap"]
 PROSE_TAGS = {"p", "li", "dd", "dt", "summary", "figcaption", "h1", "h2", "h3", "blockquote"}
 SKIP_TAGS = {"script", "style", "svg", "code", "pre", "kbd", "title"}
 
@@ -69,7 +69,9 @@ class PageParser(HTMLParser):
             self.ids.add(a["id"])
         for c in (a.get("class") or "").split():
             self.classes.add(c)
-        if tag == "svg":
+        if tag == "svg" and a.get("aria-hidden") == "true":
+            pass                          # a hidden defs-only svg (shared markers) is not a diagram
+        elif tag == "svg":
             self.svg_count += 1
             self.in_svg += 1
             self.svg_info.append({"role": a.get("role"), "title": False, "desc": False,
@@ -116,6 +118,52 @@ class PageParser(HTMLParser):
 def split_sentences(text):
     parts = re.split(r"(?<=[.!?。])\s+", text)
     return [p.strip() for p in parts if len(p.strip()) > 1]
+
+
+def check_timeline(nc, add_outer, tag=""):
+    def add(level, group, msg):
+        add_outer(level, group, tag + msg)
+    frames = re.findall(r'<li[^>]*class="[^"]*\bframe\b[^"]*"[^>]*>(.*?)</li>', nc, re.S)
+    if len(frames) < 2:
+        add("ERROR", "timeline", f"{len(frames)} storyboard frame(s); a timeline needs at least 2")
+        return
+    if len(frames) > 12:
+        add("WARN", "timeline", f"{len(frames)} frames; keep 3-12 and show only key frames")
+    viewboxes, keysets = [], []
+    for i, f in enumerate(frames, 1):
+        if "<svg" not in f:
+            add("ERROR", "timeline", f"frame {i} has no <svg>")
+            continue
+        if "frame-caption" not in f:
+            add("WARN", "timeline", f"frame {i} has no .frame-caption sentence")
+        vb = re.search(r'viewBox="([^"]+)"', f)
+        viewboxes.append(vb.group(1) if vb else None)
+        keys = re.findall(r'data-key="([^"]+)"', f)
+        dup = sorted({k for k in keys if keys.count(k) > 1})
+        if dup:
+            add("ERROR", "timeline", f"frame {i} repeats data-key {', '.join(dup)}; keys must be unique per frame")
+        keysets.append(set(keys))
+        if vb:
+            try:
+                w = float(vb.group(1).split()[2])
+                if w > 480:
+                    add("WARN", "timeline", f"frame {i} viewBox is {w:.0f} wide; keep <= 480 so labels stay readable in the storyboard")
+            except (IndexError, ValueError):
+                pass
+    if len(set(viewboxes)) > 1:
+        add("ERROR", "timeline", "frames use different viewBox values; every frame needs the same one")
+    if keysets and any(k != keysets[0] for k in keysets):
+        allk = set().union(*keysets)
+        for i, k in enumerate(keysets, 1):
+            missing = sorted(allk - k)
+            if missing:
+                add("ERROR", "timeline", f"frame {i} lacks data-key {', '.join(missing)}; keep every keyed element in every frame (use class=\"off\" to hide it)")
+    if keysets and not keysets[0]:
+        add("WARN", "timeline", "no data-key elements; the player can only cross-cut, not animate")
+    for need, what in (('class="stage"', "a .stage element"), ('data-act="play"', "a play button"),
+                       ('data-act="next"', "a next button"), ('class="scrub"', "a .scrub range")):
+        if need not in nc:
+            add("WARN", "timeline", f"player is missing {what}")
 
 
 def check(path):
@@ -199,6 +247,28 @@ def check(path):
         missing.append("limits")
     if missing:
         add("WARN", "structure", "sections not found by id/class: " + ", ".join(missing))
+    # the term list belongs inside "What you already know", not in a glossary at the end
+    nc = re.sub(r"<!--.*?-->", "", raw, flags=re.S)
+    fam = re.search(r'<section[^>]*\bid="familiar"', nc)
+    terms_at = [m.start() for m in re.finditer(r'<dl[^>]*class="[^"]*\bterms\b', nc)]
+    if 'id="terms"' in nc:
+        add("WARN", "structure", 'separate Terms section found; move the term list into "What you already know"')
+    if not terms_at:
+        add("WARN", "structure", 'no dl.terms list of the words this page uses')
+    elif fam:
+        nxt = nc.find("<section", fam.end())
+        end = nxt if nxt != -1 else len(nc)
+        if not any(fam.start() < t < end for t in terms_at):
+            add("WARN", "structure", 'dl.terms is not inside the "What you already know" section')
+    # timeline: a storyboard of frames that the template's script turns into a player
+    starts = [m.start() for m in re.finditer(r'<figure[^>]*class="[^"]*\btimeline\b', nc)]
+    for n_tl, a in enumerate(starts, 1):
+        end = starts[n_tl] if n_tl < len(starts) else len(nc)
+        check_timeline(nc[a:end], add, f"timeline {n_tl}: " if len(starts) > 1 else "")
+    if starts and "Timeline player:" not in nc:
+        add("ERROR", "timeline", "the template's timeline player script is missing")
+    if starts and re.search(r"\bautoplay\b", nc):
+        add("ERROR", "timeline", "autoplay found; the timeline must start paused on frame 1")
     if not any(c in p.classes for c in ("answer",)):
         add("WARN", "structure", "no .answer one-sentence answer under the title")
 
@@ -208,17 +278,21 @@ def check(path):
     korean = len(HANGUL.findall(text)) > 0.3 * max(1, len(re.findall(r"\w", text)))
     limit = 15 if korean else 25
     sentences = []
+    caption_words = 0
     for tag, cls, t in prose:
         if tag in ("h1", "h2", "h3", "dt"):
             continue
+        if "frame-caption" in cls or "frame" in cls.split():
+            caption_words += len(t.split())
         sentences.extend(split_sentences(t))
     counts = [len(s.split()) for s in sentences]
-    words = sum(counts)
+    words = sum(counts) - caption_words   # captions are the timeline's text; not in the prose budget
     stats = {
+        "timeline_caption_words": caption_words,
         "language": "ko" if korean else "en",
         "prose_words": words,
         "sentences": len(sentences),
-        "mean_words_per_sentence": round(words / len(sentences), 1) if sentences else 0,
+        "mean_words_per_sentence": round(sum(counts) / len(sentences), 1) if sentences else 0,
         "long_sentence_limit": limit,
         "long_sentences": sum(1 for c in counts if c > limit),
     }
@@ -281,7 +355,8 @@ def main():
         if not findings:
             print("OK    no findings")
         print()
-        print(f"voice: {stats['language']}, {stats['prose_words']} words, {stats['sentences']} sentences, "
+        cap = f" (+{stats['timeline_caption_words']} in frame captions)" if stats['timeline_caption_words'] else ""
+        print(f"voice: {stats['language']}, {stats['prose_words']} words{cap}, {stats['sentences']} sentences, "
               f"mean {stats['mean_words_per_sentence']} words/sentence, "
               f"{stats['long_sentences']} over {stats['long_sentence_limit']}, "
               f"{stats['passive_suspects']} passive suspects")

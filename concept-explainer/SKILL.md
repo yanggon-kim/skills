@@ -1,6 +1,6 @@
 ---
 name: concept-explainer
-description: Explains any concept, mechanism, algorithm or idea as one self-contained HTML learning page — plain-voice prose (short sentences, plain words, active voice, one idea per sentence), one diagram that shows the mechanism, and one interaction where the reader predicts and then sees — saved as a local file and published as a private claude.ai artifact link. Use it whenever the user wants to understand something rather than just get a fact — "explain X", "how does X work", "teach me X", "help me understand X", "I don't get X", "make an explainer for X", "X가 뭔지 설명해줘", "X를 이해하고 싶어" — for any field (computer architecture, math, statistics, ML, systems, git, physics, finance), even when they never ask for a page or HTML. Do NOT use for one-line factual lookups, debugging a specific bug, explaining what a particular piece of the user's code does line by line, slide decks, or documents meant for others to edit.
+description: Explains any concept, mechanism, algorithm or idea as one self-contained HTML learning page — plain-voice prose, one diagram of the mechanism, and one interaction where the reader predicts and then checks. When the concept is a process that changes over time, the page shows it as a timeline — a storyboard of frames on one fixed layout, plus an animated player built from them. Saved locally and published as a private claude.ai artifact. Use it whenever the user wants to understand something rather than get a fact — "explain X", "how does X work", "teach me X", "walk me through X step by step", "I don't get X", "X가 뭔지 설명해줘" — in any field (computer architecture, math, statistics, ML, systems, git, physics), even when they never ask for a page or HTML. Not for one-line lookups, debugging a specific bug, line-by-line walkthroughs of the user's code, slide decks, or documents others will edit.
 ---
 
 # Concept explainer
@@ -14,9 +14,15 @@ test**. The page carries three representations of the same idea, each doing a jo
 | one diagram | sees the structure | parts and how they connect |
 | one interaction | predicts, changes an input, compares | proof that the model works |
 
+When the concept changes over time — a procedure, a process, an algorithm's steps — the diagram
+becomes a **timeline**: a **storyboard** (every step as a frame on the same fixed layout, side by
+side) and a **player** (the same frames animated in place, with play, pause, step and scrub). The
+storyboard lets the reader compare states; the player lets them follow the motion.
+
 The design comes from Andrej Karpathy's "learning ladder" (writing → diagram → web page → video) and
-a learning-studio prompt built on it. The video rung is deliberately dropped: an HTML page can
-already show motion and cause and effect, and it can be checked and corrected in minutes. A page is
+a learning-studio prompt built on it. The video rung is replaced by the timeline: an HTML page can
+show change over time, and unlike a video the reader can pause it, step it and read every frame,
+and it can be checked and corrected in minutes. A page is
 judged by one question: after reading it, can the reader predict what the mechanism does in a case
 the page did not show? Decoration that does not serve that question is cut.
 
@@ -55,10 +61,10 @@ concept.
 
 A polished page makes a wrong explanation look trustworthy, so accuracy comes first.
 
-- List **five facts** the page depends on, **three terms** the reader must learn (the concept's
-  own name may be one of them), **one common misconception**, and **one real-world example** (a
-  real system, product, dataset or event — not a toy story). The real example usually belongs in
-  "the problem" or "the result".
+- List **five facts** the page depends on, **the terms the page will use** (every word a smart
+  non-expert might not know, typically four to eight, including the concept's own name), **one
+  common misconception**, and **one real-world example** (a real system, product, dataset or event
+  — not a toy story). The real example usually belongs in "the problem" or "the result".
 - For each fact, ask: do I know this firmly? For recent topics, niche details, exact numbers, or
   anything about the user's own code or paper, check it — search the web or read the file — before
   you print it.
@@ -68,10 +74,15 @@ A polished page makes a wrong explanation look trustworthy, so accuracy comes fi
 ### 3. Write the prose
 
 Read `references/voice.md` first. Follow the section order in `references/page-structure.md`:
-question → what you already know → the problem → the mechanism → try it → the result → a common
-misconception → recap → terms → assumptions and limits.
+question → what you already know (background and the words the page uses) → the problem → the
+mechanism → try it → the result → a common misconception → recap → assumptions and limits.
 
-Show before you name: give the concrete example or the step working, then give the term for it.
+The terms are not a glossary at the end. "What you already know" explains the background and then
+defines, one plain line each, every word the rest of the page uses, so the reader meets each word
+before it appears. Use exactly those words afterwards, one name per concept.
+
+Show before you name: the list near the top gives each word a short definition, and the mechanism
+section still shows each new term working, with its concrete example, before it relies on it.
 The central idea must be findable in under 20 seconds — it sits in the one-sentence answer under
 the title. If a stranger skimming the top of the page cannot find it, rewrite the top.
 
@@ -83,6 +94,15 @@ primary elements, every arrow has one defined meaning, labels make sense without
 still reads in grayscale. Use inline SVG, not Mermaid or images, so the page works offline and the
 diagram follows the light and dark themes.
 
+**If the concept changes over time, draw a timeline instead.** Ask: is the answer to the reader's
+question a sequence of states ("what happens when ...", "walk me through ...", a pipeline, a
+protocol, an algorithm's steps, a git operation)? If yes, read `references/timeline.md` and build
+the storyboard: 3–12 frames, one change per frame, the same layout and the same keyed elements in
+every frame, one caption sentence each. You write only the storyboard; the template's script builds
+the player from those frames, so the two views cannot disagree, and the storyboard alone still
+teaches without JavaScript or motion. A static structure or a relationship between quantities keeps
+the single diagram.
+
 ### 5. Build the interaction
 
 One interactive widget that changes one real input and shows the mechanism respond. Prediction
@@ -92,6 +112,10 @@ first**, then acts, then compares two states, then reads why the result changed.
 fallback for concepts with no natural dial are in `references/page-structure.md` § Interaction. If
 the interaction computes anything, compute it from the real rule, not from invented numbers, and say
 on the page what the model simplifies.
+
+For a pure procedure with no real input to change, the timeline's player is the interaction: ask
+the reader to predict a later frame before pressing play, and ask a transfer question afterwards.
+Build a separate widget only when the concept also has a real input to change.
 
 ### 6. Assemble the page
 
@@ -168,5 +192,6 @@ what it leaves out. Do not paste the explanation into the chat — the page is t
 |---|---|
 | `references/voice.md` | before writing any prose (step 3) |
 | `references/page-structure.md` | when planning the sections, diagram and interaction (steps 3–5) |
+| `references/timeline.md` | when the concept changes over time (step 4) |
 | `assets/template.html` | when assembling the page (step 6) — copy it, do not edit it in place |
 | `scripts/check_page.py` | after the page is written (step 7) |

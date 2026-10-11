@@ -162,7 +162,7 @@ button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
 html:not(.js) .js-only { display: none; }
 html.js .nojs-only { display: none; }
 
-/* Misconception, recap, terms, limits */
+/* Terms (inside "What you already know"), misconception, recap, limits */
 .misconception { display: grid; gap: 0.6rem; }
 .misconception .wrong { text-decoration: line-through; text-decoration-color: var(--accent); text-decoration-thickness: 2px; color: var(--ink-soft); }
 .terms { display: grid; grid-template-columns: minmax(7rem, max-content) 1fr; gap: 0.6rem 1.25rem; }
@@ -171,6 +171,23 @@ html.js .nojs-only { display: none; }
 @media (max-width: 30rem) { .terms { grid-template-columns: 1fr; gap: 0.2rem; } .terms dd { margin-bottom: 0.6rem; } }
 .limits { border: 1px dashed var(--pencil); border-radius: 2px; padding: 1rem 1.25rem; display: grid; gap: 0.6rem; font-size: var(--step--1); color: var(--ink-soft); }
 .limits .label { color: var(--ink-soft); }
+
+/* Timeline (references/timeline.md): a storyboard of frames, and a player built from it */
+.timeline .storyboard { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr)); gap: 1rem; counter-reset: frame; }
+.storyboard .frame { counter-increment: frame; display: grid; gap: 0.4rem; align-content: start; min-width: 0; padding: 0.6rem 0.75rem 0.75rem; background: var(--paper); border: 1px solid var(--idle); border-radius: 2px; }
+.storyboard .frame::before { content: counter(frame); font-family: var(--font-mono); font-size: var(--step--1); color: var(--pencil); }
+.storyboard .frame svg { display: block; width: 100%; height: auto; }
+.frame-caption { font-size: var(--step--1); line-height: 1.5; }
+html.js .storyboard .frame { cursor: pointer; }
+.storyboard .frame:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.storyboard .frame.is-current { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.storyboard .frame.is-current::before { color: var(--accent-ink); }
+.player { display: grid; gap: 0.75rem; }
+.stage svg { display: block; width: 100%; max-width: 40rem; height: auto; margin: 0 auto; }
+.stage-caption { min-height: 3.3em; }
+.scrub { accent-color: var(--accent); flex: 1 1 10rem; min-width: 0; }
+.counter { font-family: var(--font-mono); font-size: var(--step--1); font-variant-numeric: tabular-nums; color: var(--ink-soft); }
+svg .off { opacity: 0; }
 
 /* Motion: short, and none for readers who ask for none */
 svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
@@ -188,7 +205,13 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
 
   <section id="familiar">
     <h2>{{What you already know}}</h2>
-    <p>{{2–4 sentences anchoring in something familiar.}}</p>
+    <p>{{2–4 sentences: the background the page builds on, anchored in something familiar.}}</p>
+    <p class="label">{{"Words this page uses" in the page language}}</p>
+    <!-- SLOT NOTE: every term the rest of the page uses, one plain line each. Background words
+         first, then the words this page introduces, in the order they appear. -->
+    <dl class="terms">
+      <dt>{{term}}</dt><dd>{{One plain line.}}</dd>
+    </dl>
   </section>
 
   <section id="problem">
@@ -227,6 +250,9 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
     </figure>
 
     <p>{{Step 2 and the name for it. Then step 3 if needed.}}</p>
+    <!-- SLOT NOTE: if the concept changes over time (a procedure, a process, an algorithm's steps),
+         replace the figure above with a timeline: a storyboard of frames plus a player. Read
+         references/timeline.md. Otherwise delete this note. -->
   </section>
 
   <section id="try">
@@ -287,13 +313,6 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
     </ul>
   </section>
 
-  <section id="terms">
-    <h2>{{Terms}}</h2>
-    <dl class="terms">
-      <dt>{{term}}</dt><dd>{{One plain line.}}</dd>
-    </dl>
-  </section>
-
   <aside class="limits" aria-labelledby="limits-label">
     <p class="label" id="limits-label">{{Assumptions and limits}}</p>
     <ul>
@@ -338,5 +357,155 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
     render();
   });
   render();
+})();
+</script>
+
+<script>
+/* Timeline player: builds a player from each .timeline's storyboard frames and animates the
+   elements that share a data-key from one frame to the next. Keep this block unchanged on a page
+   with a timeline; on a page without one it does nothing, and you may delete it. */
+(function () {
+  document.documentElement.classList.add("js");
+  var NUM = ["x", "y", "width", "height", "cx", "cy", "r", "rx", "ry", "x1", "y1", "x2", "y2", "opacity", "stroke-width"];
+  var reduce = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+  function ease(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+  function translate(v) {
+    var m = /translate\(\s*(-?[\d.]+)(?:[\s,]+(-?[\d.]+))?\s*\)/.exec(v || "");
+    return m ? [parseFloat(m[1]), parseFloat(m[2] || "0")] : null;
+  }
+  function keyed(root) {
+    var map = {};
+    Array.prototype.forEach.call(root.querySelectorAll("[data-key]"), function (el) { map[el.getAttribute("data-key")] = el; });
+    return map;
+  }
+  function copyState(el, to) {
+    Array.prototype.slice.call(el.attributes).forEach(function (a) {
+      if (a.name !== "data-key" && !to.hasAttribute(a.name)) el.removeAttribute(a.name);
+    });
+    Array.prototype.forEach.call(to.attributes, function (a) {
+      if (a.name !== "id") el.setAttribute(a.name, a.value);
+    });
+    if (!to.children.length) el.textContent = to.textContent;
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll(".timeline"), function (tl) {
+    var frames = tl.querySelectorAll(".storyboard .frame");
+    var stage = tl.querySelector(".stage");
+    if (frames.length < 2 || !stage || !frames[0].querySelector("svg")) return;
+
+    var n = frames.length, cur = 0, raf = 0, timer = 0, guard = 0, playing = false;
+    var tweenMs = reduce ? 0 : Number(tl.getAttribute("data-tween-ms") || 600);
+    var holdMs = Number(tl.getAttribute("data-hold-ms") || 1600);
+    var stepWord = tl.getAttribute("data-step-word") || "Step";
+    var ofWord = tl.getAttribute("data-of-word") || "of";
+    var btnPlay = tl.querySelector('[data-act="play"]');
+    var btnPrev = tl.querySelector('[data-act="prev"]');
+    var btnNext = tl.querySelector('[data-act="next"]');
+    var scrub = tl.querySelector(".scrub");
+    var counter = tl.querySelector(".counter");
+    var caption = tl.querySelector(".stage-caption");
+
+    var svg = frames[0].querySelector("svg").cloneNode(true);
+    Array.prototype.forEach.call(svg.querySelectorAll("title, desc"), function (el) { el.removeAttribute("id"); });
+    svg.removeAttribute("aria-labelledby");
+    svg.setAttribute("aria-hidden", "true");   // the stage caption carries the text
+    stage.appendChild(svg);
+    var live = keyed(svg);
+    if (scrub) scrub.max = String(n - 1);
+
+    function label(i) {
+      var cap = frames[i].querySelector(".frame-caption");
+      if (caption) caption.textContent = cap ? cap.textContent : "";
+      if (counter) counter.textContent = stepWord + " " + (i + 1) + " " + ofWord + " " + n;
+      if (scrub) scrub.value = String(i);
+      if (btnPrev) btnPrev.disabled = i === 0;
+      if (btnNext) btnNext.disabled = i === n - 1;
+      Array.prototype.forEach.call(frames, function (f, j) {
+        f.classList.toggle("is-current", j === i);
+        if (j === i) f.setAttribute("aria-current", "step"); else f.removeAttribute("aria-current");
+      });
+    }
+
+    function show(i, animate) {
+      cancelAnimationFrame(raf);
+      clearTimeout(guard);
+      cur = i;
+      label(i);
+      var target = keyed(frames[i].querySelector("svg"));
+      var tracks = [];
+      Object.keys(target).forEach(function (k) {
+        var el = live[k], to = target[k];
+        if (!el) return;
+        NUM.forEach(function (a) {
+          var b = parseFloat(el.getAttribute(a)), e = parseFloat(to.getAttribute(a));
+          if (!isNaN(b) && !isNaN(e) && b !== e) tracks.push([el, a, b, e]);
+        });
+        var tb = translate(el.getAttribute("transform")), te = translate(to.getAttribute("transform"));
+        if (tb && te && (tb[0] !== te[0] || tb[1] !== te[1])) tracks.push([el, "transform", tb, te]);
+        el.setAttribute("class", to.getAttribute("class") || "");   // colors and .off fade by CSS
+      });
+      var done = false;
+      function finish() {
+        if (done) return;
+        done = true;
+        cancelAnimationFrame(raf);
+        clearTimeout(guard);
+        Object.keys(target).forEach(function (k) { if (live[k]) copyState(live[k], target[k]); });
+      }
+      var dur = animate ? tweenMs : 0, t0 = null;
+      if (!dur || !tracks.length) { finish(); return; }
+      // animation frames pause in background tabs; the guard still lands the final state
+      guard = setTimeout(finish, dur + 150);
+      raf = requestAnimationFrame(function step(ts) {
+        if (done) return;
+        if (t0 === null) t0 = ts;
+        var p = Math.min(1, (ts - t0) / dur), q = ease(p);
+        tracks.forEach(function (t) {
+          if (t[1] === "transform") {
+            t[0].setAttribute("transform", "translate(" + (t[2][0] + (t[3][0] - t[2][0]) * q) + " " + (t[2][1] + (t[3][1] - t[2][1]) * q) + ")");
+          } else {
+            t[0].setAttribute(t[1], String(t[2] + (t[3] - t[2]) * q));
+          }
+        });
+        if (p < 1) raf = requestAnimationFrame(step); else finish();
+      });
+    }
+
+    function setPlaying(on) {
+      playing = on;
+      clearTimeout(timer);
+      if (btnPlay) {
+        btnPlay.textContent = on ? (btnPlay.getAttribute("data-pause-label") || "Pause") : (btnPlay.getAttribute("data-play-label") || "Play");
+        btnPlay.setAttribute("aria-pressed", String(on));
+      }
+    }
+    function tick() {
+      if (!playing) return;
+      if (cur >= n - 1) { setPlaying(false); return; }
+      show(cur + 1, true);
+      timer = setTimeout(tick, tweenMs + holdMs);
+    }
+    function jump(i) { setPlaying(false); show(Math.max(0, Math.min(n - 1, i)), true); }
+
+    if (btnPlay) btnPlay.addEventListener("click", function () {
+      if (playing) { setPlaying(false); return; }
+      if (cur >= n - 1) show(0, false);
+      setPlaying(true);
+      timer = setTimeout(tick, Math.min(holdMs, 800));
+    });
+    if (btnPrev) btnPrev.addEventListener("click", function () { jump(cur - 1); });
+    if (btnNext) btnNext.addEventListener("click", function () { jump(cur + 1); });
+    if (scrub) scrub.addEventListener("input", function () { jump(Number(scrub.value)); });
+    Array.prototype.forEach.call(frames, function (f, j) {
+      f.tabIndex = 0;
+      f.addEventListener("click", function () { jump(j); });
+      f.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); jump(j); }
+      });
+    });
+    setPlaying(false);
+    show(0, false);
+  });
 })();
 </script>
