@@ -1,0 +1,7 @@
+# Template for ~/.codex/config.toml. Merge these settings into an existing file.
+# Mirrors the broad Bash(*) approval in doc/legacy/claude-settings.json.
+approval_policy = "never"
+sandbox_mode = "danger-full-access"
+
+# Closest Codex setting to Claude Code's effortLevel = "high".
+model_reasoning_effort = "high"

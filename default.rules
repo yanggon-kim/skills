@@ -1,0 +1,18 @@
+# Template for ~/.codex/rules/default.rules.
+# The legacy Claude Bash(*) allow entry makes its narrower Bash allows redundant.
+# Keep its two explicit denials. The strictest matching decision wins.
+prefix_rule(
+    pattern = ["rm", "-rf"],
+    decision = "forbidden",
+    justification = "The legacy Claude settings deny rm -rf commands",
+    match = ["rm -rf build"],
+    not_match = ["rm build"],
+)
+
+prefix_rule(
+    pattern = ["git", "reset", "--hard"],
+    decision = "forbidden",
+    justification = "The legacy Claude settings deny git reset --hard commands",
+    match = ["git reset --hard HEAD"],
+    not_match = ["git reset --soft HEAD"],
+)

@@ -52,6 +52,29 @@ change `~/.codex/config.toml`, command rules, model settings, or plugin connecti
 The Claude `enabledPlugins` settings do not install Codex plugins. The directory
 `superpowers/` here contains standalone skills, not a registered plugin.
 
+## Optional global Codex settings
+
+The root [`config.toml`](config.toml) and [`default.rules`](default.rules) are
+templates translated from `doc/legacy/claude-settings.json`. To use them for your
+user account, merge the three settings from `config.toml` into
+`~/.codex/config.toml`, and copy `default.rules` into
+`~/.codex/rules/default.rules`. Preserve any settings or rules you already have.
+Restart Codex after changing the rules. Check the deny rules with:
+
+```bash
+codex execpolicy check --pretty --rules ~/.codex/rules/default.rules -- rm -rf build
+codex execpolicy check --pretty --rules ~/.codex/rules/default.rules -- git reset --hard HEAD
+```
+
+`Bash(*)` in the Claude file already covers every narrower Bash allow entry, so
+the Codex template uses `approval_policy = "never"` and
+`sandbox_mode = "danger-full-access"` for broad command access. This grants
+Codex unsandboxed filesystem and network access without approval prompts.
+The two rules forbid the listed command prefixes; they do not prevent the same
+effects through another command or argument spelling. Managed policies may also
+override these user settings. The Claude plugin and web tool settings have no
+direct mapping in these two Codex files.
+
 ## Validate
 
 ```bash
