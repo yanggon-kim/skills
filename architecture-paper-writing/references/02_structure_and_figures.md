@@ -249,6 +249,66 @@ anywhere (a grep for `FFE082\|B8860B` across the figure generators must be empty
   LazyDP colours everywhere: `\Comment{}` green and the numeric literals in the statements red.
   A number inside a comment stays green — the comment is coloured as a whole.
 
+### F8. The background's core concept is a block diagram plus its command timeline (owner, 2026-10-16)
+The owner's rule: when a background subsection explains the hardware the paper builds on (a DRAM channel, a
+PIM unit, an accelerator), give it a figure. The figure is one **block diagram (a)** of the substrate and,
+beneath it, one **timeline (b)** of the timing parameters the paper's argument turns on. The text paragraphs
+map one to one onto the panels: the "what is there" paragraph onto (a), the "how fast may it be used"
+paragraph onto (b). Draw only the one design the paper builds on, never a gallery of variants.
+- **(a), the architecture-abstraction form** (read off LoCaLUT, HPCA'26, Fig. 1 "DRAM-PIM architecture
+  abstraction"): a host bar beside a channel strip of banks with the shared I/O drawn as its own block; one
+  bank is pulled out by **two dashed trapezoid zoom lines** into a vertical stack (DRAM bank → row buffer /
+  local buffer → processing unit). Square boxes, labels inside the blocks, light fills. Nothing in a
+  background figure is ours, so it carries no "ours" tint (F1): white and grays only.
+- **(b), the command-timeline form** (read off P3-LLM, arXiv 2511.06838, Fig. 7 "Command timing of HBM-PIM and P3-LLM"): a
+  bare time axis with labelled ticks and a **dotted vertical grid** at every tick; one row per resource,
+  labelled at the left (clock, C/A bus, bank or bank group, PU); commands as small glyphs on the C/A row,
+  long operations as bars on their resource row; every timing parameter the text names (tCCD_S, tCCD_L, the
+  PU clock) drawn as a **double-headed span between the two events it separates**, labelled with the
+  parameter's name. Idle time stays visibly empty — the gap is usually the paper's opportunity.
+- **Redraw, never trace.** Take the *form* (zoom lines, grid, spans) and draw it in your own glyphs, palette
+  and geometry; copying a published figure's glyphs and colours reads as plagiarism even when cited.
+- **DAC CoDe example (`fig:dram_pim`):** (a) AiM-style LPDDR5: controller on C/A and DQ, 16 banks in four
+  bank groups, one bank zoomed into cell array → IOSA → PU (multiplier lanes + output register), the shared
+  GB. (b) CK at 1.25 ns, column commands tCCD_S = 2.5 ns apart across bank groups and tCCD_L = 5 ns within
+  one, one all-bank MAC per tCCD_L, and a stock PU busy one CK of every four — the idle cycles set up the
+  paper's beats-per-column argument.
+
+### F9. A micro-architecture figure is a block diagram, never a flowchart (owner, 2026-10-16)
+A figure that shows *how a unit is built* draws the hardware: what holds state, what computes, what
+controls, and the wires between them, inside the unit's boundary. The owner rejected a PU figure whose
+boxes were linked like steps of an algorithm.
+- **The form** (read off GROW, arXiv 2203.00158, Fig. 8 "High-level overview of GROW", and TensorDIMM, MICRO'19,
+  Fig. 6(a) "NMP core"):
+  - **A bounding box is the unit.** Whatever is outside the unit (DRAM, the bank, the host) sits outside the
+    box; interfaces (PHY, protocol engine, command port, drain port) sit *on* the box edge.
+  - **Blocks are structures named by what they are** — "weight latch", "staging register", "accumulator
+    file", "global buffer (SRAM)" — never by what they do ("accumulate", "fetch next").
+  - **Shape carries the kind:** storage as a stack of slots (a queue or register file drawn as rows,
+    labelled with its depth, e.g. "V slots"); arithmetic as a row or column of MAC cells, or a trapezoid ALU;
+    control as a **narrow full-height bar** beside the datapath it steers, with short ticks into the blocks
+    it controls.
+  - **Wires are labelled with what they carry** ("column, 256 b", "GB word", "tile MAC command") and arrows
+    show data or command direction between physical blocks only.
+  - **Hierarchy is shown by zoom panels** (a) → (b) → (c), core → module → system, each panel a block diagram
+    at its own scale.
+- **Flowchart smell test — redraw the figure if any holds:** a box is named with a verb; an arrow means
+  "then"; there is no containing boundary; one "controller" box has an arrow to every other box; the
+  layout reads top-to-bottom as a sequence of steps.
+- **Show where the unit attaches, minimally** (owner, 2026-10-16). When the unit lives inside a larger
+  structure (a PU inside a DRAM bank, a core inside a buffer device), draw that structure as a thin
+  enclosing block with only the piece the unit connects to (e.g. a small cell array over a row-buffer / IOSA
+  strip), so the reader sees the attachment — the column bus dropping into the weight latch — without the
+  host structure's internals competing with the design. The unit stays the dominant element.
+- **One idea per figure.** Do not stack a timing strip under the block diagram when another figure already
+  carries the timing; point the prose at that figure instead. The block diagram itself never encodes time.
+- **DAC CoDe example (`fig:tile`):** a thin gray "bank" block encloses everything; along its top, a small
+  cell array over the IOSA strip, whose column bus drops into the weight latch; below it the PU, the dominant
+  element — weight latch, staging register as V token slots, the stock multiplier lanes as MAC cells into an
+  adder, the accumulator file as 2V slots, and the beat sequencer as a narrow control bar; CoDe-added blocks
+  sky-blue, stock blocks white or gray. The shared global buffer sits outside the bank; the C/A and drain
+  ports sit on the bank's edge. The tile timing lives in the design-comparison timeline, not here.
+
 ---
 
 ## Worked example (SPLEX, ASPLOS submission)
@@ -285,3 +345,6 @@ colour constants of the chart generators.
 - **A restyle changes no data.** Every data assert in the generators still holds after a restyle; content,
   series and numbers are untouched.
 - **A restyle changes no canvas.** Every canvas keeps its size, because the page float map depends on it.
+- **Diagrams are prototyped in HTML first** (owner, 2026-10-16): a block diagram or timeline is drawn as an
+  inline-SVG HTML page at its final size, looked at, then converted to the PDF the paper includes
+  (procedure in `10_production_and_verification.md` §7). Data charts stay with their plotting scripts.
