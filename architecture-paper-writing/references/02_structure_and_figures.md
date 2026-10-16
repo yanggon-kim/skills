@@ -309,6 +309,29 @@ boxes were linked like steps of an algorithm.
   sky-blue, stock blocks white or gray. The shared global buffer sits outside the bank; the C/A and drain
   ports sit on the bank's edge. The tile timing lives in the design-comparison timeline, not here.
 
+### F10. Fill the figure's rectangle (owner, 2026-10-16)
+A float is a rectangle the reader pays for in page space; white space left empty inside it is wasted page,
+and in a six-page venue it is the first thing to cost a paragraph. Lay a diagram out so its content fills the
+rectangle.
+- **Stretch side blocks to their neighbour.** A block that sits beside a container (a shared buffer beside a
+  bank, a host bar beside a channel, a bus beside a stack) spans the container's full height or width, with
+  its label set vertically, instead of floating as a small box in a corner.
+- **Pack blocks as close as their wires and labels allow**, and shrink every container to its contents. A
+  gap is justified only by a wire or a label that must fit in it.
+- **Show a repeated array as cells with "…"**: a few cells, an ellipsis in the middle, and a count label
+  ("32 lanes"), spread across the available width — never a short row of six that leaves the rest empty and
+  undercounts the hardware.
+- **Text is at least the caption size** (8–9 pt in a 9–10 pt body). When there is spare room, enlarge the
+  text before anything else.
+- **Restack a sparse wide figure into one column.** A `figure*` whose rows are mostly empty (a label at the
+  left, a short timeline, a summary at the right) becomes a one-column figure of stacked units: each unit is a
+  header row (name left, summary right) with its timeline beneath, at the same font size. It gets taller and
+  narrower and frees the full-width slot.
+- **DAC CoDe examples:** `fig:tile` — the shared GB drawn as a full-height skinny block beside the bank with a
+  vertical label, the PU's blocks packed, the multiplier row as cells with "…" and a lane count, labels at
+  8–9 pt. `fig:timeline` — four designs restacked from a full-width figure into one column, each a
+  name-and-summary row over its cmd / bank / PU lanes.
+
 ---
 
 ## Worked example (SPLEX, ASPLOS submission)
