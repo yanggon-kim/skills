@@ -318,6 +318,11 @@ rectangle.
   its label set vertically, instead of floating as a small box in a corner.
 - **Pack blocks as close as their wires and labels allow**, and shrink every container to its contents. A
   gap is justified only by a wire or a label that must fit in it.
+- **A connector gap is as wide as its label and arrowhead, no wider.** Between two blocks joined only by
+  buses (a host and a channel, a core and its PHY), size the gap to the bus label ("C/A", "DQ") plus the
+  arrowhead, set the label just above its short arrow, and **give the freed width to the content** (wider
+  bank columns, a larger enlarged panel, bigger text) rather than leaving it as a new gap elsewhere. Check by
+  eye at 100 %: a white band between two boxes that is wider than the text inside it is wasted.
 - **Show a repeated array as cells with "…"**: a few cells, an ellipsis in the middle, and a count label
   ("32 lanes"), spread across the available width — never a short row of six that leaves the rest empty and
   undercounts the hardware.
@@ -330,7 +335,10 @@ rectangle.
 - **DAC CoDe examples:** `fig:tile` — the shared GB drawn as a full-height skinny block beside the bank with a
   vertical label, the PU's blocks packed, the multiplier row as cells with "…" and a lane count, labels at
   8–9 pt. `fig:timeline` — four designs restacked from a full-width figure into one column, each a
-  name-and-summary row over its cmd / bank / PU lanes.
+  name-and-summary row over its cmd / bank / PU lanes. `fig:dram_pim`(a) — the white band between the host
+  bar and the channel box held only the C/A and DQ arrows: cut from 31 pt to 14 pt (label + arrowhead, labels
+  set just above the short arrows), and the freed 17 pt went to the content — channel box 106 → 114 pt, the
+  enlarged bank-and-PU panel 84 → 93 pt — with the canvas width unchanged.
 
 ---
 
