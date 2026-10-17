@@ -79,7 +79,7 @@ list to hold in mind while drafting.
 - **Numbers are traced, not typed.** Each traces to a frozen data view, a design document or a
   verified citation; print both ends of a range, never "up to N"; judge a number against a cited
   external budget, not an adverb ("clearly", "merely"); a number is printed with its setting in
-  reader order.
+  reader order (the setting attached to the noun it qualifies, not a list of settings fronted before the verb).
 - **Define before elaborating.** Name → definition → validity → payoff → implementation → cost. A
   component is its role. Our mechanism first, the familiar precedent last, as a citation.
 - **A characterization is not an advertisement.** In a motivation section the reference papers
@@ -88,7 +88,12 @@ list to hold in mind while drafting.
 - **Constrained results are trades, not gaps.** A result achieved under a budget is written as
   "the same outcome at a fraction of the cost", with the tolerance in the same clause as the cap —
   never as "N % behind the unconstrained baseline".
-- **Run-in heads are blunt, general findings.** Concrete subject, plain verb, the scale in words: "Hot
+- **Every clause has a subject and a finite verb; name, don't point; titles are noun phrases.** No equation
+  stands as a clause, at most one fronted setting per sentence; repeat the noun instead of "the two", "both",
+  "it", "this" when the antecedent is outside the clause (a clarifying repeat is not restatement); section and
+  subsection titles name a topic ("PIM–Host Crossover"), never a sentence or a where/how clause.
+  Full rules in `01_sentence_style.md` §5.
+- **Run-in heads are blunt, general findings** (run-in `\paragraph` heads only, never numbered titles). Concrete subject, plain verb, the scale in words: "Hot
   entries stay hot for hundreds of steps." Not the measurement itself — the number opens the sentence
   below — and never an abstraction or an evaluation. Pace the numbers: one or two per sentence, then their
   description; derived figures at most one per paragraph.

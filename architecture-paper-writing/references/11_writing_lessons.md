@@ -187,6 +187,8 @@ curve; red kept for swap arrows and one operating point; the hatched "n/a" place
 
 ## Run-in heads are blunt findings
 
+**Scope.** Run-in `\paragraph` heads only; numbered section and subsection titles are noun phrases
+(see "Titles are noun phrases" below and `01_sentence_style.md` §5.3).
 **Rule.** A run-in head states the finding as a plain declarative with a concrete subject, a plain verb and the
 scale *in words*: "Hot entries stay hot for hundreds of steps." It is general and direct — not the measurement
 itself ("Sixty-four consecutive steps touch 12 % of the pool" is too specific for a head; the number belongs in
@@ -297,3 +299,36 @@ sentence — mechanism, models, numbers — before any later sentence leans on i
 **Why.** A substrate sentence followed by a finding, with the setting's mechanism appearing as an unintroduced
 modifier, was judged abrupt in two rounds. The submitted SPLEX abstract in `03_abstract.md` is the model,
 sentence by sentence.
+
+## Every clause has a visible subject and a finite verb
+
+**Rule.** No equation stands as a clause on its own, and a sentence fronts at most one setting; a list of settings
+goes after the verb.
+**Why.** Under a word budget the cheapest cut is a verb, and the result ("…, D = 4, and …") makes the reader rebuild
+the grammar. The owner could not find the subject or the verb.
+**Example** *(DAC example)*. "At 0.8 GHz on LPDDR5-6400 and 1 GHz on HBM2, D = 4, and a stock PU uses one beat." →
+"A PU clocked at 0.8 GHz on LPDDR5-6400 or at 1 GHz on HBM2 fits D = 4 beats into each column period; a stock PU uses
+one of them." Full rule: `01_sentence_style.md` §5.1.
+
+## Name, don't point
+
+**Rule.** Repeat the noun phrase instead of "the two", "both", "it", "this" or "they" whenever the antecedent is outside
+the current clause or more than one noun could fit; a clarifying repeat is not restatement.
+**Why.** The de-rhetoric cuts treat a repeated noun as restatement, so it gets replaced by "the two" or "it", and the
+reader has to search backwards. The owner reads such a pronoun as a gap in the sentence. Pronouns are fine when the
+only antecedent is in the same clause; use them rarely otherwise.
+**Example** *(DAC example)*. "…once the two are separated" → "…once MAC timing is separated from command timing";
+"Two deployments create it." → "Two deployments create skinny GEMMs." Full rule: `01_sentence_style.md` §5.2.
+
+## Titles are noun phrases
+
+**Rule.** Section and subsection titles name the topic as an engineering noun phrase; never a sentence, a where / how
+/ why clause, or a result with a number. One labelled thesis title per section is allowed ("The Opportunity: …").
+**Why.** The blunt-finding rule for run-in heads leaked into numbered titles and produced "Every Prior Design Paces
+MACs by Commands" and "Where PIM and Host Cross", which the owner read as colloquial. A title is a label for the
+table of contents; the claim belongs in the first sentence or a run-in head.
+**Example** *(DAC example)*. "Where PIM and Host Cross" → "PIM–Host Crossover"; "Every Prior Design Paces MACs by
+Commands" → "Command-Paced MACs in Prior PIM"; "Where the Gain Comes From" → "Sources of the Gain"; "Edge Server:
+1.68× P3-LLM-Style's Batched Decode Speed" → "Edge-Server Platform against P3-LLM-Style" (the 1.68× stays in the
+subsection's first sentence).
+

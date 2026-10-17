@@ -356,7 +356,7 @@ opportunities within this critical preprocessing stage is important." No "Next, 
 
 ---
 
-**F0. Run-in heads are blunt, general findings; the measurement opens the sentence below.** The head is a
+**F0. Run-in heads are blunt, general findings; the measurement opens the sentence below.** (Run-in `\paragraph` heads only; numbered subsection titles are noun phrases, `01` §5.3.) The head is a
 plain declarative with a concrete subject, a plain verb and the scale *in words* — "Hot entries stay hot for
 hundreds of steps." — not the measurement itself. "Sixty-four consecutive steps touch 12 % of the pool" and
 "The most recent 2,048 positions cover 0.47 of a selection" are too specific for a head: the reader meets the

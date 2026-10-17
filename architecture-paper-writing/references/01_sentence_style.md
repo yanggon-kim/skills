@@ -29,6 +29,7 @@ sentence can still carry a freeloading clause.
   - Before: "The substrate, in short, is arriving." → After: deleted; the paragraph opens directly
     with "Each HBM site can become the head of a small memory network: …". *(SPLEX example)*
 - **Restatement-with-drums** — a second clause that repeats the first with emphasis.
+  (Repeating a *noun phrase* so the reader knows what a clause is about is not restatement — see §5.2.)
   - Before: "… must be measured against it; no static property of the memories supplies it."
     → After: "… must be measured against it." *(SPLEX example)*
 - **Evaluative metaphors on our own design.**
@@ -78,3 +79,45 @@ explicitly endorsed this pattern (fixes 8, 12, 13 of the 2026-08-31 pass).
 Merging by trailing clause also works when the announcement closes a paragraph:
 "… and what the base-die logic must contain -- the subject of this paper." (replaced a standalone
 "That is the subject of this paper.") *(SPLEX example)*
+
+## 5. Grammar the reader can parse on the first pass (owner, 2026-10-16)
+
+The cuts above make sentences shorter; these rules keep the shorter sentence parseable. They were written after
+the owner flagged DAC-paper sentences in which a reader could not find the subject, the verb or the referent.
+
+### 5.1 Every clause has a visible subject and a finite verb
+- An equation is never a clause on its own. "…, D = 4, and …" between commas leaves the reader to supply the
+  verb; write "fits D = 4 beats", "gives D = 4", "D equals 4".
+- At most **one** fronted setting per sentence. A list of settings goes after the verb, attached to the noun
+  it qualifies.
+- Before: "At 0.8 GHz on LPDDR5-6400 and 1 GHz on HBM2, D = 4, and a stock PU uses one beat." (three
+  constructions joined by commas; only the last has a subject and verb) → After: "A PU clocked at 0.8 GHz on
+  LPDDR5-6400 or at 1 GHz on HBM2 fits D = 4 beats into each column period; a stock PU uses one of them."
+  *(DAC example)*
+- Check: read each comma-separated piece alone; every piece that carries a claim must have its own verb.
+
+### 5.2 Name, don't point
+- Write the noun phrase again instead of "the two", "both", "the former / latter", "it", "this", "they"
+  whenever the antecedent sits outside the current clause or more than one noun could fit. A clarifying repeat
+  is not restatement, and it costs two or three words that the reader would otherwise pay for by re-reading.
+- A pronoun is fine when its only possible antecedent is in the same clause ("a PU and its accumulator").
+  Possessive "its" on the subject of the same sentence is normal; do not over-correct it.
+- A sentence never opens with a bare "This" or "It" that points at the previous sentence: name the thing
+  ("This cap", "The crossover").
+- Before: "…and derive the depth a column allows once the two are separated" → After: "…once MAC timing is
+  separated from command timing". Before: "Two deployments create it." → After: "Two deployments create skinny
+  GEMMs." *(DAC examples)*
+- Check: grep the section for `the two|both|\bit\b|\bthis\b|they|them|former|latter` and resolve each hit
+  by looking only at its own sentence.
+
+### 5.3 Section and subsection titles are noun phrases
+- A `\section` / `\subsection` title names the topic in engineering terms: "Command Interface", "PU
+  Microarchitecture", "PIM–Host Crossover", "Sources of the Gain". It is never a sentence ("Every Prior
+  Design Paces MACs by Commands"), a where / how / why clause ("Where PIM and Host Cross", "Where the Gain
+  Comes From"), or a result with a number ("1.68× P3-LLM-Style's Speed").
+- A labelled claim is allowed once per section when it is the section's thesis, written as label + noun
+  phrase or label + compact statement: "The Opportunity: DRAM Timing Bounds Access, Not MACs".
+- The blunt-finding rule (`11_writing_lessons.md` "Run-in heads are blunt findings") governs **run-in
+  `\paragraph` heads only**, never numbered titles.
+- A number dropped from a title must still be printed in that subsection's text (promise check, `10`).
+
