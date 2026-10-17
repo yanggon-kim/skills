@@ -110,14 +110,17 @@ the owner flagged DAC-paper sentences in which a reader could not find the subje
 - Check: grep the section for `the two|both|\bit\b|\bthis\b|they|them|former|latter` and resolve each hit
   by looking only at its own sentence.
 
-### 5.3 Section and subsection titles are noun phrases
+### 5.3 Headings are noun phrases: section, subsection and run-in heads
 - A `\section` / `\subsection` title names the topic in engineering terms: "Command Interface", "PU
   Microarchitecture", "PIM–Host Crossover", "Sources of the Gain". It is never a sentence ("Every Prior
   Design Paces MACs by Commands"), a where / how / why clause ("Where PIM and Host Cross", "Where the Gain
   Comes From"), or a result with a number ("1.68× P3-LLM-Style's Speed").
 - A labelled claim is allowed once per section when it is the section's thesis, written as label + noun
   phrase or label + compact statement: "The Opportunity: DRAM Timing Bounds Access, Not MACs".
-- The blunt-finding rule (`11_writing_lessons.md` "Run-in heads are blunt findings") governs **run-in
-  `\paragraph` heads only**, never numbered titles.
+- **Run-in `\paragraph` heads are noun phrases too** (owner, 2026-10-17).
+  - Good heads: "Area family", "Faster-PU family", "Cost of logic in a DRAM die".
+  - Never a sentence, such as "Six designs widen the MAC step with multipliers".
+  - The blunt finding moves into the first sentence under the head (`11_writing_lessons.md`, "Run-in heads are noun phrases; the blunt finding opens the paragraph").
+- **Check:** grep the draft's `\paragraph{` heads. A head with a finite verb ("is", "stays", "wins", "runs", "keep", "stops") is a sentence; rewrite it.
 - A number dropped from a title must still be printed in that subsection's text (promise check, `10`).
 

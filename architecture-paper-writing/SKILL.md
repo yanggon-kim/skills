@@ -88,15 +88,16 @@ list to hold in mind while drafting.
 - **Constrained results are trades, not gaps.** A result achieved under a budget is written as
   "the same outcome at a fraction of the cost", with the tolerance in the same clause as the cap —
   never as "N % behind the unconstrained baseline".
-- **Every clause has a subject and a finite verb; name, don't point; titles are noun phrases.** No equation
-  stands as a clause, at most one fronted setting per sentence; repeat the noun instead of "the two", "both",
-  "it", "this" when the antecedent is outside the clause (a clarifying repeat is not restatement); section and
-  subsection titles name a topic ("PIM–Host Crossover"), never a sentence or a where/how clause.
+- **Every clause has a subject and a finite verb; name, don't point; every heading is a noun phrase.**
+  - No equation stands as a clause, and a sentence has at most one fronted setting.
+  - Repeat the noun instead of "the two", "both", "it" or "this" when the antecedent is outside the clause. A clarifying repeat is not restatement.
+  - Every heading names a topic, never a sentence or a where/how clause: section and subsection titles ("PIM–Host Crossover") and run-in `\paragraph` heads ("Area family", "Cost of logic in a DRAM die").
+
   Full rules in `01_sentence_style.md` §5.
-- **Run-in heads are blunt, general findings** (run-in `\paragraph` heads only, never numbered titles). Concrete subject, plain verb, the scale in words: "Hot
-  entries stay hot for hundreds of steps." Not the measurement itself — the number opens the sentence
-  below — and never an abstraction or an evaluation. Pace the numbers: one or two per sentence, then their
-  description; derived figures at most one per paragraph.
+- **The finding opens the paragraph, under a noun-phrase head.**
+  - The first sentence is blunt and general, with a concrete subject, a plain verb and the scale in words: "Hot entries stay hot for hundreds of steps."
+  - It is not the measurement itself; the number opens the next sentence. It is never an abstraction or an evaluation.
+  - Pace the numbers: one or two per sentence, each followed by its description. Use at most one derived figure per paragraph.
 - **An evaluative adjective is replaced by the two quantities it compares.** "The deadline is loose" →
   "microseconds of work against a deadline of tens of milliseconds". A cost is stated at its unit and scaled to
   the system in the same sentence.

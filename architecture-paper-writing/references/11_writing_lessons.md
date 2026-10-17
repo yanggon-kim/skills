@@ -76,7 +76,7 @@ up to 3.6× the traffic for that last 0.013, so the 0.013 is what a 3.6× saving
 ## Never merge measurement paragraphs of different kinds
 
 **Rule.** Merge only paragraphs that measure the same kind of thing; two findings of different kinds each keep their own
-run-in head, even at zero page slack, because the run-in head is where the claim is made.
+run-in head, even at zero page slack. The reason: a reader finds a finding by its head and by the claim sentence under that head.
 **Why.** Every number and promise can survive a merge as sentences while the section's point dies, because a reader takes
 the claims from the heads. Ask what each paragraph's unit is (per pair of steps, per window, per decode); different units
 mean different heads, and a finding whose value is that nobody else computes it always gets its own. The enumeration in a
@@ -185,21 +185,34 @@ interesting one; "n/a" text alone marks an absent measurement.
 ramp for GPU, HBM, LPDDR, host and every baseline; sky-blue fill for the blocks the base die adds and for the one system
 curve; red kept for swap arrows and one operating point; the hatched "n/a" placeholder bar dropped.
 
-## Run-in heads are blunt findings
+## Run-in heads are noun phrases; the blunt finding opens the paragraph
 
-**Scope.** Run-in `\paragraph` heads only; numbered section and subsection titles are noun phrases
-(see "Titles are noun phrases" below and `01_sentence_style.md` §5.3).
-**Rule.** A run-in head states the finding as a plain declarative with a concrete subject, a plain verb and the
-scale *in words*: "Hot entries stay hot for hundreds of steps." It is general and direct — not the measurement
-itself ("Sixty-four consecutive steps touch 12 % of the pool" is too specific for a head; the number belongs in
-the first sentence below it) and not an abstraction or an evaluation ("Recency is not the signal", "The deadline
-is loose").
-**Why.** The head is the claim a skimming reviewer reads; an abstraction makes them read the paragraph to learn
-what was found, a blunt fact lets them decide whether to. The author's standard is direct, straightforward,
-outspoken.
-**Example.** *(eval)* "Recency is not the signal." → "The most recent 2,048 positions cover 0.47 of a selection."
-"Hotness persists far beyond the next step." (acceptable) → "Hot entries stay hot for hundreds of steps." (better:
-the scale is in the head).
+**Superseded rule.**
+- An earlier version made run-in `\paragraph` heads full-sentence findings, e.g. "Hot entries stay hot for hundreds of steps."
+- On 2026-10-17 the owner rejected that for the DAC paper. Heads such as "Six designs widen the MAC step with multipliers" and "A faster PU stops at two tokens per read" read as sentences posing as headings.
+
+**Rule.** Every heading is an engineering noun phrase:
+- section and subsection titles;
+- run-in `\paragraph` heads.
+
+**Where the finding goes.**
+- It moves into the **first sentence** under the head.
+- That sentence is a plain declarative with a concrete subject, a plain verb and the scale *in words*.
+- It is general and direct. It is not the measurement itself; the number opens the next sentence.
+- It is not an abstraction or an evaluation, such as "Recency is not the signal" or "The deadline is loose".
+
+**Why.**
+- A heading is a label the reader scans to find a topic; a sentence set in bold reads as a slogan.
+- The claim still comes first, one line lower. A skimming reviewer reads it there as the paragraph's opening.
+
+**Example.**
+
+| before (sentence head) | after: noun-phrase head | after: first sentence under it |
+|---|---|---|
+| "Six designs widen the MAC step with multipliers" *(DAC)* | "Area family" | "Six designs widen the MAC step with multipliers: …" |
+| "A faster PU stops at two tokens per read" *(DAC)* | "Faster-PU family" | |
+| "Logic in a DRAM die is expensive" *(DAC)* | "Cost of logic in a DRAM die" | |
+| "Hotness persists far beyond the next step." *(eval)* | "Hotness over time" | "Hot entries stay hot for hundreds of steps." |
 
 ## No evaluative adjective without the two quantities it compares
 
@@ -326,7 +339,7 @@ only antecedent is in the same clause; use them rarely otherwise.
 / why clause, or a result with a number. One labelled thesis title per section is allowed ("The Opportunity: …").
 **Why.** The blunt-finding rule for run-in heads leaked into numbered titles and produced "Every Prior Design Paces
 MACs by Commands" and "Where PIM and Host Cross", which the owner read as colloquial. A title is a label for the
-table of contents; the claim belongs in the first sentence or a run-in head.
+table of contents. The claim belongs in the first sentence below the title, and the same holds for run-in heads (see "Run-in heads are noun phrases" above).
 **Example** *(DAC example)*. "Where PIM and Host Cross" → "PIM–Host Crossover"; "Every Prior Design Paces MACs by
 Commands" → "Command-Paced MACs in Prior PIM"; "Where the Gain Comes From" → "Sources of the Gain"; "Edge Server:
 1.68× P3-LLM-Style's Batched Decode Speed" → "Edge-Server Platform against P3-LLM-Style" (the 1.68× stays in the

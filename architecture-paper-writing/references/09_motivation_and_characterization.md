@@ -318,11 +318,19 @@ copy it (§H3).
 
 There is **no "Observation 1:" numbering and no boxed summary anywhere in the corpus.** Do not invent one.
 
-**The house's own sixth device, and it is the right one: a `\lead{}` run-in that states the finding.** The SPLEX §3.3 carries four
-(*The latent hot set is small and skewed.* / *Hotness is temporal: a fast drop, then a slowly eroding
-core.* / *Churn recycles within a small working set.* / *Hotness is semantic, not positional.*). It is [M]'s bold run-in with [LazyDP]'s
-takeaway folded into it: the head is the claim, so the paragraph needs no closing restatement and costs no extra printed line. Keep it, and
-keep each one a claim that the paragraph's own numbers settle — a head naming a topic ("Temporal behaviour.") throws the device away.
+**The house's own sixth device: a noun-phrase run-in whose first sentence states the finding.**
+
+The rule changed on 2026-10-17 (`11_writing_lessons.md`, "Run-in heads are noun phrases").
+- **Before:** SPLEX §3.3 used sentence heads, such as *The latent hot set is small and skewed.*
+- **Now:** the head names the topic and the finding opens the paragraph. Example: head *Hot-set size*, first sentence "The latent hot set is small and skewed."
+
+Why the device works:
+- It is [M]'s bold run-in with [LazyDP]'s takeaway folded into the paragraph's first sentence.
+- The paragraph therefore needs no closing restatement and costs no extra printed line.
+
+How to keep it working:
+- The first sentence is a claim that the paragraph's own numbers settle.
+- A paragraph whose first sentence is only setup throws the device away.
 
 **F2. A figure is named in the sentence that reports its number, never in a bare parenthesis.** 78 figure references in 8,360 words — one per ~107
 words, i.e. one or two per paragraph. The reference is the subject or the object of the reporting sentence:
@@ -356,14 +364,20 @@ opportunities within this critical preprocessing stage is important." No "Next, 
 
 ---
 
-**F0. Run-in heads are blunt, general findings; the measurement opens the sentence below.** (Run-in `\paragraph` heads only; numbered subsection titles are noun phrases, `01` §5.3.) The head is a
-plain declarative with a concrete subject, a plain verb and the scale *in words* — "Hot entries stay hot for
-hundreds of steps." — not the measurement itself. "Sixty-four consecutive steps touch 12 % of the pool" and
-"The most recent 2,048 positions cover 0.47 of a selection" are too specific for a head: the reader meets the
-number before the claim it supports. Write the general fact as the head and give the number in the first
-sentence under it. Never an abstraction ("Recency is not the signal") or an evaluation ("The deadline is
-loose") either — the head carries the finding, the sentence below carries its number. (Author feedback on the
-eval runs, two rounds; the later word in `11_writing_lessons.md`.)
+**F0. Each paragraph opens with a blunt, general finding; the measurement follows it.**
+
+*The head:*
+- A run-in head is a noun phrase that names the topic, e.g. "Hotness over time" or "Area family" (`01` §5.3; owner, 2026-10-17).
+- It is never a sentence.
+
+*The first sentence under the head:*
+- It is a plain declarative with a concrete subject, a plain verb and the scale *in words*, e.g. "Hot entries stay hot for hundreds of steps."
+- It is not the measurement itself. "Sixty-four consecutive steps touch 12 % of the pool" is too specific for an opening: the reader would meet the number before the claim it supports.
+- It is never an abstraction ("Recency is not the signal") or an evaluation ("The deadline is loose").
+
+*The second sentence:* it gives the number.
+
+(Author feedback on the eval runs and on the DAC paper; `11_writing_lessons.md` is the later word.)
 
 **F0b. Pace the numbers.** One or two new numbers per sentence, each followed by its description; a sentence
 that introduces a number opens with it, so the reader takes numbers at an even pace. A long sentence that
