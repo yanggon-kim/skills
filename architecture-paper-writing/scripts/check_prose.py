@@ -249,6 +249,14 @@ CITE_CMD_RE = re.compile(r"\\(?:cite[a-zA-Z]*|autocite)\s*(?:\[[^\]]*\])*\s*\{([
 NUM_CITE_RE = re.compile(r"\[\s*\d+(?:\s*[-–,]\s*\d+)*\s*\]")
 CLAUSE_BREAK_RE = re.compile(r",\s+(?:while|whereas|but|although|though|which|and|or)\b|;\s")
 LIST3_RE = re.compile(r"[^,]{2,60},[^,]{2,60},\s+(?:and|or)\s")
+# A sentence-initial system name: a token with an inner capital, a digit or a hyphen joining capitals
+# (AttAcc, NeuPIMs, IANUS, P3-LLM, LP-Spec, H$^2$-LLM), not followed by its own citation.
+PROPER_OPEN_RE = re.compile(r"\s*(?:The\s+)?((?:[A-Z][A-Za-z]*[A-Z0-9][A-Za-z0-9]*|[A-Z][A-Za-z0-9$^{}]*-[A-Z][A-Za-z0-9-]*)"
+                            r"(?:'s)?)(?![^\s]*~?\\cite)\s")
+# Technical terms that open a sentence as the subject of a borrowed claim (12 §C), not as a cited system.
+COMMON_TERM_RE = re.compile(r"(?:DRAM|SRAM|PIM|NPU|GPU|CPU|TPU|DSP|SoC|ASIC|FPGA|HBM\d?E?|L?P?DDR\d?X?|GDDR\d|LLMs?|"
+                            r"GEMMs?|GEMVs?|MACs?|PUs?|ALUs?|FC|KV|SIMD|CXL|PCIe|NVMe|SSDs?|I/O|DNNs?|CNNs?)"
+                            r"(?:[-\d.]*)?(?:'s)?$")
 
 
 def citations_in(sentence):
@@ -289,6 +297,10 @@ def cite_flags(sentence):
         if cites[0][2] >= 4 and words >= 25:
             flags.append("%d keys in one trailing group on a %d-word sentence (12 §I)"
                          % (cites[0][2], words))
+        m = PROPER_OPEN_RE.match(before)
+        if m and not COMMON_TERM_RE.match(m.group(1)):
+            flags.append("opens with the proper noun '%s' but cites only at the end "
+                         "-> cite at the name: %s~\\cite{...} (12 §B)" % (m.group(1), m.group(1)))
     seen = {}
     for _, _, _, keys in cites:
         for k in keys:

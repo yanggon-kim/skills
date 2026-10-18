@@ -345,3 +345,16 @@ Commands" → "Command-Paced MACs in Prior PIM"; "Where the Gain Comes From" →
 1.68× P3-LLM-Style's Batched Decode Speed" → "Edge-Server Platform against P3-LLM-Style" (the 1.68× stays in the
 subsection's first sentence).
 
+
+## Cite at the proper noun
+
+**Rule.** When a sentence names a prior system, paper, product or platform, the citation follows the name, also when the
+sentence opens with that name and describes only that system; never park it at the end of the sentence. Cite a rival's
+published work at each mention (once per sentence at most); your own "-style" model of it takes none.
+**Why.** The owner (2026-10-18) found a background paragraph built as "AttAcc runs … [attacc]. NeuPIMs maps … [neupims].
+IANUS chooses … [ianus]." and asked for every reference to sit next to its proper noun. `12_citation_placement.md` §B
+already said so, but the trailing habit survived because a one-system sentence looks harmless. The check in
+`scripts/check_prose.py --cite` now flags it.
+**Example** *(DAC example)*. "AttAcc runs batched FC layers on the xPU and attention on PIM~\cite{attacc}." →
+"AttAcc~\cite{attacc} runs batched FC layers on the xPU and attention on PIM."; "The mobile NPU reads x64 LPDDR5-6400 at
+42 GB/s, the 8 Gen 3's achieved fraction …" → "…, the achieved fraction of the Snapdragon 8 Gen 3~\cite{…} …".

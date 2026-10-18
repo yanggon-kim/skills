@@ -43,6 +43,21 @@ silently extends the citation's apparent scope to whatever else the sentence cla
 - *No:* "vLLM manages the KV cache with PagedAttention [42]." — now the citation reads as support for the claim about
   PagedAttention rather than as the identification of vLLM, which matters if the two have different sources.
 
+**The sentence that opens with the name — the most common slip.** A sentence whose subject is a prior system's proper
+name gets the citation right after that name, *even when the whole sentence describes that one system*. The trailing
+position looks harmless there and is the habit to break: a run of such sentences ("AttAcc runs … [3]. NeuPIMs maps …
+[4]. IANUS chooses … [5].") makes the reader hold every name unresolved and reads like a list of claims, not a list of
+systems. §H then forbids repeating the citation at the end. A direct quote from that work is covered by the citation at
+the name; it needs no second group unless the quote comes from a different source.
+- *No* *(DAC example)*: "AttAcc runs batched FC layers on the xPU and attention on PIM~\cite{attacc}. NeuPIMs maps the
+  QKV, projection and FFN GEMMs to the NPU because PIM ``lacks the computational power …''~\cite{neupims}."
+- *Yes:* "AttAcc~\cite{attacc} runs batched FC layers on the xPU and attention on PIM. NeuPIMs~\cite{neupims} maps the
+  QKV, projection and FFN GEMMs to the NPU because PIM ``lacks the computational power …''."
+- The same holds for a platform or product named as a fact source ("Snapdragon 8 Gen 3~\cite{…} reads …") and for a
+  rival named again later in the paper: cite it at each mention of the published work, at most once per sentence. A
+  design of your own modelled after a rival ("LP-Spec-style") is not the published work and takes no citation.
+- `scripts/check_prose.py --cite` flags a sentence that opens with a proper noun and carries only a trailing group.
+
 ## C. A claim is cited at the claim
 
 **Rule.** When the citation is evidence for a proposition rather than the identity of a noun, it goes at the end of the

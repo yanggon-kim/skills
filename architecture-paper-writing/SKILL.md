@@ -106,7 +106,8 @@ list to hold in mind while drafting.
 - **Citation scope is placement.** Cite an entity immediately after its name and a claim immediately after the
   smallest clause expressing it; split the references when one sentence carries two claims, and give each category
   or example in a landscape sentence its own group. A cluster at the end of a long sentence claims support for
-  everything in it. Full rules in `12_citation_placement.md`.
+  everything in it. A sentence that opens with a system's proper name cites it at the name: "AttAcc~\cite{attacc}
+  runs …", never "AttAcc runs …~\cite{attacc}". Full rules in `12_citation_placement.md` §B.
 - **Terminology discipline.** One canonical name per concept, defined once, with the synonyms you
   are *not* using listed somewhere you will see them. Readers notice a system called three things.
 - **The banned list**, verified as absent from all six reference papers in the relevant
