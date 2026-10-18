@@ -253,6 +253,8 @@ LIST3_RE = re.compile(r"[^,]{2,60},[^,]{2,60},\s+(?:and|or)\s")
 # (AttAcc, NeuPIMs, IANUS, P3-LLM, LP-Spec, H$^2$-LLM), not followed by its own citation.
 PROPER_OPEN_RE = re.compile(r"\s*(?:The\s+)?((?:[A-Z][A-Za-z]*[A-Z0-9][A-Za-z0-9]*|[A-Z][A-Za-z0-9$^{}]*-[A-Z][A-Za-z0-9-]*)"
                             r"(?:'s)?)(?![^\s]*~?\\cite)\s")
+# The paper's own system (--system, and \SYS) is never a cited entity.
+OWN_SYSTEMS = {"SYSTEM"}
 # Technical terms that open a sentence as the subject of a borrowed claim (12 §C), not as a cited system.
 COMMON_TERM_RE = re.compile(r"(?:DRAM|SRAM|PIM|NPU|GPU|CPU|TPU|DSP|SoC|ASIC|FPGA|HBM\d?E?|L?P?DDR\d?X?|GDDR\d|LLMs?|"
                             r"GEMMs?|GEMVs?|MACs?|PUs?|ALUs?|FC|KV|SIMD|CXL|PCIe|NVMe|SSDs?|I/O|DNNs?|CNNs?)"
@@ -298,7 +300,7 @@ def cite_flags(sentence):
             flags.append("%d keys in one trailing group on a %d-word sentence (12 §I)"
                          % (cites[0][2], words))
         m = PROPER_OPEN_RE.match(before)
-        if m and not COMMON_TERM_RE.match(m.group(1)):
+        if m and not COMMON_TERM_RE.match(m.group(1)) and m.group(1).replace("'s", "") not in OWN_SYSTEMS:
             flags.append("opens with the proper noun '%s' but cites only at the end "
                          "-> cite at the name: %s~\\cite{...} (12 §B)" % (m.group(1), m.group(1)))
     seen = {}
@@ -370,6 +372,7 @@ def main():
         kind = "md" if args.file.lower().endswith((".md", ".markdown", ".txt")) else "tex"
     lines = raw.splitlines(True)
     system = args.system or "SYSTEM"
+    OWN_SYSTEMS.add(system)
     rows = preprocess_tex(lines, system) if kind == "tex" else preprocess_md(lines, system)
 
     # group into paragraphs
