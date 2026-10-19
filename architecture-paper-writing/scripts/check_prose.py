@@ -51,6 +51,13 @@ The checks and the guide each comes from
                         agentive, never "we believe").
     (6) Ranges          count of N--M / N–M / N—M ranges versus "up to N".
                         06 §C, 09 §H6: ranges print both ends.
+    (8) Captions        with --captions: each \\caption's word count (over 30 words is
+                        flagged) and every run of 5 words it shares with a prose
+                        paragraph of the same input.  02 §3 F11 and 11 "Minimal
+                        captions": a caption names what is drawn; settings, findings
+                        and explanations live in the paragraph.  A figure's caption
+                        and its citing paragraph are often in different files: pipe
+                        them together (cat sections/*.tex | check_prose.py - --captions).
 
 Output
     One block per paragraph (line range, sentence count, numbered sentences,
@@ -82,6 +89,8 @@ FIGNUM_RE = re.compile(
     r"(?:Figures?|Fig\.|Tables?|Sections?|Sec\.|§|Algorithms?|Alg\.|Eq\.|Equations?|Lines?)\s*~?\s*\d+(?:[.\-–]\d+)*[a-z]?",
     re.I)
 ABBREV = ["e.g.", "i.e.", "Fig.", "Figs.", "Sec.", "Secs.", "et al.", "vs.", "cf.", "No.", "Eq.", "Eqs.", "Tab.", "approx."]
+
+CAP_WORDS, CAP_NGRAM = 30, 5
 
 FLOAT_ENVS = ("figure", "figure*", "table", "table*", "algorithm", "algorithmic", "equation", "equation*", "align", "align*")
 
@@ -158,7 +167,7 @@ END_RE = re.compile(r"\\end\{([a-zA-Z*]+)\}")
 
 def preprocess_tex(lines, system):
     """Return list of (lineno, text, heading_or_None, is_caption)."""
-    res, in_float, depth = [], None, 0
+    res, in_float, depth, fbuf, fstart = [], None, 0, [], 0
     for n, raw in enumerate(lines, 1):
         line = strip_comment(raw.rstrip("\n"))
         heading = None
@@ -167,11 +176,7 @@ def preprocess_tex(lines, system):
             arg, _ = balanced_arg(line, hm.end() - 1)
             heading = "%s: %s" % (hm.group(1), reduce_commands(arg, system).strip())
         if in_float:
-            for cm in re.finditer(r"\\caption\s*(?:\[[^\]]*\])?\s*\{", line):
-                arg, _ = balanced_arg(line, cm.end() - 1)
-                res.append((n, "", None, False))
-                res.append((n, reduce_commands(arg, system), None, True))
-                res.append((n, "", None, False))
+            fbuf.append(line)
             for bm in BEGIN_RE.finditer(line):
                 if bm.group(1) == in_float:
                     depth += 1
@@ -180,10 +185,20 @@ def preprocess_tex(lines, system):
                     depth -= 1
                     if depth == 0:
                         in_float = None
+            if in_float is None:
+                # captions may span lines: extract them from the whole float
+                ftext = " ".join(fbuf)
+                for cm in re.finditer(r"\\caption\s*(?:\[[^\]]*\])?\s*\{", ftext):
+                    arg, _ = balanced_arg(ftext, cm.end() - 1)
+                    cap = reduce_commands(arg, system)
+                    cap = re.sub(r"\\[A-Za-z]+\*?", " ", cap).replace("{", "").replace("}", "")
+                    res.append((fstart, "", None, False))
+                    res.append((fstart, cap, None, True))
+                    res.append((fstart, "", None, False))
             continue
         bm = BEGIN_RE.search(line)
         if bm and bm.group(1) in FLOAT_ENVS:
-            in_float, depth = bm.group(1), 1
+            in_float, depth, fbuf, fstart = bm.group(1), 1, [line[bm.end():]], n
             line = line[:bm.start()]
             # a one-line float
             em = END_RE.search(raw, bm.end())
@@ -349,6 +364,47 @@ def citation_report(raw, quiet):
     return out, n_cites, n_trailing, n_flagged
 
 
+def _tokens(text):
+    return re.findall(r"[a-z0-9]+(?:[.'-][a-z0-9]+)*", text.lower())
+
+
+def caption_report(paras, quiet):
+    """Caption length and word runs a caption shares with the prose (02 §3 F11)."""
+    prose = set()
+    for p in paras:
+        if p["caption"]:
+            continue
+        tok = _tokens(" ".join(t for _, t in p["lines"]))
+        prose.update(tuple(tok[i:i + CAP_NGRAM]) for i in range(len(tok) - CAP_NGRAM + 1))
+    out, n_caps, n_long, n_shared = [], 0, 0, 0
+    for p in paras:
+        if not p["caption"]:
+            continue
+        n_caps += 1
+        tok = _tokens(" ".join(t for _, t in p["lines"]))
+        shared, i = [], 0
+        while i <= len(tok) - CAP_NGRAM:
+            if tuple(tok[i:i + CAP_NGRAM]) in prose:
+                j = i + CAP_NGRAM
+                while j < len(tok) and tuple(tok[j - CAP_NGRAM + 1:j + 1]) in prose:
+                    j += 1
+                shared.append(" ".join(tok[i:j]))
+                i = j
+            else:
+                i += 1
+        long_ = len(tok) > CAP_WORDS
+        n_long += long_
+        n_shared += len(shared)
+        if quiet or not (long_ or shared):
+            continue
+        out.append("  caption at line %d: %d words%s" % (
+            p["start"], len(tok), " (over %d -> name what is drawn, move the rest to the paragraph)" % CAP_WORDS
+            if long_ else ""))
+        for r in shared:
+            out.append("      shared with the prose: \"%s\"" % r)
+    return out, n_caps, n_long, n_shared
+
+
 # --------------------------------------------------------------------------- report
 def main():
     ap = argparse.ArgumentParser(
@@ -361,6 +417,8 @@ def main():
     ap.add_argument("--quiet", action="store_true", help="print only the TOTAL block")
     ap.add_argument("--cite", action="store_true",
                     help="also report citation-placement suspects (see references/12_citation_placement.md)")
+    ap.add_argument("--captions", action="store_true",
+                    help="also report caption length and caption text repeated in the prose (02 §3 F11)")
     args = ap.parse_args()
 
     if args.file == "-":
@@ -473,6 +531,14 @@ def main():
             print()
             print("CITATION PLACEMENT (suspects, not errors - read each one)")
             print("\n".join(cout))
+    if args.captions:
+        kout, n_caps, n_long, n_shared = caption_report(paras, args.quiet)
+        print("  (8) captions             : %d captions, %d over %d words, %d runs shared with the prose" % (
+            n_caps, n_long, CAP_WORDS, n_shared))
+        if kout:
+            print()
+            print("CAPTIONS (suspects, not errors - keep only what is drawn and the encoding the legend lacks)")
+            print("\n".join(kout))
     return 0
 
 

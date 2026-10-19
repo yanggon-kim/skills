@@ -358,3 +358,21 @@ already said so, but the trailing habit survived because a one-system sentence l
 **Example** *(DAC example)*. "AttAcc runs batched FC layers on the xPU and attention on PIM~\cite{attacc}." →
 "AttAcc~\cite{attacc} runs batched FC layers on the xPU and attention on PIM."; "The mobile NPU reads x64 LPDDR5-6400 at
 42 GB/s, the 8 Gen 3's achieved fraction …" → "…, the achieved fraction of the Snapdragon 8 Gen 3~\cite{…} …".
+
+
+## Minimal captions
+
+**Rule.** A caption names what is drawn: the figure's subject, each panel's letter with its metric, and only the encoding
+the figure cannot show itself. Settings, workloads, explanations and findings go in the paragraph that cites the figure,
+printed once; what several figures share goes in the methodology, once. A caption fact printed nowhere else moves into
+the citing paragraph; it is never dropped. A table caption does not list the column headers.
+**Why.** The owner (2026-10-18) read the DAC draft's captions as "rather redundant as they are repeated with the related
+paragraph" and asked to "minimize the caption and express things at paragraph". All eight captions ran 37–75 words,
+and ten 5-word runs matched the prose. This overrides the reference papers' setup-carrying captions
+(`09` §G2, `05` §G3, `06` §B12). Full rule and check: `02_structure_and_figures.md` §3 F11;
+`scripts/check_prose.py --captions`.
+**Example** *(DAC example)*. "Mobile platform, PIM on LPDDR5-6400, INT8: (a) speculative-verify decode step of Llama-2-7B
+at L = 1024, tokens per second, with the Snapdragon 8 Gen 3 NPU; (b) GEMM throughput per logic mm², geometric mean over
+six FC shapes; …" → "Mobile platform: (a) decode-step speed; (b) GEMM, (c) attention-layer and (d) decode-step throughput
+per logic mm²." The workloads and the NPU stay in IV-A, which already printed them; the
+plotted points (Llama-2-7B, geometric means, L = 1024) move to IV-B's opening paragraph. Caption words 425 → 133.

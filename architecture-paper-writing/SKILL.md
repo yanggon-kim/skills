@@ -31,7 +31,7 @@ each is self-contained and ends with a worked example and a set of guard checks.
    trap described there before citing a page.
 4. **Write, then run the checks.** `python3 scripts/check_prose.py --system NAME file.tex`
    reports interrogatives, banned words, number density, own-system mentions and range forms; add `--cite`
-   for citation-placement suspects —
+   for citation-placement suspects and `--captions` for caption length and caption text repeated in the prose —
    the mechanical half of the guides' guards. It is a report, not a gate; read it, then apply the
    section's reader test by hand.
 5. **Apply the reader test.** Each section guide ends with one. They exist because prose that
@@ -53,7 +53,7 @@ each is self-contained and ends with a worked example and a set of guard checks.
 | Methodology and evaluation | `references/06_methodology_evaluation.md` | claim first, figure pointer second; a fact in a table is never repeated in prose; one headline number per subsection; both ends of every range | PACT'20 vision, SmartSAGE, Mesorasi |
 | Related work | `references/04_introduction.md` §A (the landscape moves) and `references/09_…` §D (how to print a rival's best case) | each rival's mechanism named, its own best number given, then the measured gap | SmartSAGE, LazyDP |
 | Conclusion | `references/07_conclusion.md` | five moves; claim → key idea → what was done → one number → outlook; no result clause; ~115 words | PACT'20 vision, Tensor Casting |
-| Figures, captions, colour | `references/02_structure_and_figures.md` §3; diagrams prototyped in HTML, then PDF (`10` §7) | luminance ramp for what exists, one tint for what you add, red only for small marks, four-spine charts, no hatches; a background concept gets a block diagram + command timeline (F8); a micro-architecture figure is a block diagram, never a flowchart (F9); fill the figure's rectangle — full-height side blocks, packed blocks, "…" arrays, text ≥ caption size (F10) | LazyDP Fig. 9(b) and Fig. 11; LoCaLUT Fig. 1, P3-LLM Fig. 7, GROW Fig. 8, TensorDIMM Fig. 6(a) (cited, not bundled) |
+| Figures, captions, colour | `references/02_structure_and_figures.md` §3; diagrams prototyped in HTML, then PDF (`10` §7) | luminance ramp for what exists, one tint for what you add, red only for small marks, four-spine charts, no hatches; a background concept gets a block diagram + command timeline (F8); a micro-architecture figure is a block diagram, never a flowchart (F9); fill the figure's rectangle — full-height side blocks, packed blocks, "…" arrays, text ≥ caption size (F10); a minimal caption names what is drawn, and the setting and finding go in the paragraph (F11) | LazyDP Fig. 9(b) and Fig. 11; LoCaLUT Fig. 1, P3-LLM Fig. 7, GROW Fig. 8, TensorDIMM Fig. 6(a) (cited, not bundled) |
 | The paper's spine (which section carries which claim) | `references/02_structure_and_figures.md` §1–2 and `references/00_reading_order.md` | L1–L7 | all five Set-A papers |
 | Citations — where the brackets go in a sentence | `references/12_citation_placement.md` | cite an entity at its name, a claim at the smallest clause expressing it; no trailing cluster on a multi-claim sentence | SmartSAGE, LazyDP (related-work landscapes) |
 | Any build, float, page-limit, number-bearing or structural edit; adding a reference | `references/10_production_and_verification.md` | the edit-class matrix; floats fixed by moving source blocks; every cited page must *print* the number | — |
@@ -103,6 +103,10 @@ list to hold in mind while drafting.
   the system in the same sentence.
 - **Numbers the figure carries are printed at their endpoints;** every figure citation names the thing to
   look at. Roles are stated positively — what a part does, never what it does not.
+- **Captions are minimal; the paragraph carries the content.** A caption names what is drawn (subject, panel
+  letters with their metrics, an encoding the legend lacks) in one or two lines; the setting, the explanation and
+  the finding are printed once, in the citing paragraph or the methodology. A caption fact printed nowhere else
+  moves into that paragraph. Full rule in `02_structure_and_figures.md` §3 F11; check with `--captions`.
 - **Citation scope is placement.** Cite an entity immediately after its name and a claim immediately after the
   smallest clause expressing it; split the references when one sentence carries two claims, and give each category
   or example in a landscape sentence its own group. A cluster at the end of a long sentence claims support for

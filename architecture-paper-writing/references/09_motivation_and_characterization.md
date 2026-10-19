@@ -409,7 +409,9 @@ fine-grained, not bandwidth-hungry*; Fig. 5 [CAL] proves *the share of the time*
 Fig. 6 [LazyDP] proves *the baseline sits at the ceiling*. A figure that would prove two claims is split into (a)/(b) panels with one sentence each
 ([CAL] Fig. 5a/5b, [PVF] Fig. 2's two groups).
 
-**G2. The caption carries the setup and the experimental delta; the finding stays in the prose.** The rule with its exceptions:
+**G2. The caption carries the setup and the experimental delta; the finding stays in the prose.** *Superseded by the house rule
+`02` §3 F11 (owner, 2026-10-18): the caption names what is drawn and the encoding the legend lacks; the setup, the delta and the
+finding all go in the paragraph.* What the reference papers do, kept as a record and not to be copied:
 - Setup-only captions (the majority): [M] Fig. 4: "Latency of five point cloud networks on the Pascal GPU on TX2. Results are averaged over
   100 executions, and the error bars denote one standard deviation." [SS] Fig. 5: "The LLC miss rate (left) and DRAM bandwidth utilization
   (right) during the neighbor sampling stage with baseline in-memory processing training using PyG. We utilize Linux perf (caching) and Intel RDT
@@ -422,7 +424,7 @@ Fig. 6 [LazyDP] proves *the baseline sits at the ceiling*. A figure that would p
 - **Exception 2 — the figure has exactly one point to make and the text makes it too:** [LazyDP] Fig. 6: "As depicted, our implementation of
   noise sampling (corresponding to the data point at N=101) exhibits a compute-bound behavior and reaches 81% of the maximum AVX performance."
   [M] Fig. 12: "Both absolute (left y-axis) and relative (right y-axis) aggregation times increase with delayed-aggregation."
-- **Test:** if the caption states a finding, the same finding is in the prose, and the number is one of the section's own; a caption is never the only
+- **Test** (house): a caption states no finding and no setting the prose prints; a caption is never the only
   place a number appears — except a definitional byte size in a schematic's caption (a standing house exception).
 
 **G3. Every number a caption prints is a generator number.** A house rule, not the references': a caption value must live in the figure

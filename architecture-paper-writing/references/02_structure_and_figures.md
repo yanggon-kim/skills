@@ -340,6 +340,38 @@ rectangle.
   set just above the short arrows), and the freed 17 pt went to the content — channel box 106 → 114 pt, the
   enlarged bank-and-PU panel 84 → 93 pt — with the canvas width unchanged.
 
+### F11. Minimal captions: the caption names what is drawn, the paragraph says the rest (owner, 2026-10-18)
+A caption that repeats its paragraph spends page space twice on one fact, and in a six-page venue that space is
+a paragraph's worth of argument. The owner found every caption of the DAC draft restating the setting, the
+workload or the finding of the paragraph that cites it, and set the house rule:
+- **A caption holds** the figure's subject, each panel's letter with its metric or subject, and only the
+  encoding the reader cannot decode from the figure itself (a tint, a mark, a thin bar) when no legend shows it.
+  Aim at one or two lines; 30 words is the flag.
+- **The paragraph holds** the setting (platform, precision, workload, context length, the normalization), the
+  explanation of what each part does, and the finding. The methodology holds what several figures share, once;
+  the caption does not repeat it, and need not point to it.
+- **Never a finding in a caption.** "A command paces each MAC of the prior designs" is the paragraph's sentence;
+  the caption says "MAC beats of four designs over one weight column".
+- **Move, don't drop.** When a caption fact is printed nowhere else and the reader needs it to read the figure
+  (a quantization dip at non-power-of-two points, a time-weighting, a column-fetch term added to every row),
+  move it into the first paragraph that cites the figure, at the clause where the reader needs it. The promise
+  check of `10` applies to captions too.
+- **A table's caption** names the table; its column headers name the columns, so the caption does not list them.
+- **This overrides** the reference papers' setup-carrying captions (`09` §G2, `05` §G3, `06` §B12 and §E):
+  they show what passed review; the house rule is the owner's.
+- **Check:** `scripts/check_prose.py --captions` reports each caption's words and every 5-word run it shares
+  with the prose. Pipe the sections together, because a figure and its citing paragraph often sit in different
+  files: `cat sections/*.tex | python3 scripts/check_prose.py - --captions`.
+- **DAC CoDe example** *(before the trim)*: the mobile-evaluation caption ran 75 words and repeated "six FC
+  shapes", "three head configurations at L = 1024" and "the Snapdragon 8 Gen 3 NPU" from IV-A; the timeline
+  caption ended on the paragraph's finding ("A command paces each MAC of stock AiM, LP-Spec-style and
+  P3-LLM-style; the PU clock paces each MAC of CoDe"); the DRAM caption repeated II-B's "16 banks in four bank
+  groups". All eight captions were over 30 words, and ten 5-word runs matched the prose. After (DAC 27ef005): 425 → 133
+  caption words; e.g. "Mobile platform: (a) decode-step speed; (b) GEMM, (c) attention-layer and (d) decode-step
+  throughput per logic mm²." and "One weight column of one bank in four designs; lanes show DRAM commands (cmd),
+  column reads (bank) and MAC beats (PU)." The facts printed nowhere else (the M = 2^k points, the
+  time-weighting, the column-fetch power) moved into the citing paragraphs; the body gained 148 words and lost a page.
+
 ---
 
 ## Worked example (SPLEX, ASPLOS submission)

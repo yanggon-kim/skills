@@ -145,8 +145,8 @@ each; [TC] / [SS] / [LazyDP] ≈ 22–26 words with the justification folded int
 
 1. **One definition sentence replaces a paragraph** — [PVF]'s three frame types are three sentences.
 2. **Coin the term once** ("henceforth referred to as T.Casted" [TC], "aggregated noise sampling (ANS)" [LazyDP]) and never re-explain.
-3. **Captions carry parameters**: [TC]'s Table I holds every memory parameter so no sentence lists them; [M]'s Fig. 14 caption holds the
-   banking rationale and the body only names the structure.
+3. **Tables carry parameters; captions stay minimal**: [TC]'s Table I holds every memory parameter so no sentence lists them. [M]'s
+   Fig. 14 caption holds the banking rationale, which the house rule moves to the paragraph (`02` §3 F11, owner 2026-10-18).
 4. **Pseudo-code carries the policy; prose names it by line**: [LazyDP] "Line 1-2 introduces the HistoryTable", "Line 3-5 introduces
    the InputQueue", "Line 6-27 explains the key operations undertaken during the main training loop."; [PVF] "Algorithm 1 describes
    the pseudo-code."

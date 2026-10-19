@@ -73,8 +73,8 @@ grepped in the PDF text before it was printed here.
     attributed to optimizing the MLPs in feature computation."; [SS] "Overall, the evaluation in this section highlights the effectiveness
     of SmartSAGE's software/hardware co-design"; [TC] "highlighting the robustness of Tensor Casting."
 11. **"Note that" carries the fairness caveat.** [TC] "Note that Tensor Casting does not change the algorithmic nature of SGD training".
-12. **Captions carry the experimental delta.** [SS] Fig. 16: "Results assume 12 concurrent workers as performance is at its highest with 12
-    workers, for both baseline and SmartSAGE."
+12. **The experimental delta goes in the paragraph, not the caption** (house rule, `02` §3 F11, owner 2026-10-18). [SS] Fig. 16 puts
+    it in the caption ("Results assume 12 concurrent workers …"); the house version is a clause in the paragraph that cites the figure.
 13. **A no-effect result is one sentence without a figure; an omitted study is announced.** [SS] "Results showed that the chosen
     mini-batch size have little effect on SmartSAGE's achieved speedup."; [SS] "omit the results due to space constraints"; [TC] "We omit
     the results for brevity."; [M] "Due to the page limit".
@@ -113,8 +113,8 @@ ends on what the number means, not on the number. No metaphor, no adverb of degr
 
 ## E. Compression habits (how 2,300 words become 640)
 
-One paragraph per figure, one sentence per panel [PVF]; range + average instead of a per-benchmark list [TC]; the caption carries the
-setup delta, so the prose does not [SS Fig. 16]; one causal clause per number [M]; small topics merged under run-in heads inside one
+One paragraph per figure, one sentence per panel [PVF]; range + average instead of a per-benchmark list [TC]; the setup delta is a clause in the
+prose and the caption names only what is drawn (`02` §3 F11); one causal clause per number [M]; small topics merged under run-in heads inside one
 subsection ([TC] §VI-C "Design overheads. / Energy-efficiency. / NMP utilization."; [PVF] §6.1 four one-sentence overheads); the
 configuration in the table and one number in prose [TC]; a no-effect result in one sentence [SS]; "we omit … for brevity" [TC];
 forward-tags in §Method so §Eval never re-introduces a baseline [SS]; overhead / accuracy first, so the benefit paragraphs stay pure
