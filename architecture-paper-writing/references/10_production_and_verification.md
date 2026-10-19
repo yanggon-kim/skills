@@ -81,6 +81,11 @@ thirty-six lines of bookkeeping because every gate was applied uniformly.
   float move cannot change how much text a column holds except by its own height, so it over-corrects — unless the float
   leaves for the *other column of the same page*, which buys whole lines without touching prose. Report where the residual
   went and how big it is; "the white is gone" is only true of where the reader was looking.
+- **One float per spot** (owner, 2026-10-19; full rule `02` §3 F12): two floats never share a column of one page, and
+  floats spread across pages as far as the layout allows — one figure per page first, opposite columns of one page next.
+  The levers are the ones above: move the source block (a column later, or past the page break), never shrink a figure
+  or add `\vspace`. After every build, list the float map (float → page, column, top/bottom) and check that no column
+  holds two floats.
 - A float may legitimately precede its first reference when the author placed it so; report the separation, do not fix it.
 - The formatting rule: no `\vspace`, no space squeezing, figure text at 8 pt or larger. These are the things a venue's
   format check rejects, and squeezed space is the first thing a reviewer's eye catches.

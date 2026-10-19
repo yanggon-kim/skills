@@ -376,3 +376,15 @@ at L = 1024, tokens per second, with the Snapdragon 8 Gen 3 NPU; (b) GEMM throug
 six FC shapes; …" → "Mobile platform: (a) decode-step speed; (b) GEMM, (c) attention-layer and (d) decode-step throughput
 per logic mm²." The workloads and the NPU stay in IV-A, which already printed them; the
 plotted points (Llama-2-7B, geometric means, L = 1024) move to IV-B's opening paragraph. Caption words 425 → 133.
+
+
+## One float per spot
+
+**Rule.** Two floats never share a column of one page. Spread the floats across pages as far as the layout allows: one
+figure per page first, opposite columns of one page next, and each float on the page that first cites it or the next.
+Move source blocks to get there; never shrink a figure or add space.
+**Why.** The owner (2026-10-19): "we don't put two different figures in the same spot. we want to separate them in
+different pages as much as possible." Two stacked figures read as one block and push the text that cites them away.
+Full rule: `02_structure_and_figures.md` §3 F12; mechanics `10` §3.
+**Example** *(DAC example)*. Fig. 2 (roofline) moved to p. 2; Fig. 4 (stock-command breakdown) moved from the left to
+the right column of its page.

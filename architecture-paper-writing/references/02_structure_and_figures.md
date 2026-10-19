@@ -372,6 +372,23 @@ workload or the finding of the paragraph that cites it, and set the house rule:
   column reads (bank) and MAC beats (PU)." The facts printed nowhere else (the M = 2^k points, the
   time-weighting, the column-fetch power) moved into the citing paragraphs; the body gained 148 words and lost a page.
 
+### F12. One float per spot: spread the floats across pages (owner, 2026-10-19)
+Two figures stacked in one column, or one under the other at the top of a page, read as one block: the eye cannot
+tell where one ends, and the column's text is pushed a screen away from both. The owner's rule:
+- **At most one float per column of a page.** Never two figures (or a figure and a table) in the same column.
+- **Spread them across pages as far as the layout allows:** one figure per page first; when a page must carry two,
+  they sit in opposite columns.
+- **Each float stays on the page that first cites it or the next**, so spreading never parks a figure pages away
+  from its text.
+- **How:** move the float's source block (`10` §3), a column or a page later; never shrink a figure, never `\vspace`.
+  A `figure*` takes a page's top across both columns, so no column float shares that page's top.
+- **Check:** after every build list the float map (float → page, column, top/bottom); a column with two entries fails.
+- **DAC CoDe example** (e8bff31): before, Fig. 2 sat under Fig. 1 (p. 1 right), Fig. 4 under Fig. 3 (p. 3 left) and
+  Table I under the full-width Fig. 6 (p. 5 left). After, by source moves only: p. 1 R Fig. 1; p. 2 L Fig. 2; p. 3 L
+  Fig. 3, R Fig. 4; p. 4 L Fig. 5, R Table I; p. 5 Fig. 6 alone; p. 6 L Fig. 7. With 8 floats in 6 pages, two pages
+  must carry two floats, and they sit in opposite columns. The split floats cost 2 lines of spacing, won back by
+  cutting two redundant phrases (`10` §3: pay for a float move with a source move or a redundancy cut, never space).
+
 ---
 
 ## Worked example (SPLEX, ASPLOS submission)
