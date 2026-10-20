@@ -9,7 +9,8 @@ A figure is drawn in a small vocabulary (references/html-prototype.md): <rect>, 
   fills    f-paper f-sheet f-white | f-idle | f-ink | f-accent | f-tint | f-c2 (alias f-teal) |
            f-c3 (alias f-mustard) | f-pencil | f-none
   strokes  s-ink | s-pencil | s-accent | s-c2 (s-teal) | s-c3 (s-mustard); "thick", "dashed"; "grid" on a
-           <line> marks a gridline (record key grid: true), which deck_lib.js drawFig cuts where it meets a label
+           <line> marks a gridline (record key grid: true), which the build cuts where it meets a label
+           (scripts/crossings.js; a polyline's segments carry poly: [index, segments, arrowhead] for that pass)
   text     t-label | t-mono | t-head | t-accent | t-onbar   (optional font-size="N" overrides the size)
   state    "off" hides an element in one storyboard frame; <g class="hot"> / <g class="pend"> mark a
            highlighted / still-to-come group; data-key="k" names an element across frames.
@@ -140,7 +141,9 @@ def parse_svg(svgtext, timeline=False):
                 nm = name if n == 1 or name is None else f"{name}.{i}"
                 shapes.append(dict(t="line", x1=x1 + dx, y1=y1 + dy, x2=x2 + dx, y2=y2 + dy, stroke=stroke or "black",
                                    sw=sw or 1.5, dash=dashed, arrow=arrow and i == n - 1, name=nm,
-                                   **({"grid": True} if "grid" in cls else {})))  # a gridline: drawFig cuts it at labels
+                                   **({"grid": True} if "grid" in cls else {}),  # a gridline: cut at labels (crossings.js)
+                                   # a polyline segment: [index, segments, arrowhead], so crossings.js tells a curve from a leader
+                                   **({"poly": [i, n, int(arrow)]} if tag == "polyline" else {})))
         else:
             raise Unmapped(f"element <{tag}> (supported: rect, circle, ellipse, line, polyline, text, g)")
 

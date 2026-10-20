@@ -46,7 +46,8 @@ python3 $SK/examples/p3llm/build_p3llm_intro.py p3llm-intro.html                
 - The author's own reading carries the deck's tag on the slide and in the notes; schematic drawings say
   so in the notes. The audit marks these rows "our reading".
 - Labels clear of lines, with no QA warning left: chart gridlines carry the class `grid` and are cut at
-  their labels (slides 32, 39, 53–55); the timing frames' rule markers start at the lane of the command
+  their labels by the build's crossing pass (slides 32, 39, 53–55: 15 cuts, logged in
+  `WORK/p3llm-intro.crossings.json`; the pass changes nothing else in this deck); the timing frames' rule markers start at the lane of the command
   they mark and stop at the time axis (11–16, the same keys on every frame); a moved label clears the
   roofline's operator guide (32) and the PCU's zoom leader (40). The perplexity dot plot (39) is drawn
   at about 2.4 : 1 with one legend line, 41.6 % empty against the 42 % threshold.

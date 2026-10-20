@@ -59,40 +59,12 @@ const NUMBERED = ["DIVIDER", "CONTENT", "FRAME"]; // raw layouts whose slides sh
 const PRELIM_TAG = "Preliminary note · presenter's primer, not the paper";
 const PRELIM_BOX = { x: 4.2, y: 0.04, w: R - 4.2, h: 0.17 };
 
-/* Gridline knockout. A line the prototype draws with the class "grid" (a chart gridline or reference line) is cut
-   where it would run through a label: the gap is the label's text box at its final, floor-raised size (0.6 em per
-   character plus 0.3 em each side, 0.6 em above and below its middle), so the label reads on a clear background and
-   QA `lines` stays clean. gridPieces returns the kept parts of the line as [t0, t1] fractions; parts shorter than
-   2 SVG units are dropped. drawFig applies it on figure slides only: on storyboard frames the pieces would differ
-   from frame to frame and break Morph's pairing, so a storyboard keeps its labels off its gridlines in the drawing. */
-function labelBoxes(shapes, s) {
-  return shapes.filter((t) => t.t === "text").map((t) => {
-    const fsE = Math.max(MIN_PT, t.size * s * 72) / (s * 72), w = t.s.length * fsE * 0.6 + fsE * 0.6;
-    const x = t.anchor === "middle" ? t.x - w / 2 : t.anchor === "end" ? t.x - w : t.x - fsE * 0.3;
-    const yc = t.y - t.size * 0.33;
-    return [x, yc - fsE * 0.6, x + w, yc + fsE * 0.6];
-  });
-}
-function segInRect(x1, y1, x2, y2, r) { // Liang-Barsky: the [t0, t1] part of the segment inside r, or null
-  const dx = x2 - x1, dy = y2 - y1;
-  let t0 = 0, t1 = 1;
-  for (const [p, q] of [[-dx, x1 - r[0]], [dx, r[2] - x1], [-dy, y1 - r[1]], [dy, r[3] - y1]]) {
-    if (p === 0) { if (q < 0) return null; continue; }
-    const t = q / p;
-    if (p < 0) t0 = Math.max(t0, t); else t1 = Math.min(t1, t);
-    if (t0 > t1) return null;
-  }
-  return [t0, t1];
-}
-function gridPieces(sh, boxes) {
-  let iv = [[0, 1]];
-  for (const r of boxes) {
-    const hit = segInRect(sh.x1, sh.y1, sh.x2, sh.y2, r);
-    if (hit) iv = iv.flatMap(([a, b]) => [[a, Math.min(b, hit[0])], [Math.max(a, hit[1]), b]]);
-  }
-  const len = Math.hypot(sh.x2 - sh.x1, sh.y2 - sh.y1);
-  return iv.filter(([a, b]) => (b - a) * len >= 2);
-}
+/* Label crossings (crossings.js): every figure passes through fixFrames before it is drawn, so no gridline, rule,
+   leader or curve runs through a label (cut, trimmed, label nudged, or a knockout behind it, in that order of
+   preference). Storyboards are fixed over all their frames at once, the same fix on every frame. Each change is
+   logged with its slide; write() saves the log as WORK/<name>.crossings.json and its count in the sidecar. */
+const XING = require(path.join(__dirname, "crossings.js"));
+const { labelBoxes, gridPieces } = XING;
 
 function loadPptxgen(work) {
   const nm = path.join(work, "node_modules");
@@ -163,6 +135,7 @@ function createDeck(opts = {}) {
 
   const NOTES = []; // [slide no, kind, words of the spoken notes] for the build report
   const FIGPT = []; // [slide no, figure, scaled pt, set pt] for every figure text
+  const XLOG = []; // label-crossing fixes: {slide, figure, element, action, label, detail}
   let SLIDE_NO = 0;
 
   /* o.preliminary: this section is the Preliminary Note (the presenter's primer, not the paper). */
@@ -205,8 +178,15 @@ function createDeck(opts = {}) {
   }
 
   /* Draw one parsed SVG figure into `box` (inches). morph: name keyed elements "!!key" and the static ones
-     "!!u<n>", so Morph can pair every element across the frame slides of a storyboard. Gridlines (class "grid")
-     are cut at labels on figure slides (gridPieces); a cut part k > 0 is named "<name>.<k>". */
+     "!!u<n>", so Morph can pair every element across the frame slides of a storyboard. Label crossings are fixed
+     first (crossings.js fixFrames; opt.fixed: the caller already did, as storySlides does over all frames); a cut
+     line's part k > 0 is named "<name>.<k>", a knockout "<label>.ko". */
+  const figScale = (fig, box) => { const bb = fig.bb || fig.vb; return Math.min(box.w / bb[2], box.h / bb[3]); };
+  function fixCrossings(frames, s, id, slides) {
+    const r = XING.fixFrames(frames, s, { text: rc });
+    for (const e of r.log) XLOG.push({ slide: slides, figure: id, ...e });
+    return r.frames;
+  }
   function drawFig(slide, fig, box, opt = {}) {
     const [vx, vy, vw, vh] = fig.bb || fig.vb; // the content bounds, so the figure fills the box
     const s = Math.min(box.w / vw, box.h / vh);
@@ -216,13 +196,13 @@ function createDeck(opts = {}) {
     let un = 0;
     const id = opt.id || "fig";
     const filled = []; // filled shapes drawn so far, to pick the text colour on top of them
-    const boxes = opt.morph || fig.image ? [] : labelBoxes(fig.shapes, s);
     if (fig.image) { // an embedded picture (a figure outside the shape vocabulary)
       slide.addImage({ data: fig.image, x: r2(ox), y: r2(oy), w: r2(vw * s), h: r2(vh * s), objectName: `${id}:image` });
       return { x: ox, y: oy, w: vw * s, h: vh * s, scale: s };
     }
-    for (const sh of fig.shapes) {
-      const base = sh.name ? sh.name : `u${un++}`;
+    const shapes = opt.fixed ? fig.shapes : fixCrossings([fig], s, id, `${SLIDE_NO}`)[0];
+    for (const sh of shapes) {
+      const base = sh._id || (sh.name ? sh.name : `u${un++}`);
       const objectName = opt.morph ? `!!${base}` : `${id}:${base}`;
       if (sh.t === "rect" || sh.t === "circle" || sh.t === "ellipse") {
         const o = { objectName };
@@ -241,7 +221,7 @@ function createDeck(opts = {}) {
         slide.addShape(sh.t === "rect" ? pres.shapes.RECTANGLE : pres.shapes.OVAL, o);
         if (sh.fill) filled.push({ ...b, fill: sh.fill });
       } else if (sh.t === "line") {
-        const parts = sh.grid && boxes.length ? gridPieces(sh, boxes) : [[0, 1]];
+        const parts = sh.parts || [[0, 1]], tEnd = sh.tEnd ?? 1; // kept parts after cuts and trims (crossings.js)
         parts.forEach(([a, b], k) => {
           const x1 = X(sh.x1 + (sh.x2 - sh.x1) * a), y1 = Y(sh.y1 + (sh.y2 - sh.y1) * a);
           const x2 = X(sh.x1 + (sh.x2 - sh.x1) * b), y2 = Y(sh.y1 + (sh.y2 - sh.y1) * b);
@@ -250,7 +230,7 @@ function createDeck(opts = {}) {
             x: r2(Math.min(x1, x2)), y: r2(Math.min(y1, y2)), w: r2(Math.abs(x2 - x1)), h: r2(Math.abs(y2 - y1)),
             flipH: x2 < x1, flipV: y2 < y1,
             line: { color: COL[sh.stroke], width: pt(sh.sw * s * 72), ...(sh.dash ? { dashType: "dash" } : {}),
-              ...(sh.arrow && b === 1 ? { endArrowType: "triangle" } : {}) },
+              ...(sh.arrow && b === tEnd ? { endArrowType: "triangle" } : {}) },
           });
         });
       } else if (sh.t === "text") {
@@ -376,6 +356,8 @@ function createDeck(opts = {}) {
   function storySlides(sectionTitle, o) {
     const st = o.story;
     const n = st.frames.length;
+    // label crossings, decided over every frame and applied alike, so Morph keeps its names and counts
+    const fixed = fixCrossings(st.frames, figScale(st.frames[0], FAREA), o.id, `${SLIDE_NO + 1}-${SLIDE_NO + n}`);
     st.frames.forEach((f, i) => {
       const sl = newSlide("FRAME", sectionTitle, i === 0 ? "frame-first" : "frame", { appendix: o.appendix });
       sl._morph = i > 0;
@@ -391,7 +373,7 @@ function createDeck(opts = {}) {
       ], { x: FCOL.x, y: FSTEP.y, w: FCOL.w, h: FSTEP.h, margin: 0, valign: "top", isTextBox: true, objectName: "!!steplabel" });
       const cap = (o.captions && o.captions[i]) || f.caption;
       sl.addText(paras([rc(cap)]), { placeholder: "stepcaption" });
-      drawFig(sl, f, FAREA, { id: o.id, morph: true, center: true, middle: true });
+      drawFig(sl, { ...f, shapes: fixed[i] }, FAREA, { id: o.id, morph: true, center: true, middle: true, fixed: true });
       notes(sl, o.notes[i], o.caption);
     });
   }
@@ -462,7 +444,10 @@ function createDeck(opts = {}) {
     const RAW = path.join(work, `${base}.raw.pptx`), META = path.join(work, `${base}.meta.json`);
     await pres.writeFile({ fileName: RAW });
     const notesWords = Object.fromEntries(NOTES.map(([n, , w]) => [n, w]));
+    const XFILE = path.join(work, `${base}.crossings.json`); // every label-crossing fix, for the author to review
+    fs.writeFileSync(XFILE, "[\n" + XLOG.map((e) => JSON.stringify(e)).join(",\n") + "\n]\n");
     fs.writeFileSync(META, JSON.stringify({ ...META_DOC, paper: PAPER, geometry: GEOM, qa: QA,
+      crossings: { log: XFILE, changes: XLOG.length, unresolved: XLOG.filter((e) => e.action === "unresolved").length },
       slides: pres._slides.map((s) => ({ layout: s._master, kind: s._kind, section: s._section, morph: !!s._morph,
         appendix: !!s._appendix, preliminary: !!s._prelim, slideNumber: NUMBERED.includes(s._master), notesWords: notesWords[s._no] || 0 })) }, null, 1));
     const py = path.join(work, "venv", "bin", "python");
@@ -480,6 +465,10 @@ function createDeck(opts = {}) {
     }
     const raised = Object.entries(lift).filter(([, v]) => v < MIN_PT).map(([k, v]) => `${k} ${v.toFixed(1)}`);
     console.log(`figure text raised to ${MIN_PT} pt (slide:figure smallest scaled pt):`, raised.join(", ") || "none");
+    const byAct = {};
+    for (const e of XLOG) byAct[e.action] = (byAct[e.action] || 0) + 1;
+    console.log(`label crossings fixed before QA: ${XLOG.length}` + (XLOG.length ? ` (${Object.entries(byAct).map(([k, v]) => `${k} ${v}`).join(", ")}); log ${XFILE}` : ""));
+    for (const e of XLOG.filter((x) => x.action === "unresolved")) console.log(`WARN unresolved crossing s${e.slide} ${e.figure}: ${e.label} ${e.detail}`);
     return { raw: RAW, meta: META, out, slides: SLIDE_NO };
   }
 
@@ -490,4 +479,4 @@ function createDeck(opts = {}) {
   };
 }
 
-module.exports = { createDeck, labelBoxes, gridPieces, GEOM, M, R, CW, F, K, AREA, BAND, FAREA, FCOL, TITLE_PT, TEXT_PT, LABEL_PT, PRELIM_TAG };
+module.exports = { createDeck, labelBoxes, gridPieces, fixFrames: XING.fixFrames, GEOM, M, R, CW, F, K, AREA, BAND, FAREA, FCOL, TITLE_PT, TEXT_PT, LABEL_PT, PRELIM_TAG };

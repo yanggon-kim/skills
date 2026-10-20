@@ -2,6 +2,7 @@
 
 ## Contents
 - The pipeline
+- Label crossings: fixed in the build, before QA
 - Geometry (inches on 10 × 5.625)
 - Type floors and sizes
 - How a figure is placed
@@ -15,10 +16,13 @@
 
 ```
 talk.html ──html_to_spec.py──> talk.spec.json ──build_deck.js (deck_lib.js)──> WORK/talk.raw.pptx + WORK/talk.meta.json
-          (lint, SVG -> shapes,                   (one geometry, palette,                │
-           outline/dividers/appendix index)        type floors; Morph flags)             └─transplant.py──> talk.pptx
+          (lint, SVG -> shapes,                   (one geometry, palette,                │   + WORK/talk.crossings.json
+           outline/dividers/appendix index,        type floors; Morph flags;             └─transplant.py──> talk.pptx
+           FIX report of label crossings)          crossings.js on every figure)
 talk.pptx ──deck_qa.py (+ meta)──> PASS/FAIL     ──validate_deck.py──> schema check     ──render.py──> PDF + JPGs
 ```
+The order is build → crossing fix → QA: the fix runs inside the build (`drawFig` and `storySlides` call
+`crossings.js` before any shape is written), so QA checks a deck whose labels are already clear.
 - **Why two decks.** pptxgenjs writes clean slides but cannot open a template; python-pptx opens the
   template but is clumsy for drawing. So pptxgenjs writes a raw deck at the template's size using only
   theme colours and theme fonts, and `transplant.py` re-creates every slide on the template's layouts,
@@ -27,6 +31,53 @@ talk.pptx ──deck_qa.py (+ meta)──> PASS/FAIL     ──validate_deck.py�
   appendix flag, slide-number flag, notes word count; the shared geometry; QA settings (table floors,
   restricted phrases, extra tag patterns, footer words). `deck_qa.py` needs it for the geometry, Morph,
   structure and table-floor checks.
+
+## Label crossings: fixed in the build, before QA
+
+**Rule.** No line (gridline, rule marker, connector, leader, data curve) may run through a label's drawn
+extent. **Why:** a crossed label is hard to read, and it is the most common QA warning a figure produces;
+found after the build, each one cost a hand re-draw, and a fix made by editing the .pptx is lost at the next
+build and invisible to QA. So the build fixes crossings itself and QA's `lines` check is only the final guard.
+
+**Where.** `scripts/crossings.js` (`fixFrames`), called by `deck_lib.js` for every figure: `drawFig` on figure
+slides (`figSlide`, figure + stats, a hand-written builder's `drawFig`), `storySlides` once per storyboard over
+all its frames. It works in SVG units at the deck's scale: each label is measured at its final size (raised to
+the 12 pt floor, rounded to 0.5 pt) with Liberation Sans widths, the metrics `deck_qa.py` measures with, so what
+the pass clears QA also finds clear.
+
+**What it does, in this order of preference.**
+1. **Cut** gridlines and other non-data lines around the label: a `<line class="grid">` wherever it meets a
+   label's clear box (the label's ink plus 0.15 em, joined with the older 0.6-em-per-character box), and an
+   unclassed *rule* (an axis-parallel line without an arrowhead, not part of a polyline, spanning at least 30 %
+   of the figure along its axis) where it runs through a label. Pieces under 2 SVG units are dropped; piece
+   k > 0 is named `<name>.<k>`.
+2. **Trim** a leader or connector (a `<line>`, a polyline of up to three points, any line with an
+   arrowhead) whose end lies within 1 em of the label it crosses: the end moves to 0.15 em before the label's
+   padded ink, the arrowhead with it. A trim that would leave less than 0.5 em of line becomes a nudge.
+3. **Nudge** a label that sits on a data line or curve (a polyline of four or more points without an
+   arrowhead), or on a line that cannot be trimmed: the nearest of the candidate moves (0.25 em steps up to
+   3 em, in eight directions, the shortest first) that keeps the label clear of every line, off every other
+   label, inside the figure's crop, inside (or outside) the same boxes as before, and nearer the line it sat
+   on than any other line, so it still names that line.
+4. **Knockout** when no move qualifies: a rectangle in the slide's background colour (`lt1`) behind the
+   label, drawn with the label above the lines, named `<label>.ko`. `deck_qa.py` does not count a line drawn
+   below a knockout that covers the label.
+
+**Storyboards.** Elements are identified across frames by `data-key`, or by their order among the unkeyed
+elements (Morph pairs those by order, as `!!u<n>`). Each fix is decided over all frames and applied
+identically on every frame: one move per label, one trim and one set of cuts per line, a knockout on every
+frame that shows the label. Morph's names, counts and positions therefore stay consistent (QA `morph`).
+
+**Log.** Every change goes to `WORK/<name>.crossings.json`, one line per change: slide (a storyboard gives
+its slide range), figure id, element, action (`cut`, `trim end`, `trim start`, `nudge` with dx / dy in inches
+and SVG units, `knockout`, or `unresolved` when a crossing survives), the label and a sentence. The build
+prints the count by action; the sidecar records the count and the log path, and QA prints them.
+
+**The prototype.** The HTML is not rewritten: `html_to_spec.py` runs the same pass (node `crossings.js
+--report`) at the deck's scale and prints each fix as a `FIX` line, with a nudge in SVG units, so the author
+can carry it into the prototype; once carried over, the pass finds nothing and page and deck agree. One
+implementation decides both. A second pass in the browser would measure labels at the preview's size
+without the 12 pt raise and would move them differently from the deck.
 
 ## Geometry (inches on 10 × 5.625)
 
@@ -115,13 +166,11 @@ Look at every slide and fix in the prototype, in this order:
 3. **White space** (a figure that fills little of its area; QA `whitespace`): change the figure's
    proportions (stack panels vertically or side by side to match ~2.65 : 1), enlarge elements, bring
    legends inside.
-4. **Labels clear of lines** (QA `lines`, `edges`): a label sits beside a curve, between gridlines or past
-   their end, never on them; an arrow ends short of the text it points at; a label fits inside its box.
-   Gridlines and reference lines get the class `grid`: on a figure slide `drawFig` cuts them where they meet
-   a label (`gridPieces` in `deck_lib.js`: the label's box at its final, floor-raised size plus 0.3 em), so
-   value labels may sit across them. Data lines, curves and leaders never get `grid`: move the label or
-   re-route the leader. Storyboard frames are not cut (the pieces would break Morph's pairing): keep their
-   labels off their gridlines in the drawing, e.g. stop timing markers at the axis above the tick numbers.
+4. **Labels clear of lines** (the crossing log; QA `lines`, `edges`): the build has already cut, trimmed,
+   nudged or knocked out every crossing (above). Read its log: draw a nudged label where the pass put it, give
+   a cut rule the class `grid` (the page then knocks it out too), and redraw any spot that needed a knockout,
+   which reads worse than a label beside its line. Data lines, curves and leaders never get `grid`. A label
+   must also fit inside its box (`edges`).
 5. **Highlight**: exactly one gold element per slide or frame, on the thing the title talks about.
 6. Rebuild, re-run QA and re-render; repeat until both are clean.
 
@@ -138,7 +187,7 @@ Look at every slide and fix in the prototype, in this order:
 | structure | title not first, a point list or badge on the title slide, outline not second or not opening the Summary section, slide 3 not the summary slide or its title not starting "Summary", a later part without a divider, closing count ≠ 1, appendix misplaced | reorder the prototype; add the summary slide; move title-slide points to the summary slide |
 | fit | a title over one line, a text box too small for its text (an all-caps style, such as the divider kicker, measured in capitals), a table below the area | shorten, split, or move to the appendix |
 | overlap | two texts overlap (each text's ink: measured width placed by its alignment, lines placed by the anchor, trimmed to the glyphs, so empty box padding never counts) | move or shorten one label; a label raised to 12 pt needs more room |
-| lines (WARN) | a line or connector passes through a text's ink: gridlines, arrows, curves over labels | mark gridlines `grid` (cut at labels); put the label beside the curve or leader, or past its end; end the arrow short of the text |
+| lines (WARN) | a line or connector passes through a text's ink and is not under the label's knockout; after the build's crossing pass this is the final guard, so a WARN means the pass logged it "unresolved" | move the label or the line in the prototype; mark a gridline `grid` |
 | edges (WARN) | a text mostly inside a drawn shape runs out over its edge | shorten the label or widen the box |
 | whitespace (WARN) | the share of the area farther than 0.25 in from every element (shape, text ink, line) is above 25 % on a table slide or 42 % on a figure slide or storyboard frame | the figure's proportions, the table's rows (re-layout step 3) |
 
@@ -146,7 +195,8 @@ WARN does not change the exit status; look at each in the render and fix it or a
 whitespace thresholds are calibrated on the approved reference deck (`assets/reference/`): its frames
 reach 40 %, its figure slides 41.6 % (slide 39, a dot plot redrawn at 2.4 : 1 after it sat at 49.5 % as a
 tall 1.9 : 1 plot), its tables 3.1 %. It passes every check with no warnings: its 33 gridline crossings
-went with `grid` cuts (charts), markers stopped at the axis (timing frames) and moved labels.
+went with `grid` cuts (charts; the crossing pass logs them as 15 cut lines), markers stopped at the axis
+(timing frames) and moved labels.
 
 ## Writing a builder by hand
 

@@ -81,24 +81,31 @@ package check; plain `soffice`).
 ## Mode 2: translate the prototype into the deck
 
 ```bash
-$PY $SK/scripts/html_to_spec.py talk.html talk.spec.json --work WORK     # lint + spec (exit 1 on ERROR)
-node $SK/scripts/build_deck.js talk.spec.json talk.pptx --work WORK       # raw deck -> transplant onto the template
+$PY $SK/scripts/html_to_spec.py talk.html talk.spec.json --work WORK     # lint + spec (exit 1 on ERROR); FIX lines
+node $SK/scripts/build_deck.js talk.spec.json talk.pptx --work WORK       # shapes -> crossing fix -> raw deck -> template
 $PY $SK/scripts/deck_qa.py talk.pptx WORK/talk.meta.json                  # footer … fit, overlap; WARN lines, edges, whitespace
 $PY $SK/scripts/validate_deck.py talk.pptx                                # package / schema validation
 python3 $SK/scripts/render.py talk.pptx --out render                      # PDF + one JPG per slide
 $PY $SK/scripts/audit_skeleton.py talk.pptx talk-audit.md --source "..."  # start the fact audit
 ```
-1. Every QA check must PASS. A FAIL names the slide; fix it **in the prototype** (shorten, split, re-draw),
+1. **Fix label crossings, then QA** (rule 13). The build does the first part by itself: `build_deck.js`
+   (through `deck_lib.js`, as a hand-written builder does) runs every figure through `scripts/crossings.js`
+   before drawing it, so no gridline, rule, leader or curve runs through a label; it prints the count and
+   logs every change (slide, element, action) in `WORK/talk.crossings.json`. Read the log: a nudged label
+   or a knockout is a hint to redraw that spot in the prototype (the lint's `FIX` lines say where).
+2. Every QA check must PASS. A FAIL names the slide; fix it **in the prototype** (shorten, split, re-draw),
    never in the .pptx, and re-run. The fixes for each failure are in references/translation-layout.md.
-   Clear every WARN too (a line through a label, a label over its box's edge, an area more than 25 %
-   (table) or 42 % (figure, frame) empty), or accept it knowingly after looking at the render.
-2. **Look at every rendered slide** (contact sheets of 4–6 slides are quick). Check what QA cannot: labels
-   that collide after being raised to 12 pt, gridlines through labels, arrows over text, white space a
-   figure leaves, a highlight on the wrong element. LibreOffice shows Morph as a fade; that is expected.
-3. **Tighten and fact-check** (rule 11, references/audit.md): every slide and its notes against the
+   Clear every WARN too (a label over its box's edge, an area more than 25 % (table) or 42 % (figure,
+   frame) empty), or accept it knowingly after looking at the render. A `lines` WARN after the pass means
+   it met a case it does not handle (the build prints it as "unresolved"): redraw that spot.
+3. **Look at every rendered slide** (contact sheets of 4–6 slides are quick). Check what QA cannot: labels
+   that collide after being raised to 12 pt, a moved label that now reads as another curve's, arrows over
+   text, white space a figure leaves, a highlight on the wrong element. LibreOffice shows Morph as a fade;
+   that is expected.
+4. **Tighten and fact-check** (rule 11, references/audit.md): every slide and its notes against the
    source, item by item, in the audit file; fix every error in the prototype and rebuild.
-4. Report: the .pptx path, slide count, QA result, the renders, the audit counts, and anything left
-   open (for example a presenter name or date left blank on the title slide).
+5. Report: the .pptx path, slide count, QA result, the crossings fixed, the renders, the audit counts, and
+   anything left open (for example a presenter name or date left blank on the title slide).
 
 ## The rules, and why
 
@@ -178,6 +185,16 @@ Each rule exists because a reviewer of an earlier deck asked for it; the reason 
     `proto.py` places the part (`d.preliminary()`), the lint stops on a misplaced Preliminary Note or a
     paper deck without Background and warns when a Preliminary slide cites the paper as its source, and QA
     `structure` checks the sections and the tag on every Preliminary slide.
+13. **Labels stay readable: crossings are fixed in the build, before QA.** No gridline, rule marker,
+    connector, leader or curve may run through a label's drawn extent (measured at its final size, after
+    the 12 pt raise). The build fixes every crossing itself, in this order: a gridline or rule is cut around
+    the label; a leader or connector ends at the label's edge; a label on a data line moves to the nearest
+    clear spot that keeps it inside its figure and nearest its own line; a label with no clear spot gets a
+    knockout in the background colour. Storyboard frames get the identical fix on every frame, so Morph's
+    names, counts and positions hold. Every change is logged for review. Why: a label crossed by a line is
+    hard to read from the back of a room, and QA used to find crossings only after the build, when each
+    one cost a hand re-draw; and a fix made by hand-editing the .pptx is lost at the next build and invisible
+    to QA, so the fix belongs in the build. QA's `lines` check stays as the final guard.
 
 ## When QA or the render shows a problem
 
@@ -188,7 +205,9 @@ Each rule exists because a reviewer of an earlier deck asked for it; the reason 
 | table ends below the area (fit) | shorter cells, fewer columns, or move rows to an appendix table |
 | floors | a table at < 13 pt (12 if dense): split it; never lower the size |
 | labels collide after the 12 pt raise (overlap) | shorten labels, replace repeated row labels with one legend line, draw the figure larger (fewer, bigger elements) |
-| lines / edges (WARN) | move the label beside the curve, between gridlines or past their end; end arrows short of the text; shorten a label wider than its box |
+| lines (WARN) after the build's crossing fix | the pass logged it "unresolved": move the label or the line in the prototype; a gridline gets class `grid` |
+| crossing log shows a nudge or knockout | optional: carry the move into the prototype (the lint's `FIX` line gives it in SVG units) so the page matches the deck |
+| edges (WARN) | shorten a label wider than its box, or widen the box |
 | figure leaves white space (lint fill, QA whitespace) | change the figure's proportions to the area's (8.5 × 3.2 in; frames 6.05 × 4.4 in): wrap a long row, stack panels, enlarge |
 | table leaves white space | the deck already grows it (type to 18 pt, taller rows); widen the row-label column, add the rows the talk needs, or use a figure or stats |
 | tags | move the provenance sentence to `.source` |
@@ -213,10 +232,11 @@ scripts/setup.sh              installs pptxgenjs 3.12.0 + a venv (python-pptx, l
 scripts/proto.py              Mode 1: Deck API + SVG helpers -> the prototype HTML (also JSON -> HTML)
 scripts/html_to_spec.py       Mode 2: prototype -> lint + deck spec JSON (--check: lint only)
 scripts/svg_shapes.py         SVG figure -> native-shape records, content bounds, deck-only edits
+scripts/crossings.js          the label-crossing pass (cut, trim, nudge, knockout); run by deck_lib.js and the lint
 scripts/deck_lib.js           the slide vocabulary (title, outline, figure, storyboard, table, stats, cards, closing)
 scripts/build_deck.js         spec JSON -> raw deck + sidecar -> transplant.py -> .pptx
 scripts/transplant.py         raw deck -> the brand template (layouts, theme, footer, Morph, sections)
-scripts/deck_qa.py            structural and fit checks (PASS / FAIL per check)
+scripts/deck_qa.py            structural and fit checks (PASS / FAIL per check; `lines` is the final crossing guard)
 scripts/validate_deck.py      package validation (pptx skill's validate.py, else a minimal check)
 scripts/render.py             .pptx -> PDF -> JPG with metric-compatible fonts
 scripts/audit_skeleton.py     one audit row per claim on every slide and in its notes

@@ -169,7 +169,8 @@ Colour only through classes (no inline colours): fills `f-white` (`f-paper`, `f-
 (light gold) · `f-c2` (blue, second category) · `f-c3` (light blue, third) · `f-pencil` (gray) ·
 `f-none`; strokes `s-ink` · `s-pencil` · `s-accent` (navy on shapes, gold on lines) · `s-c2` · `s-c3`;
 modifiers `thick`, `dashed`, `off` (hidden in this frame), `grid` (on a `<line>`: a chart gridline or reference
-line, which the deck cuts where it meets a label and the prototype knocks out with a halo). Text: `t-label` (15 px), `t-mono` (13 px; 15 px
+line, which the deck cuts where it meets a label and the prototype knocks out with a halo; the deck also cuts an
+unclassed axis-parallel rule that runs through a label, and the lint asks for the class so the page matches). Text: `t-label` (15 px), `t-mono` (13 px; 15 px
 in storyboards), `t-head` and `t-accent` (bold navy), `t-onbar` (white, **only on dark fills** `f-c2`,
 `f-ink`, `f-pencil`; the deck turns it navy elsewhere). The aliases `f-teal`/`s-teal` = c2 and
 `f-mustard`/`s-mustard` = c3 are accepted. `<svg data-text-scale="0.9">` scales every label of a dense
@@ -182,7 +183,9 @@ Drawing rules (each saves a re-layout later):
   the area; `data-whitespace="reason"` on the slide keeps it, with a warning).
 - **Labels clear of lines.** Put a curve's label beside the curve's end or between gridlines, never on
   the curve or a gridline; end arrows short of the text they point at; keep a label inside its box. The
-  deck's QA warns on every line through a text and FAILs on text over text.
+  build clears any crossing left (scripts/crossings.js: gridlines and rules cut, leaders trimmed, labels
+  nudged, a knockout as the last resort) and the lint prints each fix as a `FIX` line; carry a nudge or a
+  trim back into the drawing so the page shows what the deck shows. QA's `lines` check is the final guard.
 - **Labels near 12–14 pt after scaling.** A 640-unit-wide figure in the 8.5 in area scales by ~0.0133 in
   per unit, so a 13 px label lands at ~12.4 pt. Labels below 12 pt are raised and may collide.
 - **One highlight.** Gold marks the single thing the slide is about; categories use c2 / c3.
@@ -250,6 +253,12 @@ even at its grown size; results without a methodology
 slide; notes outside 40–300 words; an appendix slide nobody points to; a part without slides; a Summary
 part of more than one slide; a Preliminary Note slide whose `.source` cites the paper ("the paper's",
 "§", "Fig. 2", "Table I").
+FIX (informational, never stops the spec): each label crossing the build will fix, computed by the build's own
+pass (`crossings.js`, run through node at the deck's scale with labels raised to 12 pt): a rule cut at a label
+(class it `grid`), a leader trimmed at a label's edge, a label moved by so many SVG units, a knockout behind a
+label with no clear spot. The deck applies them all by itself; the page changes only when the author carries
+them into the prototype, which keeps the reviewed page and the deck alike. Gridlines already classed `grid`
+are not listed (the page's halo shows their gap).
 
 ## What the preview does
 

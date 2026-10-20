@@ -23,7 +23,9 @@ Checks, each printed as PASS / FAIL with the offending slides; exit status 1 on 
   overlap   no two texts overlap (each text's ink: its measured width placed by alignment, its lines placed by
             the anchor, trimmed to the glyphs, so a box's empty padding never counts)
 Warnings (printed as WARN, exit status unchanged; look at the render and fix or accept each):
-  lines     a line or connector passes through a text's ink (gridlines, arrows, curves over labels)
+  lines     a line or connector passes through a text's ink (gridlines, arrows, curves over labels); the build's
+            crossing pass (crossings.js) clears these before QA, so this is the final guard; a line drawn below a
+            knockout ("<label>.ko", a background-colour box the pass puts behind a label) does not count
   edges     a text sits mostly inside a drawn shape but runs out over its edge (a label wider than its box)
   whitespace  the share of the content area (frame area on storyboard slides) farther than 0.25 in from
             every element is above 25 % for a table slide, 42 % for a figure slide or a frame
@@ -344,7 +346,8 @@ def main():
         texts, segs, blocks = [], [], []  # text inks, line segments, other content boxes (inches, x0 y0 x1 y1)
         has_table = False
         boxes = []  # drawn shapes (rects, ovals), for the label-over-an-edge warning
-        for sp in slide.shapes:
+        kos = []  # knockouts (the crossing pass's background boxes behind labels): (box, z order)
+        for z, sp in enumerate(slide.shapes):
             el = sp._element
             nm = sp.name
             is_ph = el.find(".//p:nvPr/p:ph", NS) is not None
@@ -358,8 +361,12 @@ def main():
                     w, h = emu_in(xf.find("a:ext", NS).get("cx")), emu_in(xf.find("a:ext", NS).get("cy"))
                     x1, x2 = (x + w, x) if xf.get("flipH") == "1" else (x, x + w)
                     y1, y2 = (y + h, y) if xf.get("flipV") == "1" else (y, y + h)
-                    segs.append((x1, y1, x2, y2, nm))
+                    segs.append((x1, y1, x2, y2, nm, z))
                 continue
+            if nm.endswith(".ko"):
+                bx = box_of(el, inh)
+                if bx:
+                    kos.append(([bx[0], bx[1], bx[0] + bx[2], bx[1] + bx[3]], z))
             if not is_ph and not in_col and not (hasattr(sp, "has_table") and sp.has_table):
                 spr = el.find("p:spPr", NS)
                 ln = spr.find("a:ln", NS) if spr is not None else None
@@ -369,7 +376,7 @@ def main():
                 bx = box_of(el, inh) if spr is not None else None
                 if visible and bx:
                     blocks.append([bx[0], bx[1], bx[0] + bx[2], bx[1] + bx[3]])
-                    if not el.tag.endswith("}pic"):
+                    if not el.tag.endswith("}pic") and not nm.endswith(".ko"):  # a knockout is the label's own background
                         boxes.append((blocks[-1], nm))
             if G and nm == "!!steplabel" and abs(Emu(sp.top).inches - G.get("stepLabelY", 1.14)) > 0.005:
                 res["geometry"].append(f"s{no}: steplabel y {Emu(sp.top).inches}")
@@ -504,8 +511,10 @@ def main():
                 if min(a[2], b[2]) - max(a[0], b[0]) > OVERLAP_MIN and min(a[3], b[3]) - max(a[1], b[1]) > OVERLAP_MIN:
                     res["overlap"].append(f"s{no}: {texts[i][1][:28]!r} on {texts[j][1][:28]!r}")
             core = [a[0] + 0.01, a[1] + 0.01, a[2] - 0.01, a[3] - 0.01]
-            for x1, y1, x2, y2, ln_nm in segs:
-                if core[2] > core[0] and core[3] > core[1] and seg_hits_rect(x1, y1, x2, y2, core):
+            for x1, y1, x2, y2, ln_nm, zl in segs:
+                hidden = any(zk > zl and kb[0] <= core[0] + 0.01 and kb[1] <= core[1] + 0.01 and kb[2] >= core[2] - 0.01
+                             and kb[3] >= core[3] - 0.01 for kb, zk in kos)  # under a knockout behind the label
+                if not hidden and core[2] > core[0] and core[3] > core[1] and seg_hits_rect(x1, y1, x2, y2, core):
                     warns["lines"].append(f"s{no}: line {ln_nm} crosses {texts[i][1][:28]!r}")
             # a label that runs out of the shape it sits in (partly inside, partly outside by > OVERLAP_MIN)
             for r, bnm in boxes:
@@ -610,6 +619,10 @@ def main():
         for x in v:
             print("   ", x)
     print("info:", "; ".join(fit_notes))
+    xing = meta.get("crossings") if meta else None
+    if xing:
+        print(f"info: label crossings fixed in the build before QA: {xing.get('changes', 0)}"
+              + (f", {xing['unresolved']} unresolved" if xing.get("unresolved") else "") + f" (log {xing.get('log')})")
     if ws_notes:
         print("info: empty share of the content / frame area:", " ".join(ws_notes))
     sys.exit(0 if ok else 1)

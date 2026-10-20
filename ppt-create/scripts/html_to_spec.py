@@ -35,6 +35,11 @@ What it does:
     taller than the area or still under 75 % of it when grown, results without a methodology slide, notes
     shorter than 40 or longer than 300 words, a Summary part of more than one slide, a Preliminary Note
     slide whose provenance (.source) cites the paper;
+  * label crossings (FIX lines, not errors): every figure is run through the build's own crossing pass
+    (crossings.js, via node) at the deck's scale, and each crossing is printed with the fix the build will make
+    (a gridline or rule cut, a leader trimmed, a label nudged by so many SVG units, a knockout). The deck is
+    fixed automatically; carry a nudge back into the prototype (or class a rule "grid", which the page knocks
+    out) so the page shows what the deck shows;
   * tables grow to fill the area: type up to 18 pt, then taller rows (fit_table).
 """
 import argparse
@@ -43,6 +48,7 @@ import html as htmllib
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -180,7 +186,10 @@ def svg_to_png(svgtext, work):
 
 class Lint:
     def __init__(self):
-        self.errors, self.warns = [], []
+        self.errors, self.warns, self.fixes = [], [], []
+
+    def fix(self, where, msg):
+        self.fixes.append(f"FIX   {where}: {msg}")
 
     def err(self, where, msg):
         self.errors.append(f"ERROR {where}: {msg}")
@@ -277,6 +286,39 @@ def check_fig(fig, bb, where, lint, area, accept=None):
             lint.warn(where, f"smallest label scales to {small:.1f} pt and is raised to 12 pt; check the render for collisions")
 
 
+def crossing_report(items, lint, work):
+    """Run the build's crossing pass (crossings.js) on every figure at the deck's scale and report each fix it
+    will make, so the prototype can be brought in step with the deck. One implementation: the lint quotes the
+    deck's own decisions."""
+    if not items:
+        return
+    node = shutil.which("node")
+    if not node:
+        lint.warn("deck", "node not found: label crossings not reported here (the build still fixes them)")
+        return
+    tmp = os.path.join(work, "crossings.in.json")
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(items, f)
+    r = subprocess.run([node, os.path.join(HERE, "crossings.js"), "--report", tmp], capture_output=True, text=True)
+    if r.returncode:
+        lint.warn("deck", f"crossing report failed: {r.stderr.strip()[:200]}")
+        return
+    say = {"cut": lambda e: f"{e['element']} runs through {e['label']}: the deck cuts it there ({e['detail']}); class it 'grid' "
+                            "so the page knocks it out too",
+           "trim end": lambda e: f"leader {e['element']} runs into {e['label']}: the deck ends it at the label's edge; end it there",
+           "trim start": lambda e: f"leader {e['element']} starts inside {e['label']}: the deck starts it at the label's edge; start it there",
+           "nudge": lambda e: f"label {e['label']} sits on a line: the deck moves it {e['detail'].split(',')[0][6:]} "
+                              f"(by {e['dxU']:g}, {e['dyU']:g} SVG units); move it there in the prototype",
+           "knockout": lambda e: f"label {e['label']} sits on a line with no clear spot within 3 em: the deck puts a background box "
+                                 "behind it; move the label or the line in the prototype",
+           "unresolved": lambda e: f"label {e['label']}: {e['detail']} after the pass; QA will warn"}
+    for it in json.loads(r.stdout or "[]"):
+        for e in it["log"]:
+            if e["action"] == "cut" and "gridline" in e["detail"]:
+                continue  # a "grid" line: the page's halo already knocks it out
+            (lint.warn if e["action"] == "unresolved" else lint.fix)(it["where"], say[e["action"]](e))
+
+
 def parse(path, png=False, work="."):
     src = open(path, encoding="utf-8").read()
     svgs = []
@@ -324,6 +366,7 @@ def parse(path, png=False, work="."):
         return svgs[int(r["data-i"])] if r is not None else None
 
     slides, n_fig = [], 0
+    xitems = []  # figures for the crossing report: {where, frames, box}
     for sec in sections:
         kind = sec.get("data-kind")
         if kind == "appendix-index" and sec.has_attr("data-auto"):
@@ -375,6 +418,7 @@ def parse(path, png=False, work="."):
                     fig["bb"] = fig.get("bb") or bounds([fig])
                     if fig["shapes"]:
                         check_fig(fig, fig["bb"], where, lint, box, sec.get("data-whitespace"))
+                        xitems.append({"where": where, "frames": [fig], "box": list(box)})
                 rec["area"] = {"type": "figure-stats" if stats else "figure", "id": fid, "fig": fig, "items": st_items}
             elif tab is not None:
                 head = [clean(th) for th in tab.select("thead th")] or [clean(c) for c in tab.find("tr").find_all(["th", "td"])]
@@ -434,6 +478,7 @@ def parse(path, png=False, work="."):
                 for f in frames:
                     f["bb"] = bb
                 check_fig(frames[0], bb, where, lint, (FAREA_W, FAREA_H), sec.get("data-whitespace"))
+                xitems.append({"where": where, "frames": frames, "box": [FAREA_W, FAREA_H]})
                 counts = unkeyed_counts(frames)
                 if len(set(counts)) > 1:
                     lint.err(where, f"unkeyed elements per frame {counts}: Morph pairs them by order, so give data-key to "
@@ -466,6 +511,8 @@ def parse(path, png=False, work="."):
         if m:
             lint.err(where, f"provenance on the slide ({m.group(0)!r}): move it to .source (it goes to the notes)")
         slides.append(rec)
+
+    crossing_report(xitems, lint, work)
 
     # ---------------------------------------------------------------- structure: outline, dividers, closing, appendix
     out = []
@@ -595,9 +642,10 @@ def main():
     a = ap.parse_args()
     os.makedirs(a.work, exist_ok=True)
     spec, lint = parse(a.html, png=a.png_fallback, work=a.work)
-    for m in lint.errors + lint.warns:
+    for m in lint.errors + lint.warns + lint.fixes:
         print(m)
-    print(f"{len(spec['slides'])} spec slides -> {spec['deckSlides']} deck slides; {len(lint.errors)} errors, {len(lint.warns)} warnings")
+    print(f"{len(spec['slides'])} spec slides -> {spec['deckSlides']} deck slides; {len(lint.errors)} errors, {len(lint.warns)} warnings, "
+          f"{len(lint.fixes)} label crossings the build fixes")
     if lint.errors:
         sys.exit(1)
     if a.check:

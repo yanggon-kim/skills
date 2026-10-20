@@ -4,6 +4,8 @@
    Run:   node build_deck.js SPEC.json OUT.pptx [--work DIR] [--brand DIR]
           DIR: the work folder made by setup.sh ($DECK_WORK, else ./.deck_work); the raw deck and the sidecar
           JSON (OUT-name.raw.pptx, OUT-name.meta.json) land there; deck_qa.py reads the sidecar.
+          Label crossings are fixed during this build, before QA: deck_lib.js runs every figure (and every
+          storyboard, over all its frames) through crossings.js and logs each change to OUT-name.crossings.json.
    Then:  DIR/venv/bin/python deck_qa.py OUT.pptx DIR/<name>.meta.json
 
    A part marked "preliminary" in the spec (the presenter's primer, part 2) becomes a preliminary section: deck_lib.js
