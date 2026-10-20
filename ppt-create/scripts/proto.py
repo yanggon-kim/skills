@@ -6,8 +6,8 @@ From Python (the usual route: figures are easier to draw with the helpers):
     from proto import Deck, Frame, Table, svg, R, T, L, PL, C, E, G
     d = Deck("Talk title", subject="One line on the talk", author="Name")   # part 1, "Summary", is built in
     d.part("Background", "Background: the problem", "what the audience needs first")
-    d.title_slide(title="Talk title", subtitle="...", byline=["Authors", "Venue, year"],
-                  points=[("Idea 1", "one line"), ...], notes="script ...")
+    d.title_slide(title="Talk title", subtitle="...", byline=["Authors", "Venue, year"], notes="script ...")
+                                         # title, subtitle, byline, presenter, date only: no key points
     d.outline(notes="script ...")        # the outline, with Summary highlighted: also the Summary divider
     d.summary("core message of the talk", figure=svg(...), bullets=[...], notes="script ...")  # "Summary: ..."
     d.divider("Background", notes="script ...")
@@ -173,12 +173,16 @@ class Deck:
         sec = f'<section class="slide" data-kind="{kind}"' + (f' data-part="{E_(part)}"' if part else "") + f"{attrs}>{body}</section>"
         self.slides.append((kind, part, sec))
 
-    def title_slide(self, title, subtitle="", byline=(), points=(), notes="", presenter="Presenter: ______", date="Date: ______", part="Opening"):
+    def title_slide(self, title, subtitle="", byline=(), notes="", presenter="Presenter: ______", date="Date: ______", part="Opening",
+                    points=None):
+        """The Title Opener: title, subtitle, byline, presenter and date, nothing else. The talk's key points
+        belong on the Summary slide only (d.summary), so the opening never says them twice: a point list is refused."""
+        if points:
+            raise ValueError("title_slide takes no point list: the key points go on the Summary slide only (d.summary)")
         by = "".join(f"<p>{E_(b)}</p>" for b in byline)
-        kp = "".join(f"<li><b>{E_(h)}</b><span>{E_(s)}</span></li>" for h, s in points)
         body = (f'<div class="canvas"><h1>{E_(title)}</h1>' + (f'<p class="subtitle">{E_(subtitle)}</p>' if subtitle else "")
                 + (f'<div class="byline">{by}</div>' if by else "") + f'<p class="presenter">{E_(presenter)}</p>'
-                + f'<p class="date">{E_(date)}</p>' + (f'<ol class="key-points">{kp}</ol>' if kp else "") + "</div>" + _notes(notes))
+                + f'<p class="date">{E_(date)}</p></div>' + _notes(notes))
         self._add("title", part, body)
 
     def outline(self, notes="", part=SUMMARY):

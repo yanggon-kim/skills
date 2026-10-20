@@ -220,10 +220,15 @@ function createDeck(opts = {}) {
   }
 
   // ---------------------------------------------------------------- title, outline, dividers, closing
-  /* Title Opener: logo top left (transplant.py), title between the template's two brand rules, byline,
-     presenter and date below the second rule on the left, up to three key points on the right.
-     o: title, subtitle, byline [lines], presenter, date, points [[head, sub]], notes. */
+  /* Title Opener, on the template's own geometry: logo top left (transplant.py), title and subtitle between the
+     two brand rules (y 2.00 and 3.30), the byline across the rules' width below the second rule, presenter and
+     date in the layout's slots (y 4.90, 5.10). Nothing else: the talk's key points live only on the Summary slide
+     (s3), so the opening never says them twice; a point list here is refused.
+     o: title, subtitle, byline [lines], presenter, date, notes. */
   function titleSlide(sectionTitle, o) {
+    if (o.points && o.points.length) {
+      throw new Error("titleSlide: the title slide takes no point list; put the key points on the Summary slide");
+    }
     const sl = newSlide("TITLE", sectionTitle, "title");
     const t = [{ text: o.title, options: { fontSize: 36, bold: true, color: C.text1, breakLine: !!o.subtitle } }];
     if (o.subtitle) t.push({ text: o.subtitle, options: { fontSize: 16, bold: false, color: C.text1 } });
@@ -231,18 +236,11 @@ function createDeck(opts = {}) {
     const by = o.byline || [];
     if (by.length) {
       sl.addText(by.map((l, i) => ({ text: l, options: i < by.length - 1 ? { breakLine: true } : {} })),
-        { x: M, y: 3.45, w: 3.95, h: 0.85, fontSize: F(16), color: C.text1, margin: 0, valign: "top", isTextBox: true, objectName: "authors" });
+        { x: M, y: 3.45, w: CW, h: 0.85, fontSize: F(16), color: C.text1, margin: 0, valign: "top", isTextBox: true, objectName: "authors" });
     }
     // the template's presenter and department slots (Title Opener placeholders 23 and 22)
     sl.addText(o.presenter || "Presenter: ______", { x: M, y: 4.90, w: 4.0, h: 0.18, fontSize: 12, bold: true, color: NAVY, margin: 0, valign: "bottom", isTextBox: true, objectName: "ph:body:23" });
     sl.addText(o.date || "Date: ______", { x: M, y: 5.10, w: 4.0, h: 0.18, fontSize: 12, color: C.text1, margin: 0, valign: "bottom", isTextBox: true, objectName: "ph:body:22" });
-    (o.points || []).slice(0, 3).forEach(([h, s], i) => {
-      const y = 3.45 + i * 0.5, d = 0.36, x = 4.95;
-      sl.addShape(pres.shapes.OVAL, { x, y: y + 0.04, w: d, h: d, ...gold(), objectName: `part${i}-dot` });
-      sl.addText(String(i + 1), { x, y: y + 0.04, w: d, h: d, fontSize: F(18), bold: true, color: NAVY, align: "center", valign: "middle", margin: 0, isTextBox: true, objectName: `part${i}-n` });
-      sl.addText([{ text: h, options: { fontSize: F(20), bold: true, color: NAVY, breakLine: true } }, { text: s, options: { fontSize: F(16), color: C.text1 } }],
-        { x: x + 0.5, y, w: R - x - 0.5, h: 0.45, valign: "middle", margin: 0, isTextBox: true, objectName: `part${i}-text` });
-    });
     notes(sl, o.notes);
     return sl;
   }

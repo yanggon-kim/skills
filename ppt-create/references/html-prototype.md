@@ -37,15 +37,16 @@ without it). The title slide is the "Opening" section; the outline and the summa
 
 ## Slide kinds
 
-**Title** — the template's Title Opener: logo, title between two brand rules, byline left, up to three
-key points right (the talk's three ideas, each a short head and a one-line sub).
+**Title** — the template's Title Opener: logo, title and subtitle between the two brand rules, the byline
+(authors, venue) across the rules' width below them, presenter and date in the layout's slots. **Nothing
+else: no key points, numbered or bulleted.** The talk's key points live only on the Summary slide two
+slides later, so the opening is not said twice; the lint stops on a list here and QA fails on badges.
 ```html
 <section class="slide" data-kind="title">
   <div class="canvas">
     <h1>Short title</h1><p class="subtitle">Full title or one-line framing</p>
     <div class="byline"><p>Authors</p><p>Venue, year · affiliations</p></div>
     <p class="presenter">Presenter: ______</p><p class="date">Date: ______</p>
-    <ol class="key-points"><li><b>Idea one</b><span>one line (§2)</span></li>…</ol>
   </div>
   <details class="notes" open><summary>Speaker notes</summary><p>Script…</p></details>
 </section>
@@ -197,7 +198,7 @@ svg(viewBox, body, title="", desc="", text_scale=None)
 
 d = Deck(title, subject="", author="")       # part 1 "Summary" is built in
 d.part(id, label=None, sub="")                # d.part("Summary", label, sub) re-labels part 1
-d.title_slide(title, subtitle="", byline=(), points=(), notes="", presenter=…, date=…)
+d.title_slide(title, subtitle="", byline=(), notes="", presenter=…, date=…)   # no points: they go in d.summary
 d.outline(notes="")                           # Summary highlighted: also the Summary divider
 d.summary(message, **content_kwargs)          # right after the outline; title "Summary: <message>"
 d.divider(part_id, notes="")                  # every later part (a "Summary" divider is dropped)
@@ -215,7 +216,8 @@ d.write(path)        # warns about a missing outline / divider / summary / closi
 ## What the lint checks (`html_to_spec.py --check`)
 
 ERROR (no spec is written): no `Summary` part first in the parts list; no summary slide right after the
-outline; a summary slide whose title does not start with "Summary"; a divider for the Summary part; a slide without notes; provenance words on a slide (`Source:`, `Redrawn`,
+outline; a summary slide whose title does not start with "Summary"; a divider for the Summary part; a numbered or
+bullet point list on the title slide (`ol`, `ul`, `li` or a line written "1." / "•"); a slide without notes; provenance words on a slide (`Source:`, `Redrawn`,
 `Adapted from`, `schematic`, …); an appendix slide before the closing slide or a main slide after it; a
 `data-see` to a missing appendix id; a figure outside the vocabulary (without `--png-fallback`); storyboard
 frames with different numbers of unkeyed elements; a table below 12 pt; no title or no closing slide; a

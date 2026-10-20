@@ -76,10 +76,8 @@ d.titleSlide(S_OPEN, {
   title: "P3-LLM",
   subtitle: "An Integrated NPU-PIM Accelerator for Edge LLM Inference Using Hybrid Numerical Formats",
   byline: ["Y. Chen, C. Fang, X. Dai, Y. Wu, T. Tambe, M. Verhelst, M. S. Abdelfattah", "arXiv 2511.06838v4, 2026 · Cornell, KU Leuven, Stanford"],
-  points: [["W4A8KV4P8 formats", "a number format per operand (§IV)"], ["Low-precision PCU + TEP", nb("4× multipliers at tCCD_S (§V-A, §V-D)")], ["Fused dequantization", "scales folded on the NPU (§V-C)"]],
   notes: "Today's paper is P3-LLM, by Yuzong Chen, Chao Fang, Xilai Dai, Yuheng Wu, Thierry Tambe, Marian Verhelst and Mohamed Abdelfattah, from Cornell, KU Leuven and Stanford. I am using version 4 on arXiv, number 2511.06838, from May 2026. " +
     "The paper asks one question: how can DRAM processing-in-memory stay fast for LLM decoding on an edge device once the batch is larger than one? " +
-    "Its answer has three parts, the three circles on the right. First, a set of number formats that puts every operand into 4 or 8 bits, with a format chosen per operand. Second, a small low-precision compute unit inside the DRAM that runs twice per weight read; the paper calls it the throughput-enhanced PCU, or TEP. Third, a dataflow that hides the dequantization work on the host. " +
     "I will start with the whole paper on one slide, then give the DRAM and PIM background we need, the motivation, the three design parts, the evaluation, and finally some points for discussion. Every number I quote comes from the paper, and I will say which section, figure or table it comes from. DRAM sizes and timings in the background are simulator presets that I use for illustration, not JEDEC values.",
 });
 
@@ -110,7 +108,7 @@ outlineSlide(S_SUM, 0,
     ["0.25", "mean Wikitext ppl loss; QuaRot, QoQ 0.30 (Table IV)"]].forEach(([m, l, hot], i) =>
     stat(sl, sx, AREA.y + i * (AREA.h / 4), sw, m, l, hot));
   notes(sl, "In one sentence: P3-LLM shrinks every operand and uses each weight read twice. This slide is the whole paper in one picture. On the left is the host, a neural processing unit or NPU, which runs everything that needs FP16 or FP32: LayerNorm, rotary embeddings, softmax and the scales. On the right is one HBM-PIM channel. Between an even bank and an odd bank sits a PIM compute unit, the PCU. The banks stream 4-bit weights and 4-bit KV-cache into the PCU, the NPU sends 8-bit activations or attention scores, and the PCU sends 32-bit sums back. " +
-    "The three numbered badges are the three design parts. Badge one is the W4A8KV4P8 formats, from Section IV. Badge two is the low-precision PCU and the throughput-enhanced PCU, TEP, from Sections V-A and V-D. Badge three is fused dequantization on the NPU, Section V-C. " +
+    "The three numbered badges are the three design parts. Badge one is the W4A8KV4P8 formats, Section IV, which put every operand into 4 or 8 bits in a format chosen per operand. Badge two is the low-precision PCU and the throughput-enhanced PCU, TEP, which runs it twice per weight read, Sections V-A and V-D. Badge three is fused dequantization, a dataflow that hides the dequantization work on the NPU, Section V-C. " +
     "The four numbers on the right are the headline results. Speed is 4.9 times that of HBM-PIM, Figure 9. Energy efficiency is 3.5 times, Figure 10. The HBM area overhead is 17.5 percent against 16.4 percent, Table VII. And the mean Wikitext perplexity loss is 0.25, where QuaRot and QoQ lose 0.30, Table IV. Keep the 4.9 times in mind; in the discussion we will ask how much of it comes from the hardware idea and how much from quantization.", "Redrawn from the paper's Fig. 6(a) and §I.");
 }
 

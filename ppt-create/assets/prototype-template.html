@@ -137,16 +137,10 @@ body { margin: 0; background: var(--page); color: #222; font-family: var(--deck-
   border-top: 0.4cqw solid var(--c2); border-bottom: 0.4cqw solid var(--c2); }
 .canvas h1 { left: 7cqw; top: 20.7cqw; width: 85cqw; font: 700 calc(36 * var(--pt)) / 1.1 var(--deck-head); color: #58595B; }
 .canvas .subtitle { left: 7cqw; top: 26.6cqw; width: 85cqw; font-size: calc(16 * var(--pt)); line-height: 1.1; }
-.canvas .byline { left: 7cqw; top: 34.5cqw; width: 39.5cqw; font-size: calc(12 * var(--pt)); }
+.canvas .byline { left: 7cqw; top: 34.5cqw; width: 85cqw; font-size: calc(12 * var(--pt)); } /* across the rules' width: the title slide has no key points */
 .canvas .byline p { margin: 0; }
 .canvas .presenter { left: 7cqw; top: 49cqw; font: 700 calc(12 * var(--pt)) var(--deck-body); color: var(--navy); }
 .canvas .date { left: 7cqw; top: 51cqw; font-size: calc(12 * var(--pt)); }
-.key-points { left: 49.5cqw; top: 34.5cqw; width: 42.5cqw; list-style: none; padding: 0; counter-reset: kp; }
-.key-points li { counter-increment: kp; position: relative; padding-left: 5cqw; height: 5cqw; display: flex; flex-direction: column; justify-content: center; }
-.key-points li::before { content: counter(kp); position: absolute; left: 0; top: 0.8cqw; width: 3.6cqw; height: 3.6cqw; border-radius: 50%; background: var(--gold);
-  border: 1px solid var(--navy); display: grid; place-items: center; font: 700 calc(13.5 * var(--pt)) var(--deck-head); color: var(--navy); }
-.key-points b { font: 700 calc(15 * var(--pt)) var(--deck-head); color: var(--navy); }
-.key-points span { font-size: calc(12 * var(--pt)); }
 .outline-title { left: 7cqw; top: 20.5cqw; width: 28.5cqw; height: 6.1cqw; display: flex; align-items: flex-end; font: 700 calc(36 * var(--pt)) / 1 var(--deck-head); color: #58595B; }
 .outline-rule { left: 7cqw; top: 27.6cqw; width: 28.5cqw; height: 0.4cqw; background: var(--c2); }
 .outline-kicker { left: 7cqw; top: 29cqw; width: 28.5cqw; font-size: calc(16 * var(--pt)); }

@@ -14,7 +14,8 @@ Checks, each printed as PASS / FAIL with the offending slides; exit status 1 on 
   morph     one Morph transition per storyboard follow-on frame; the !!-names match frame to frame
   notes     every slide has speaker notes
   structure title first, outline second (it opens the Summary part), the summary slide third with a title
-            starting "Summary", a divider opening every other part, one closing slide, appendix slides only
+            starting "Summary", no list or badge shapes on the title slide (no ovals, bulleted or numbered
+            paragraphs, lone digits: its key points live only on the Summary slide), a divider opening every other part, one closing slide, appendix slides only
             after the closing slide
   fit       every wrapping text box holds its text (greedy word wrap with Liberation Sans at 97 % of the width),
             every title is one line, every table ends above the band
@@ -247,6 +248,32 @@ def empty_fraction(area, blocks, segs, reach=WS_REACH, cell=0.05):
         mark(min(s[0], s[2]), min(s[1], s[3]), max(s[0], s[2]), max(s[1], s[3]),
              lambda px, py, s=s: seg_dist(px, py, *s) <= reach)
     return 1 - sum(used) / (nx * ny)
+
+
+LIST_MARK = re.compile(r"^\s*(\d{1,2}[.)]|[•▪‣◦●■–])\s")  # a numbered or bulleted line written out as text
+BADGE_GEOM = ("ellipse", "flowChartConnector", "donut")  # the shapes a numbered badge is drawn with
+
+
+def title_list_marks(slide):
+    """What makes slide 1 carry a point list: badge shapes (ovals), numbered or bulleted paragraphs (explicit
+    bullets or written-out "1." / "•"), and text boxes holding only a number (a badge's digit)."""
+    bad = []
+    for el in slide.shapes._spTree.iter("{%s}sp" % NS["p"], "{%s}cxnSp" % NS["p"]):
+        name = el.find(".//p:cNvPr", NS).get("name", "")
+        geom = el.find("p:spPr/a:prstGeom", NS)
+        if geom is not None and geom.get("prst") in BADGE_GEOM:
+            bad.append(f"badge shape {name!r} ({geom.get('prst')})")
+            continue
+        for p in el.iterfind(".//a:p", NS):
+            txt = "".join(t.text or "" for t in p.iterfind(".//a:t", NS)).strip()
+            ppr = p.find("a:pPr", NS)
+            if ppr is not None and (ppr.find("a:buChar", NS) is not None or ppr.find("a:buAutoNum", NS) is not None) and txt:
+                bad.append(f"bulleted text {txt[:30]!r} in {name!r}")
+            elif re.fullmatch(r"\d{1,2}", txt):
+                bad.append(f"badge digit {txt!r} in {name!r}")
+            elif LIST_MARK.match(txt):
+                bad.append(f"numbered text {txt[:30]!r} in {name!r}")
+    return bad
 
 
 def main():
@@ -534,6 +561,10 @@ def main():
             new_sec = i == 0 or ms[i - 1]["section"] != m["section"]
             if new_sec and m["section"] != first_section and not m.get("appendix") and m["kind"] not in ("divider", "outline"):
                 res["structure"].append(f"s{i + 1}: part '{m['section']}' opens without a divider")
+    # the title slide: only title, subtitle, byline, presenter, date and logo; the key points live on the Summary slide
+    if len(prs.slides) and (prs.slides[0].slide_layout.name == "Title Opener" or (meta and meta["slides"][0].get("kind") == "title")):
+        for b in title_list_marks(prs.slides[0]):
+            res["structure"].append(f"s1 (title) has a point list: {b}; the key points belong on the Summary slide only")
     # storyboards: consecutive frame slides with one title; the unkeyed !!u<n> elements must match
     prev = None
     for no in sorted(story_names):

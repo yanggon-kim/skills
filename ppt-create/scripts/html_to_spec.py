@@ -20,7 +20,8 @@ What it does:
   * lint: ERROR stops the spec (exit 1), WARN is printed. Errors: no notes on a slide, provenance words on
     the slide, no Summary part first in the parts list, no summary slide right after the outline, a
     summary slide whose title does not start with "Summary", a divider for the Summary part (it would
-    repeat the outline), an appendix slide before the closing slide, a pointer to a missing appendix slide, unequal
+    repeat the outline), a numbered or bullet point list on the title slide (the key points live only on
+    the Summary slide), an appendix slide before the closing slide, a pointer to a missing appendix slide, unequal
     unkeyed elements across storyboard frames (Morph pairs them by order), a figure filling under half of
     its area (unless the slide has data-whitespace="reason"). Warnings: a title longer than one 20 pt
     line, a band over 4 lines or with more than 3 bullets, a step caption over 10 lines, loose viewBoxes,
@@ -55,6 +56,7 @@ TABLE_MAX_PT, TABLE_EMPTY_WARN = 18, 0.25  # a table grows to this size to fill 
 TABLE_GAP = 0.05  # in: a filled table stops this far above the area's bottom, clear of the band's hairline
 BAND_W, BAND_MARL, CAP_W = 8.5, 0.1875, 2.25
 SUMMARY = "Summary"  # the first part of every deck, and the first word of its summary slide's title
+LIST_MARK = re.compile(r"^\s*(\d{1,2}[.)]|[•▪‣◦●■–])\s")  # a numbered or bulleted line written out as text
 
 
 def is_summary(part):
@@ -306,8 +308,13 @@ def parse(path, png=False, work="."):
             rec.update(title=clean(canvas.find("h1")), subtitle=clean(canvas.select_one(".subtitle")),
                        byline=[clean(p) for p in canvas.select(".byline p")],
                        presenter=clean(canvas.select_one(".presenter")) or "Presenter: ______",
-                       date=clean(canvas.select_one(".date")) or "Date: ______",
-                       points=[[clean(li.find("b")), clean(li.find("span"))] for li in canvas.select(".key-points > li")])
+                       date=clean(canvas.select_one(".date")) or "Date: ______")
+            # the title slide carries no point list: the key points live only on the Summary slide
+            listed = canvas.select("ol, ul, li, .key-points") or [
+                p for p in canvas.find_all(["p", "div", "span"]) if LIST_MARK.match(clean(p) or "")]
+            if listed:
+                lint.err(where, "the title slide has a numbered or bullet point list: it carries only the title, subtitle, "
+                                "byline, presenter and date; the key points go on the Summary slide (once, not twice)")
         elif kind in ("outline", "divider"):
             if kind == "divider" and part not in pid:
                 lint.err(where, f"divider for unknown part {part!r} (parts: {pid})")

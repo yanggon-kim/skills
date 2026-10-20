@@ -68,7 +68,7 @@ for (const s of spec.slides) {
   const S = section(s.section);
   switch (s.kind) {
     case "title":
-      d.titleSlide(S, { ...s, points: (s.points || []).map(([h, t]) => [h, d.nb(t)]) });
+      d.titleSlide(S, s); // title, subtitle, byline, presenter, date: never a point list
       break;
     case "outline": // also the Summary part's divider: Summary (part 1) highlighted
       d.outlineSlide(S, PARTS, s.partIndex ?? 0, s.notes, { kind: "outline" });

@@ -15,7 +15,6 @@ Status: **ok** = matches the paper · **fixed** = was wrong or not the paper's c
 | slide | claim | paper location | status |
 |---|---|---|---|
 | 1 | Title, seven authors, Cornell / KU Leuven / Stanford, arXiv 2511.06838v4, 2026 (N: May 2026) | p. 1 header, arXiv stamp "3 May 2026" | ok |
-| 1 | Three parts: W4A8KV4P8 formats (§IV); low-precision PCU + TEP, 4× multipliers at tCCD_S (§V-A, §V-D); fused dequantization on the NPU (§V-C) | §I contributions; §V-A, §V-C, §V-D | ok |
 | 1 | N: the question is fast PIM decoding at batch > 1 on the edge | §I ¶2–3 (low-batch edge, GQA, arithmetic intensity > 1) | ok |
 | 2 | Outline: six parts, Summary (highlighted: slide 2 also opens part 1), Background … Discussion; dividers say "part k of 6" | (deck structure) | ok |
 | 3 | B: decoding waits on DRAM; FP16 PIM loses its gain as batch or GQA group nears 4 | §III-B ("benefits … gradually disappear as BS and G approach 4") | fixed (was "hit their compute roof already at batch 2–4", not the paper's statement) |
@@ -24,6 +23,7 @@ Status: **ok** = matches the paper · **fixed** = was wrong or not the paper's c
 | 3 | 3.5× energy efficiency vs HBM-PIM; 6.3× NPU; 2.1× Ecco | §VI-C Energy, Fig. 10 | ok |
 | 3 | 17.5 % HBM area overhead vs 16.4 % for HBM-PIM | Table VII | ok |
 | 3 | 0.25 mean Wikitext ppl loss; QuaRot and QoQ 0.30 | Table IV, Mean Δppl column | ok |
+| 3 | N: three badges = three parts: W4A8KV4P8 formats, every operand in 4 or 8 bits, a format per operand (§IV); low-precision PCU + TEP, run twice per weight read (§V-A, §V-D); fused dequantization, the work hidden on the NPU (§V-C) (moved from slide 1, whose key points were removed: the title slide carries none) | §I contributions; §IV; §V-A, §V-C, §V-D | ok |
 | 3 | N: "the four numbers on the right" | (layout) | fixed (notes said "at the bottom"; the numbers sit on the right) |
 | 4 | N: background values are one simulator preset (LPDDR5-6400 AiM, Ramulator 2.0), not JEDEC | DRAM explainer §dram intro | background |
 | 5 | Channel = own command + data bus; 4 bank groups × 4 banks = 16 banks | DRAM explainer Table B1 (mobile: 4 × 4 = 16 per channel) | background |

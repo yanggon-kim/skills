@@ -56,7 +56,8 @@ package check; plain `soffice`).
    from proto import Deck, Frame, Table, svg, R, T, L, PL, C, E, G
    d = Deck("Title", subject="...", author="...")        # part 1, "Summary", is built in
    d.part("Background", "Background: the problem", "what the audience needs first")
-   d.title_slide(...); d.outline(notes=...)                 # the outline, Summary highlighted
+   d.title_slide(title=..., subtitle=..., byline=[...], notes=...)   # no key points: those go on the summary
+   d.outline(notes=...)                                     # the outline, Summary highlighted
    d.summary("the talk's core message", figure=svg(...), bullets=[...], notes=...)  # -> "Summary: ..."
    d.divider("Background", notes=...)
    d.content("One-line message", part="Background", figure=svg("0 0 600 260", ...), bullets=[...], notes=..., source=...)
@@ -65,8 +66,8 @@ package check; plain `soffice`).
    d.write("talk.html")
    ```
 4. **Lint it**: `$PY $SK/scripts/html_to_spec.py talk.html --check`. Fix every ERROR; read every WARN
-   (no Summary part first, no summary slide right after the outline, or a summary title that does not
-   start with "Summary" are ERRORs; title over one line, band over 4 lines, loose viewBox, figure that
+   (no Summary part first, no summary slide right after the outline, a summary title that does not
+   start with "Summary", or a point list on the title slide are ERRORs; title over one line, band over 4 lines, loose viewBox, figure that
    leaves white space, labels the deck must raise to 12 pt, results without methodology, notes length). A figure that would fill less
    than half its area is an ERROR naming the proportions to redraw at.
 5. **Look at it** in a browser (or a headless screenshot). The canvas flags a title wider than its line or
@@ -105,7 +106,10 @@ Each rule exists because a reviewer of an earlier deck asked for it; the reason 
    with that part highlighted tells them where they are, which is what people lose first in a talk.
    **Every deck's first part is "Summary"**: the whole talk on one slide, titled "Summary: <core
    message>" (one 20 pt line: shorten the message, the full sentence goes to the notes), so a listener
-   who keeps only one slide keeps the right one. The outline slide doubles as the Summary divider (it
+   who keeps only one slide keeps the right one. **The title slide carries only the title, subtitle,
+   authors / venue, presenter / date and the logo — never the summary points**: the key points live only
+   on the Summary slide, so the opening is not duplicated two slides apart (the lint stops on a point list
+   on the title slide; QA fails on list or badge shapes there). The outline slide doubles as the Summary divider (it
    lists every part with Summary highlighted, "Next: part 1 of N"), so the deck never shows two outline
    slides in a row; the later dividers read "part k of N". One or two **methodology / setup** slides come
    before any results (how numbers were produced decides whether they can be trusted); mark them
@@ -169,8 +173,9 @@ Each rule exists because a reviewer of an earlier deck asked for it; the reason 
 | table leaves white space | the deck already grows it (type to 18 pt, taller rows); widen the row-label column, add the rows the talk needs, or use a figure or stats |
 | tags | move the provenance sentence to `.source` |
 | morph / unkeyed counts | give a `data-key` to every element that appears, disappears or changes; hide with class `off` |
-| structure | title first, outline second, the "Summary: …" slide third, a divider per later part, one closing slide, appendix only after it |
+| structure | title first (no point list or badges on it), outline second, the "Summary: …" slide third, a divider per later part, one closing slide, appendix only after it |
 | summary lint (ERROR) | add `d.summary("core message", …)` right after the outline; title "Summary: …"; never a divider for the Summary part |
+| title-slide list (lint ERROR, QA structure) | delete the points from the title slide; they belong on the summary slide, and the script that walked them goes to its notes |
 
 ## Files
 
