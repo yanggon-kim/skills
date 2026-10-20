@@ -42,7 +42,9 @@ package check; plain `soffice`).
 1. **Read the source** in full (paper, notes, data). List the claims you will make and where each comes
    from (section, figure, table, page). Numbers are quoted, never invented; your own inferences are kept
    apart (rule 10).
-2. **Plan the talk** as parts (sections of the outline), then slides. Each slide states **one core
+2. **Plan the talk** as parts (sections of the outline), then slides. **Part 1 is always "Summary"**:
+   one slide right after the outline, titled "Summary: <core message of the talk>", with the talk's key
+   picture or numbers (rule 2). Each slide states **one core
    message**, and its title *is* that message in a few words ("The cache halves median latency only
    above 64 users", not "Results"). Decide for every slide what the audience must see (the figure or table) and what it
    must hear (the notes). Push every detail that is not needed to follow the argument to the appendix.
@@ -52,17 +54,20 @@ package check; plain `soffice`).
    ```python
    import sys; sys.path.insert(0, f"{SK}/scripts")
    from proto import Deck, Frame, Table, svg, R, T, L, PL, C, E, G
-   d = Deck("Title", subject="...", author="...")
+   d = Deck("Title", subject="...", author="...")        # part 1, "Summary", is built in
    d.part("Background", "Background: the problem", "what the audience needs first")
-   d.title_slide(...); d.outline(notes=...); d.divider("Background", notes=...)
+   d.title_slide(...); d.outline(notes=...)                 # the outline, Summary highlighted
+   d.summary("the talk's core message", figure=svg(...), bullets=[...], notes=...)  # -> "Summary: ..."
+   d.divider("Background", notes=...)
    d.content("One-line message", part="Background", figure=svg("0 0 600 260", ...), bullets=[...], notes=..., source=...)
    d.story("One-line message", part="Background", frames=[Frame("step", svg(...), "caption", "script"), ...])
    d.closing(...); d.appendix("A1", "Full table", table=Table(...), bullets=[...], notes=...)
    d.write("talk.html")
    ```
 4. **Lint it**: `$PY $SK/scripts/html_to_spec.py talk.html --check`. Fix every ERROR; read every WARN
-   (title over one line, band over 4 lines, loose viewBox, figure that leaves white space, labels the
-   deck must raise to 12 pt, results without methodology, notes length). A figure that would fill less
+   (no Summary part first, no summary slide right after the outline, or a summary title that does not
+   start with "Summary" are ERRORs; title over one line, band over 4 lines, loose viewBox, figure that
+   leaves white space, labels the deck must raise to 12 pt, results without methodology, notes length). A figure that would fill less
    than half its area is an ERROR naming the proportions to redraw at.
 5. **Look at it** in a browser (or a headless screenshot). The canvas flags a title wider than its line or
    a band taller than its box in red; storyboards play with ←/→ and Play. Then hand it to the user.
@@ -95,12 +100,17 @@ Each rule exists because a reviewer of an earlier deck asked for it; the reason 
 
 1. **HTML first, deck translated.** (Above.) Never edit the .pptx by hand: the next build overwrites it,
    and a hand edit is invisible to QA and to the audit.
-2. **Structure: title → outline → [divider → part]… → closing → appendix.** The outline after the title
-   tells the audience the route; repeating it before each part with that part highlighted tells them where
-   they are, which is what people lose first in a talk. One or two **methodology / setup** slides come
+2. **Structure: title → outline (Summary highlighted) → summary slide → [divider → part]… → closing →
+   appendix.** The outline after the title tells the audience the route; repeating it before each part
+   with that part highlighted tells them where they are, which is what people lose first in a talk.
+   **Every deck's first part is "Summary"**: the whole talk on one slide, titled "Summary: <core
+   message>" (one 20 pt line: shorten the message, the full sentence goes to the notes), so a listener
+   who keeps only one slide keeps the right one. The outline slide doubles as the Summary divider (it
+   lists every part with Summary highlighted, "Next: part 1 of N"), so the deck never shows two outline
+   slides in a row; the later dividers read "part k of N". One or two **methodology / setup** slides come
    before any results (how numbers were produced decides whether they can be trusted); mark them
    `data-role="method"` and results `data-role="result"`. The closing slide recaps in one sentence and
-   opens the discussion. The translator adds a missing outline or divider, with a warning.
+   opens the discussion. The translator adds a missing outline or divider, with a warning; a missing summary slide stops it.
 3. **Figure or table first.** On a normal slide the figure, table, numbers or cards fill the content area
    (8.5 × 3.2 in) — a table grows its type and rows to fill it, a figure is drawn in the area's
    proportions; the audience looks at the picture while the speaker talks. **Two or three supporting
@@ -159,7 +169,8 @@ Each rule exists because a reviewer of an earlier deck asked for it; the reason 
 | table leaves white space | the deck already grows it (type to 18 pt, taller rows); widen the row-label column, add the rows the talk needs, or use a figure or stats |
 | tags | move the provenance sentence to `.source` |
 | morph / unkeyed counts | give a `data-key` to every element that appears, disappears or changes; hide with class `off` |
-| structure | title first, outline second, a divider per part, one closing slide, appendix only after it |
+| structure | title first, outline second, the "Summary: …" slide third, a divider per later part, one closing slide, appendix only after it |
+| summary lint (ERROR) | add `d.summary("core message", …)` right after the outline; title "Summary: …"; never a divider for the Summary part |
 
 ## Files
 

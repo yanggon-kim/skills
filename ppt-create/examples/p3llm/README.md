@@ -27,8 +27,9 @@ python3 $SK/examples/p3llm/build_p3llm_intro.py p3llm-intro.html                
 ```
 
 **What to look at.**
-- Structure: title (three key ideas) → outline → five parts, each opened by the outline with the part
-  highlighted → closing with three discussion questions. Two methodology slides precede the results.
+- Structure: title (three key ideas) → outline with part 1, Summary, highlighted (it is also the Summary
+  divider) → "Summary: shrink every operand; use each weight read twice" → five more parts, each opened
+  by the outline with that part highlighted ("Next: part k of 6") → closing with three discussion questions. Two methodology slides precede the results.
 - Figure-first slides with 2–3 bullets in the band; the speaker notes are a full script (120–250 words)
   that walks the figure ("the gold bar…") and names the table or section behind every number.
 - Storyboards: DRAM commands on one bank (5 frames), timing rules (6), a stock PIM run (7), the paper's

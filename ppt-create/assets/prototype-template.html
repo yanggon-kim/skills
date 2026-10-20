@@ -231,6 +231,7 @@ svg * { transition: fill 180ms ease, opacity 180ms ease; }
   var main = slides.filter(function (s) { return !s.hasAttribute("data-appendix"); });
   var appx = slides.filter(function (s) { return s.hasAttribute("data-appendix"); });
   var NUM = ["No", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
+  function isSummary(p) { return !!p && (p.id === "Summary" || p.label.indexOf("Summary") === 0); }
   function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
   function canvasOf(s) { var c = $(".canvas", s); if (!c) { c = el("div", "canvas"); s.insertBefore(c, s.firstChild); } return c; }
 
@@ -255,8 +256,9 @@ svg * { transition: fill 180ms ease, opacity 180ms ease; }
     c.innerHTML = "";
     c.appendChild(el("p", "outline-title", opts.title || "Outline"));
     c.appendChild(el("div", "outline-rule"));
-    c.appendChild(el("p", "outline-kicker" + (hi >= 0 ? " next" : ""), opts.kicker || (hi < 0 ? (NUM[rows.length] || rows.length) + " parts" : "Next: part " + (hi + 1) + " of " + rows.length)));
-    var ol = el("ol", "outline-rows" + (hi < 0 ? " all" : "") + (rows.length > 5 ? " many" : ""));
+    var num = NUM[rows.length] || rows.length;
+    c.appendChild(el("p", "outline-kicker" + (hi >= 0 ? " next" : ""), opts.kicker || (hi < 0 ? num + " parts" : "Next: part " + (hi + 1) + " of " + rows.length)));
+    var ol = el("ol", "outline-rows" + (hi < 0 ? " all" : "") + (rows.length > 6 ? " many" : ""));
     rows.forEach(function (r, i) {
       var li = el("li", i === hi ? "on" : "");
       li.appendChild(el("span", "dot", r.mark || String(i + 1)));
@@ -267,7 +269,8 @@ svg * { transition: fill 180ms ease, opacity 180ms ease; }
 
   slides.forEach(function (s) {
     var kind = s.getAttribute("data-kind");
-    if (kind === "outline") outlineCanvas(s, -1, parts, {});
+    // the outline is also the Summary part's divider: Summary (part 1) highlighted
+    if (kind === "outline") outlineCanvas(s, isSummary(parts[0]) ? 0 : -1, parts, {});
     if (kind === "divider") {
       var id = s.getAttribute("data-part"), hi = parts.findIndex(function (p) { return p.id === id; });
       outlineCanvas(s, hi, parts, {});
@@ -361,6 +364,12 @@ svg * { transition: fill 180ms ease, opacity 180ms ease; }
       var cp = $(".stage-caption", s); if (cp && cp.scrollHeight > cp.clientHeight + 1) flag(s, cp, "caption too long");
       var a = $(".area", s); if (a && a.scrollHeight > a.clientHeight + 1) flag(s, a, "area overflows");
     });
+    // the Summary part: first in the parts list, its slide right after the outline, titled "Summary: ..."
+    var firstMain = main.filter(function (s) { return ["title", "outline"].indexOf(s.getAttribute("data-kind")) < 0; })[0];
+    var ol0 = $('section.slide[data-kind="outline"]', deck) || slides[0];
+    if (!isSummary(parts[0])) flag(ol0, $(".canvas", ol0) || ol0, "no Summary part first");
+    else if (!firstMain || firstMain.getAttribute("data-part") !== parts[0].id) flag(firstMain || ol0, $(".canvas", firstMain || ol0) || ol0, "summary slide must follow the outline");
+    else { var sh = $(".canvas h2", firstMain); if (sh && sh.textContent.indexOf("Summary") !== 0) flag(firstMain, sh, "title must start with Summary"); }
     buildIndex();
   }
 

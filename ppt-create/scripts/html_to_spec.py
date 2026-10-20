@@ -10,18 +10,23 @@ Needs: beautifulsoup4 (scripts/setup.sh); Pillow + Liberation Sans for the text-
 What it does:
   * slides in page order; storyboards keep one record per frame; the outline, a divider before every part,
     and the appendix index are added when the page does not have them;
+  * the Summary part: every deck's first part is "Summary", right after the title. The outline slide
+    is its divider (drawn with Summary highlighted), so the deck never shows two outlines in a row; the
+    next slide is the summary slide, titled "Summary: <core message>";
   * figures: inline SVG -> native-shape records (svg_shapes.py) with content bounds for the crop. A figure
     outside the vocabulary stops the run, naming the element; --png-fallback instead embeds that single
     figure as a picture (rendered by LibreOffice; its text then escapes the type-floor check);
   * speaker notes from .notes; provenance (.source) is appended to the notes ("Figure: ..." / "Source: ...");
   * lint: ERROR stops the spec (exit 1), WARN is printed. Errors: no notes on a slide, provenance words on
-    the slide, an appendix slide before the closing slide, a pointer to a missing appendix slide, unequal
+    the slide, no Summary part first in the parts list, no summary slide right after the outline, a
+    summary slide whose title does not start with "Summary", a divider for the Summary part (it would
+    repeat the outline), an appendix slide before the closing slide, a pointer to a missing appendix slide, unequal
     unkeyed elements across storyboard frames (Morph pairs them by order), a figure filling under half of
     its area (unless the slide has data-whitespace="reason"). Warnings: a title longer than one 20 pt
     line, a band over 4 lines or with more than 3 bullets, a step caption over 10 lines, loose viewBoxes,
     a figure filling under 75 % of its area, figure labels that the deck must raise to 12 pt, a table
     taller than the area or still under 75 % of it when grown, results without a methodology slide, notes
-    shorter than 40 or longer than 300 words;
+    shorter than 40 or longer than 300 words, a Summary part of more than one slide;
   * tables grow to fill the area: type up to 18 pt, then taller rows (fit_table).
 """
 import argparse
@@ -49,6 +54,12 @@ FILL_ERR, FILL_WARN = 0.50, 0.75  # a figure filling less of its area stops the 
 TABLE_MAX_PT, TABLE_EMPTY_WARN = 18, 0.25  # a table grows to this size to fill the area; warn if still this empty
 TABLE_GAP = 0.05  # in: a filled table stops this far above the area's bottom, clear of the band's hairline
 BAND_W, BAND_MARL, CAP_W = 8.5, 0.1875, 2.25
+SUMMARY = "Summary"  # the first part of every deck, and the first word of its summary slide's title
+
+
+def is_summary(part):
+    """The Summary part: id or outline label "Summary" (a label may add a sub-heading, "Summary: ...")."""
+    return part["id"] == SUMMARY or (part["label"] or "").startswith(SUMMARY)
 
 # ---------------------------------------------------------------- text measure (Liberation Sans = Arial metrics)
 _FONTS = {}
@@ -270,6 +281,11 @@ def parse(path, png=False, work="."):
     sections = deck.select("section.slide")
     if not parts:
         lint.warn("deck", "no parts list (ol.parts-def): the outline will be empty")
+    if not parts or not is_summary(parts[0]):
+        lint.err("deck", f"the first part must be {SUMMARY!r} (ol.parts-def): every deck opens, right after the title, "
+                         "with a Summary part of one slide titled \"Summary: <core message>\" (proto.py adds the part; "
+                         "write the slide with Deck.summary(...))")
+    sum_id = parts[0]["id"] if parts and is_summary(parts[0]) else None
 
     def svgtext(el):
         r = el.find("svgref") if el is not None else None
@@ -295,6 +311,9 @@ def parse(path, png=False, work="."):
         elif kind in ("outline", "divider"):
             if kind == "divider" and part not in pid:
                 lint.err(where, f"divider for unknown part {part!r} (parts: {pid})")
+            elif kind == "divider" and part == sum_id:
+                lint.err(where, "divider for the Summary part: the outline slide is its divider (drawn with Summary "
+                                "highlighted), so this slide would repeat it; remove it")
         elif kind == "closing":
             rec.update(title=clean(canvas.find("h2")) or "Questions", recap=clean(canvas.select_one(".recap")),
                        citation=clean(canvas.select_one(".citation")), questions=[clean(li) for li in canvas.select(".questions > li")])
@@ -426,7 +445,7 @@ def parse(path, png=False, work="."):
                 out.append({"kind": "outline", "part": "Opening", "notes": "", "appendix": None})
             continue
         p = s["part"]
-        if p in pid and p not in seen and s["kind"] != "divider" and p not in divided:
+        if p in pid and p not in seen and s["kind"] != "divider" and p not in divided and p != sum_id:
             lint.warn("deck", f"part {p!r} has no divider slide: added, without notes")
             out.append({"kind": "divider", "part": p, "notes": "", "appendix": None})
         if p in pid:
@@ -439,8 +458,24 @@ def parse(path, png=False, work="."):
         if not s["appendix"] and i > closing_at:
             lint.err(f"[{i + 1}] {s['kind']}", "a main slide after the closing slide: move it before, or make it an appendix slide")
     for p in pid:
-        if p not in seen:
+        if p not in seen and p != sum_id:
             lint.warn("deck", f"part {p!r} has no slides")
+    # the Summary part: right after the outline, one slide, titled "Summary: <core message>"
+    if sum_id:
+        main_ = [s for s in out if not s["appendix"] and s["kind"] not in ("title", "outline")]
+        summ = [s for s in main_ if s["part"] == sum_id and s["kind"] in ("content", "story")]
+        if not summ:
+            lint.err("deck", f"no summary slide: give the part {sum_id!r} one content slide titled \"Summary: <core message>\", "
+                             "right after the outline (Deck.summary(...))")
+        elif main_[0] is not summ[0]:
+            lint.err(f"{main_[0]['kind']} {(main_[0].get('title') or '')[:40]}",
+                     "the summary slide must come right after the outline (title, outline, summary, then the parts)")
+        for s in summ:
+            if not (s.get("title") or "").startswith(SUMMARY):
+                lint.err(f"{s['kind']} {(s.get('title') or '')[:40]}", f"the summary slide's title must start with {SUMMARY!r}: "
+                                                                     "\"Summary: <core message>\", one 20 pt line (shorten the message; the full one goes to the notes)")
+        if len(summ) > 1:
+            lint.warn("deck", f"the Summary part has {len(summ)} slides: keep the talk's summary on one slide")
     appx = [s for s in slides if s["appendix"]]
     ids = [s["appendix"] for s in appx]
     for s in out:
@@ -478,13 +513,17 @@ def parse(path, png=False, work="."):
             else:
                 a["notes"] = a["notes"] + back
             out.append(a)
-    # sections: the opening (title, outline, slides before the first part), one per part, the appendix
+    # sections: the opening (the title and slides outside every part), one per part (the outline opens the
+    # Summary part: it is that part's divider, with Summary highlighted), the appendix
     for s in out:
         if s["appendix"]:
             s["section"] = "Appendix"
         elif s["kind"] == "closing":
             s["section"] = s["part"] if s["part"] in pid else (pid[-1] if pid else "Closing")
-        elif s["kind"] in ("title", "outline") or s["part"] not in pid:
+        elif s["kind"] == "outline":
+            s["section"] = sum_id or "Opening"
+            s["partIndex"] = 0 if sum_id else -1
+        elif s["kind"] == "title" or s["part"] not in pid:
             s["section"] = "Opening"
         else:
             s["section"] = s["part"]

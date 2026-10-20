@@ -13,8 +13,9 @@ Checks, each printed as PASS / FAIL with the offending slides; exit status 1 on 
             phrase (sidecar qa.restricted) only inside the named figures
   morph     one Morph transition per storyboard follow-on frame; the !!-names match frame to frame
   notes     every slide has speaker notes
-  structure title first, outline second, a divider opening every part, one closing slide, appendix slides
-            only after the closing slide
+  structure title first, outline second (it opens the Summary part), the summary slide third with a title
+            starting "Summary", a divider opening every other part, one closing slide, appendix slides only
+            after the closing slide
   fit       every wrapping text box holds its text (greedy word wrap with Liberation Sans at 97 % of the width),
             every title is one line, every table ends above the band
   overlap   no two texts overlap (each text's ink: its measured width placed by alignment, its lines placed by
@@ -412,7 +413,10 @@ def main():
                     sz, b = run_size(r, el, inh, ptype), run_bold(r, el, inh)
                     if sz < floor and not (lay == "Title Opener" and sz >= 12):
                         res["floors"].append(f"s{no} {nm}: {sz} pt '{(r.findtext('a:t', namespaces=NS) or '')[:30]}'")
-                    runs.append((r.findtext("a:t", namespaces=NS) or "", sz, b))
+                    rt = r.findtext("a:t", namespaces=NS) or ""
+                    rpr = r.find("a:rPr", NS)
+                    cap = (rpr.get("cap") if rpr is not None else None) or lst_val(el, inh, "/a:defRPr", "cap")
+                    runs.append((rt.upper() if cap == "all" else rt, sz, b))  # an all-caps style (kickers) is measured in capitals
                 if not runs:
                     continue
                 ppr = p.find("a:pPr", NS)
@@ -506,6 +510,15 @@ def main():
             res["structure"].append(f"s1 is {kinds[0]}, want the title slide")
         if len(kinds) < 2 or kinds[1] != "outline":
             res["structure"].append("s2 is not the outline")
+        # the Summary part right after the title: the outline opens it (as its divider), the summary slide follows
+        elif not ms[1]["section"].startswith("Summary"):
+            res["structure"].append(f"s2 (the outline) opens part '{ms[1]['section']}', want the Summary part")
+        elif len(ms) < 3 or ms[2]["section"] != ms[1]["section"] or ms[2]["kind"] not in ("content", "frame-first"):
+            res["structure"].append("s3 is not the summary slide (want title, outline, summary)")
+        else:
+            t3 = prs.slides[2].shapes.title.text.strip() if prs.slides[2].shapes.title is not None else ""
+            if not t3.startswith("Summary"):
+                res["structure"].append(f"s3 title {t3[:40]!r} does not start with 'Summary' (want 'Summary: <core message>')")
         closing = [i for i, k in enumerate(kinds) if k == "closing"]
         if len(closing) != 1:
             res["structure"].append(f"{len(closing)} closing slides, want 1")
@@ -519,7 +532,7 @@ def main():
         first_section = ms[0]["section"]
         for i, m in enumerate(ms):
             new_sec = i == 0 or ms[i - 1]["section"] != m["section"]
-            if new_sec and m["section"] != first_section and not m.get("appendix") and m["kind"] != "divider":
+            if new_sec and m["section"] != first_section and not m.get("appendix") and m["kind"] not in ("divider", "outline"):
                 res["structure"].append(f"s{i + 1}: part '{m['section']}' opens without a divider")
     # storyboards: consecutive frame slides with one title; the unkeyed !!u<n> elements must match
     prev = None

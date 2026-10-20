@@ -7,7 +7,7 @@
    Then:  DIR/venv/bin/python deck_qa.py OUT.pptx DIR/<name>.meta.json
 
    Every slide type comes from deck_lib.js, so a spec deck and a hand-written builder share one geometry,
-   one palette and one set of type floors. Slide kinds: title, outline, divider, content (area: figure,
+   one palette and one set of type floors. Slide kinds: title, outline (which opens the Summary part), divider, content (area: figure,
    figure-stats, table, stats, cards), story (one Morph-linked slide per frame), closing, appendix-index, and
    appendix slides (content or story with an "appendix" id: titled "A1 · ...", after the closing slide). */
 "use strict";
@@ -70,8 +70,8 @@ for (const s of spec.slides) {
     case "title":
       d.titleSlide(S, { ...s, points: (s.points || []).map(([h, t]) => [h, d.nb(t)]) });
       break;
-    case "outline":
-      d.outlineSlide(S, PARTS, -1, s.notes);
+    case "outline": // also the Summary part's divider: Summary (part 1) highlighted
+      d.outlineSlide(S, PARTS, s.partIndex ?? 0, s.notes, { kind: "outline" });
       break;
     case "divider":
       d.outlineSlide(S, PARTS, s.partIndex, s.notes);

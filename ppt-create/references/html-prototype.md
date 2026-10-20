@@ -22,6 +22,7 @@ markup below; the canvas styling is only a preview, so what matters is that the 
 ```html
 <main class="deck" data-title="Talk title" data-subject="One line" data-author="Name">
   <ol class="parts-def">                       <!-- the outline: one item per part, in order -->
+    <li data-part="Summary"><b>Summary</b><span>the talk in one slide</span></li>   <!-- always first -->
     <li data-part="Background"><b>Background: the problem</b><span>what the audience needs first</span></li>
     <li data-part="Evaluation"><b>Evaluation</b><span>method, results</span></li>
   </ol>
@@ -30,8 +31,9 @@ markup below; the canvas styling is only a preview, so what matters is that the 
 </main>
 ```
 `data-part` is the part's id and the PowerPoint section name; `<b>` is the label shown on the outline,
-`<span>` a one-line subtitle. Slides before the first divider belong to the "Opening" section; appendix
-slides to "Appendix".
+`<span>` a one-line subtitle. **The first part is always `Summary`** (proto.py adds it; the lint stops
+without it). The title slide is the "Opening" section; the outline and the summary slide are the
+"Summary" section; appendix slides are "Appendix".
 
 ## Slide kinds
 
@@ -50,11 +52,23 @@ key points right (the talk's three ideas, each a short head and a one-line sub).
 ```
 
 **Outline and dividers** — no canvas markup needed: the preview and the deck draw them from the parts
-list. The outline comes right after the title; a divider opens each part, with that part highlighted
-("Next: part 2 of 4"). Each carries its own short script (what this part is for).
+list. The outline comes right after the title and lists every part with part 1, Summary, highlighted
+("Next: part 1 of 4"): it is also the Summary part's divider, so there is no separate Summary divider
+(the lint stops on one: two outline slides in a row). A divider opens each later part, with that part
+highlighted ("Next: part 2 of 4"). Each carries its own short script (what this part is for; the
+outline's names the parts and leads into the summary).
 ```html
-<section class="slide" data-kind="outline"><details class="notes" open>…</details></section>
+<section class="slide" data-kind="outline" data-part="Summary"><details class="notes" open>…</details></section>
 <section class="slide" data-kind="divider" data-part="Background"><details class="notes" open>…</details></section>
+```
+
+**Summary** — a content slide (any area form; a figure with its headline numbers beside it works well)
+in part `Summary`, right after the outline, titled `Summary: <core message>`. The title must stay one
+20 pt line: shorten the message and say the full sentence in the notes. `d.summary(message, …)` writes it.
+```html
+<section class="slide" data-kind="content" data-part="Summary">
+  <div class="canvas"><h2>Summary: shrink every operand; use each weight read twice</h2> … </div> …
+</section>
 ```
 
 **Content** — one core message: title, the area, the band.
@@ -181,10 +195,12 @@ C(cx, cy, r, cls, key=None); E(cx, cy, rx, ry, cls, key=None)
 G(body, dx=0, dy=0, cls="", key=None)                   # cls "hot" / "pend"
 svg(viewBox, body, title="", desc="", text_scale=None)
 
-d = Deck(title, subject="", author="")
-d.part(id, label=None, sub="")
+d = Deck(title, subject="", author="")       # part 1 "Summary" is built in
+d.part(id, label=None, sub="")                # d.part("Summary", label, sub) re-labels part 1
 d.title_slide(title, subtitle="", byline=(), points=(), notes="", presenter=…, date=…)
-d.outline(notes=""); d.divider(part_id, notes="")
+d.outline(notes="")                           # Summary highlighted: also the Summary divider
+d.summary(message, **content_kwargs)          # right after the outline; title "Summary: <message>"
+d.divider(part_id, notes="")                  # every later part (a "Summary" divider is dropped)
 d.content(title, part=None, figure=None | table=Table(...) | stats=[(metric, label, hot)] | cards=[(head, text)],
           bullets=(), notes="", source="", see=None, role=None, whitespace=None)   # figure + stats = figure-stats
 d.story(title, frames=[Frame(step, svg, caption, notes)], part=None, notes="", source="", see=None, role=None,
@@ -192,13 +208,14 @@ d.story(title, frames=[Frame(step, svg, caption, notes)], part=None, notes="", s
 d.closing(title="Questions", recap="", citation="", questions=(), notes="")
 d.appendix(aid, title, frames=None, **content_or_story_kwargs)
 Table(head, rows, colw=None, font=13, ours=(), dense=False, bold_first=True)
-d.write(path)        # warns about a missing outline / divider / closing; appendix slides go last
+d.write(path)        # warns about a missing outline / divider / summary / closing; appendix slides go last
 ```
 `python3 proto.py content.json out.html` takes the same fields as JSON (see the script's docstring).
 
 ## What the lint checks (`html_to_spec.py --check`)
 
-ERROR (no spec is written): a slide without notes; provenance words on a slide (`Source:`, `Redrawn`,
+ERROR (no spec is written): no `Summary` part first in the parts list; no summary slide right after the
+outline; a summary slide whose title does not start with "Summary"; a divider for the Summary part; a slide without notes; provenance words on a slide (`Source:`, `Redrawn`,
 `Adapted from`, `schematic`, …); an appendix slide before the closing slide or a main slide after it; a
 `data-see` to a missing appendix id; a figure outside the vocabulary (without `--png-fallback`); storyboard
 frames with different numbers of unkeyed elements; a table below 12 pt; no title or no closing slide; a
@@ -207,12 +224,14 @@ WARN: a title over one 20 pt line; a band over 4 lines or with more than 3 bulle
 10 lines or a step title over 2; a loose viewBox (with the tight one to use); a figure filling < 75 % of
 its area; labels that scale below 12 pt; a table taller than the area, or one that fills < 75 % of it
 even at its grown size; results without a methodology
-slide; notes outside 40–300 words; an appendix slide nobody points to; a part without slides.
+slide; notes outside 40–300 words; an appendix slide nobody points to; a part without slides; a Summary
+part of more than one slide.
 
 ## What the preview does
 
 The template's script numbers slides as the deck will (a storyboard of n frames spans n slides), draws
-the outline, dividers and appendix index from the parts list, plays storyboards (←, Play, →; click a
+the outline (Summary highlighted), dividers and appendix index from the parts list, flags a deck without
+a Summary part first, a summary slide not right after the outline or not titled "Summary…", plays storyboards (←, Play, →; click a
 frame), flags in red a title wider than its line, a band or caption taller than its box, and an area that
 overflows, lists the slides in a side index, and moves between slides with the arrow keys. Fonts in the
 preview are the browser's Arial / Helvetica, so a line that barely fits may wrap differently in

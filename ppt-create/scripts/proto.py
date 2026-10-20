@@ -4,11 +4,12 @@
 From Python (the usual route: figures are easier to draw with the helpers):
     import sys; sys.path.insert(0, "<skill>/scripts")
     from proto import Deck, Frame, Table, svg, R, T, L, PL, C, E, G
-    d = Deck("Talk title", subject="One line on the talk", author="Name")
+    d = Deck("Talk title", subject="One line on the talk", author="Name")   # part 1, "Summary", is built in
     d.part("Background", "Background: the problem", "what the audience needs first")
     d.title_slide(title="Talk title", subtitle="...", byline=["Authors", "Venue, year"],
                   points=[("Idea 1", "one line"), ...], notes="script ...")
-    d.outline(notes="script ...")
+    d.outline(notes="script ...")        # the outline, with Summary highlighted: also the Summary divider
+    d.summary("core message of the talk", figure=svg(...), bullets=[...], notes="script ...")  # "Summary: ..."
     d.divider("Background", notes="script ...")
     d.content("One-line core message", part="Background", figure=svg("0 0 640 300", R(...) + T(...)),
               bullets=["...", "..."], notes="script ...", source="Redrawn from ...", see="A1", role="method")
@@ -19,13 +20,17 @@ From Python (the usual route: figures are easier to draw with the helpers):
 
 From JSON:  python3 proto.py CONTENT.json OUT.html
     {"title": .., "subject": .., "author": .., "parts": [{"id", "label", "sub"}],
-     "slides": [{"kind": "title" | "outline" | "divider" | "content" | "story" | "closing", ...}]}
+     "slides": [{"kind": "title" | "outline" | "summary" | "divider" | "content" | "story" | "closing", ...}]}
+    ("summary" takes the content fields with "message" in place of "title"; "parts" may omit Summary)
     with the same fields as the methods below ("figure" is an SVG string; a story's "frames" are
     {"step", "svg", "caption", "notes"}; a table is {"head", "rows", "colw", "font", "ours", "dense"}).
 
 The writer only formats; the rules (one message per slide, 2-3 bullets, figure first, notes as a script,
-provenance in .source, details to the appendix) are the author's. Missing outline or divider slides are
-added with a warning, appendix slides always go after the closing slide.
+provenance in .source, details to the appendix) are the author's. Every deck's first part is "Summary"
+(added automatically; d.part("Summary", label, sub) re-labels it): the outline right after the title is
+its divider, and the summary slide (d.summary) follows it, titled "Summary: <core message>". Missing
+outline or divider slides are added with a warning, a missing summary slide is warned about here and
+stops html_to_spec.py; appendix slides always go after the closing slide.
 """
 import html
 import json
@@ -34,6 +39,7 @@ import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+SUMMARY = "Summary"  # the first part of every deck (html_to_spec.py stops on a deck without it)
 TEMPLATE = os.path.join(os.path.dirname(HERE), "assets", "prototype-template.html")
 E_ = html.escape
 
@@ -152,12 +158,15 @@ def _bullets(items):
 class Deck:
     def __init__(self, title, subject="", author=""):
         self.title, self.subject, self.author = title, subject, author
-        self.parts = []  # (id, label, sub)
+        self.parts = [(SUMMARY, SUMMARY, "the talk in one slide")]  # (id, label, sub); Summary is always first
         self.slides = []  # (kind, part, html)
         self.appendix_slides = []
         self.warnings = []
 
     def part(self, pid, label=None, sub=""):
+        if pid == SUMMARY:  # re-label the built-in first part; it stays first
+            self.parts[0] = (SUMMARY, label or SUMMARY, sub or self.parts[0][2])
+            return
         self.parts.append((pid, label or pid, sub))
 
     def _add(self, kind, part, body, attrs=""):
@@ -172,11 +181,23 @@ class Deck:
                 + f'<p class="date">{E_(date)}</p>' + (f'<ol class="key-points">{kp}</ol>' if kp else "") + "</div>" + _notes(notes))
         self._add("title", part, body)
 
-    def outline(self, notes="", part="Opening"):
+    def outline(self, notes="", part=SUMMARY):
+        """The outline: every part listed, Summary (part 1) highlighted. It is also the Summary part's divider,
+        so its script names the parts and then introduces the summary slide."""
         self._add("outline", part, '<div class="canvas"></div>' + _notes(notes))
 
     def divider(self, pid, notes=""):
+        if pid == SUMMARY:
+            self.warnings.append("no divider for the Summary part: the outline is its divider (divider dropped)")
+            return
         self._add("divider", pid, '<div class="canvas"></div>' + _notes(notes))
+
+    def summary(self, message, **kw):
+        """The summary slide, right after the outline: the whole talk on one content slide (figure or numbers
+        first, 2-3 bullets). Its title is "Summary: <message>" and must stay one 20 pt line, so the message is
+        short; the full message goes in the notes. Takes the content() fields."""
+        title = message if message.startswith(SUMMARY) else f"{SUMMARY}: {message}"
+        self.content(title, part=SUMMARY, **kw)
 
     def _area(self, figure=None, table=None, stats=None, cards=None):
         inner = ""
@@ -243,11 +264,11 @@ class Deck:
             if kind == "title":
                 order.append(sec)
                 if not have_outline:
-                    order.append('<section class="slide" data-kind="outline" data-part="Opening"><div class="canvas"></div></section>')
+                    order.append('<section class="slide" data-kind="outline" data-part="Summary"><div class="canvas"></div></section>')
                     self.warnings.append("outline added without notes: give it a script (Deck.outline(notes=...))")
                 continue
             ids = [p[0] for p in self.parts]
-            if part in ids and part not in seen and kind != "divider":
+            if part in ids and part not in seen and kind != "divider" and part != SUMMARY:
                 if part not in dividers:
                     order.append(f'<section class="slide" data-kind="divider" data-part="{E_(part)}"><div class="canvas"></div></section>')
                     self.warnings.append(f"divider for part {part!r} added without notes")
@@ -256,6 +277,8 @@ class Deck:
             order.append(sec)
         if "closing" not in kinds:
             self.warnings.append("no closing slide")
+        if not any(k in ("content", "story") and p == SUMMARY for k, p, _ in self.slides):
+            self.warnings.append("no summary slide: add Deck.summary(message, ...) after the outline (html_to_spec.py stops without it)")
         order += self.appendix_slides
         parts = "".join(f'<li data-part="{E_(i)}"><b>{E_(l)}</b><span>{E_(s)}</span></li>' for i, l, s in self.parts)
         return (f'<main class="deck" data-title="{E_(self.title)}" data-subject="{E_(self.subject)}" data-author="{E_(self.author)}">'
@@ -291,6 +314,8 @@ def from_json(spec):
             d.outline(**s)
         elif kind == "divider":
             d.divider(s.pop("part"), **s)
+        elif kind == "summary":
+            d.summary(s.pop("message"), **s)
         elif kind == "content":
             d.content(**s)
         elif kind == "story":

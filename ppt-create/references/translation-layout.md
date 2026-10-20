@@ -41,7 +41,7 @@ talk.pptx ──deck_qa.py (+ meta)──> PASS/FAIL     ──validate_deck.py�
 | frame figure | 0.70 | 0.80 | 6.05 | 4.40 | storyboard frames: figure to y 5.20 |
 | step column | 6.95 | | 2.25 | | dots y 0.84 (0.20 in, every 0.28 in), step label y 1.14 h 0.72 ("Step i of n" 12 pt + step title 16 pt bold navy), caption y 1.92 h 3.28 at 16 pt |
 | footer | logo (0.375, 5.30, 0.463 × 0.149); slide number (9.50, 5.31, 0.50 × 0.14) | | | | only these two; no footer text |
-| outline / divider | title (0.70, 2.05, 2.85 × 0.61) 36 pt; rule and kicker in that 2.85 in column; parts listed from x 3.80, rows 0.87 in | | | | the template's Section Divider, with a title placeholder instead of its fixed text |
+| outline / divider | title (0.70, 2.05, 2.85 × 0.61) 36 pt; rule and kicker in that 2.85 in column; parts listed from x 3.80, rows 0.87 in (six or more parts: 4.35 in / n; up to six keep 19.5 / 13.5 pt); dot and highlight card centred on the row text; kicker "Next: part k of N" (the outline: part 1, Summary, highlighted) | | | | the template's Section Divider, with a title placeholder instead of its fixed text |
 | closing | title on the brand rule; recap (0.70, 2.85, 4.9 × 1.45) 16 pt; citation y 4.40 12 pt; questions from x 5.85 | | | | the template's Thank You layout, with a title placeholder |
 
 The numbers live in `deck_lib.js` (constants and `GEOM`) and reach `transplant.py` and `deck_qa.py`
@@ -128,8 +128,8 @@ Look at every slide and fix in the prototype, in this order:
 | tags | provenance words on a slide; a restricted phrase outside its figures | move to `.source`; keep restricted phrases in the named figures |
 | morph | Morph count ≠ follow-on frames; `!!u<n>` sets differ between frames | key every changing element; equal unkeyed elements per frame |
 | notes | a slide without notes | write the script |
-| structure | title not first, outline not second, a part without a divider, closing count ≠ 1, appendix misplaced | reorder the prototype |
-| fit | a title over one line, a text box too small for its text, a table below the area | shorten, split, or move to the appendix |
+| structure | title not first, outline not second or not opening the Summary section, slide 3 not the summary slide or its title not starting "Summary", a later part without a divider, closing count ≠ 1, appendix misplaced | reorder the prototype; add the summary slide |
+| fit | a title over one line, a text box too small for its text (an all-caps style, such as the divider kicker, measured in capitals), a table below the area | shorten, split, or move to the appendix |
 | overlap | two texts overlap (each text's ink: measured width placed by its alignment, lines placed by the anchor, trimmed to the glyphs, so empty box padding never counts) | move or shorten one label; a label raised to 12 pt needs more room |
 | lines (WARN) | a line or connector passes through a text's ink: gridlines, arrows, curves over labels | put the label beside the curve, between gridlines or past their end; end the arrow short of the text |
 | edges (WARN) | a text mostly inside a drawn shape runs out over its edge | shorten the label or widen the box |
@@ -147,7 +147,10 @@ the library directly, as `examples/p3llm/build_p3llm_deck.js` does:
 ```js
 const lib = require(`${SKILL}/scripts/deck_lib.js`);
 const d = lib.createDeck({ work, title, subject, author, colorWords, nbRules, qa });
-d.section("Opening"); d.titleSlide("Opening", {...}); d.outlineSlide("Opening", PARTS, -1, notes);
+d.section("Opening"); d.titleSlide("Opening", {...});          // PARTS[0] = ["Summary", "the talk in one slide"]
+d.section("Summary"); d.outlineSlide("Summary", PARTS, 0, notes, { kind: "outline" });   // Summary highlighted
+d.contentSlide("Summary", { title: "Summary: <core message>", body, notes }, (sl) => ...);
+d.section(S); d.outlineSlide(S, PARTS, k, notes);              // divider of part k + 1
 d.figSlide(S, { fig, id, title, body, notes, caption, see });
 d.storySlides(S, { story: { frames }, id, title, titles, captions, notes: [...], caption });
 d.contentSlide(S, { title, body, notes }, (sl) => d.table(sl, head, rows, { colW, fontSize }));

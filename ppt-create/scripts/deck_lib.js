@@ -2,7 +2,7 @@
 
    const { createDeck } = require("<skill>/scripts/deck_lib.js");
    const d = createDeck({ work, title, subject, author });
-   d.titleSlide({...}); d.outlineSlide(parts, -1, notes); d.figSlide(section, {...}); ... await d.write(out);
+   d.titleSlide({...}); d.outlineSlide(section, parts, 0, notes, { kind: "outline" }); d.figSlide(section, {...}); ... await d.write(out);
 
    build_deck.js drives this library from a deck spec (html_to_spec.py output); a hand-written builder may
    call it directly (examples/p3llm/build_p3llm_deck.js). Either way the deck is written in two steps,
@@ -248,25 +248,32 @@ function createDeck(opts = {}) {
   }
 
   const NUMWORD = ["No", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
-  /* The outline (hi < 0) or a section divider (hi = the part about to start, highlighted).
-     parts: [[label, sub]]; o: { title, kicker } overrides (the appendix index uses them). */
+  /* The outline or a section divider: parts listed on the right, the part about to start (hi >= 0)
+     highlighted. kind "outline" with hi = 0 is the deck's outline slide, which is also the divider of the
+     Summary part, the first part of every deck: it lists all parts with Summary highlighted ("Next: part 1
+     of 6", like every divider), so no second outline follows it. hi < 0 lists every part alike (the appendix index).
+     parts: [[label, sub, mark]]; o: { title, kicker, kind, labPt, subPt } overrides. Up to six parts
+     keep the full row type (19.5 / 13.5 pt); each dot and highlight card is centred on its row text. */
   function outlineSlide(sectionTitle, parts, hi, noteText, o = {}) {
-    const sl = newSlide("DIVIDER", sectionTitle, o.kind || (hi < 0 ? "outline" : "divider"), { appendix: o.appendix });
-    const n = parts.length;
+    const kind = o.kind || (hi < 0 ? "outline" : "divider");
+    const sl = newSlide("DIVIDER", sectionTitle, kind, { appendix: o.appendix });
+    const n = parts.length, num = NUMWORD[n] || String(n);
     sl.addText(o.title || "Outline", { placeholder: "title" });
-    sl.addText(o.kicker || (hi < 0 ? `${NUMWORD[n] || n} parts` : `Next: part ${hi + 1} of ${n}`), { placeholder: "kicker", color: hi < 0 ? C.text1 : NAVY });
+    const kicker = o.kicker || (hi < 0 ? `${num} parts` : `Next: part ${hi + 1} of ${n}`);
+    sl.addText(kicker, { placeholder: "kicker", color: hi < 0 ? C.text1 : NAVY });
     const x0 = 3.80, y0 = 0.56, rowH = n <= 5 ? 0.87 : 4.35 / n, d = Math.min(0.525, rowH - 0.2);
-    const labPt = o.labPt || (n <= 5 ? F(26) : 16), subPt = o.subPt || (n <= 5 ? F(18) : LABEL_PT);
+    const labPt = o.labPt || (n <= 6 ? F(26) : 16), subPt = o.subPt || (n <= 6 ? F(18) : LABEL_PT);
+    const textH = rowH - 0.15, cardH = rowH - 0.075;
     parts.forEach(([lab, sub, mark], i) => {
-      const y = y0 + i * rowH, on = i === hi;
-      if (on) sl.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: x0 - 0.15, y: y - 0.09, w: R - (x0 - 0.15), h: rowH - 0.075, rectRadius: 0.06, fill: { color: C.accent3 }, objectName: `row${i}-card` });
-      sl.addShape(pres.shapes.OVAL, { x: x0, y: y + 0.09, w: d, h: d, objectName: `row${i}-dot`,
+      const y = y0 + i * rowH, on = i === hi, mid = y + textH / 2;
+      if (on) sl.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: x0 - 0.15, y: mid - cardH / 2, w: R - (x0 - 0.15), h: cardH, rectRadius: 0.06, fill: { color: C.accent3 }, objectName: `row${i}-card` });
+      sl.addShape(pres.shapes.OVAL, { x: x0, y: mid - d / 2, w: d, h: d, objectName: `row${i}-dot`,
         ...(on ? gold() : { fill: { color: hi < 0 ? NAVY : C.accent3 } }) });
-      sl.addText(mark || String(i + 1), { x: x0, y: y + 0.09, w: d, h: d, align: "center", valign: "middle", fontSize: mark && mark.length > 1 ? LABEL_PT : F(22), bold: true,
+      sl.addText(mark || String(i + 1), { x: x0, y: mid - d / 2, w: d, h: d, align: "center", valign: "middle", fontSize: mark && mark.length > 1 ? LABEL_PT : F(22), bold: true,
         color: on ? NAVY : hi < 0 ? C.background1 : C.accent2, margin: 0, isTextBox: true, objectName: `row${i}-n` });
       const rows = [{ text: lab, options: { fontSize: labPt, bold: on || hi < 0, color: on ? NAVY : hi < 0 ? C.text1 : C.accent2, breakLine: !!sub } }];
       if (sub) rows.push({ text: sub, options: { fontSize: subPt, color: on || hi < 0 ? C.text1 : C.accent2 } });
-      sl.addText(rows, { x: x0 + 0.71, y: y, w: R - (x0 + 0.71) - 0.05, h: rowH - 0.15, valign: "middle", margin: 0, isTextBox: true, objectName: `row${i}-text` });
+      sl.addText(rows, { x: x0 + 0.71, y: y, w: R - (x0 + 0.71) - 0.05, h: textH, valign: "middle", margin: 0, isTextBox: true, objectName: `row${i}-text` });
     });
     notes(sl, noteText);
     return sl;

@@ -908,8 +908,22 @@ def fig_ablation():
 SLIDES = []
 
 
+# The talk's six parts, the same as the deck's outline (build_p3llm_deck.js PARTS): Summary first.
+PARTS = [
+    ("Summary", "the paper in one slide"),
+    ("Background: DRAM and AiM", "hierarchy, ACT/RD/PRE, timing, stock AiM, HBM-PIM"),
+    ("Motivation", "the compute roof of FP16 PIM, W4A8KV4P8"),
+    ("Design", "four formats, the PCU and TEP, the dataflow"),
+    ("Evaluation", "methodology, quality, speed and energy, area"),
+    ("Discussion", "where the gain comes from, open questions"),
+]
+
+
 def slide(sid, part, short, headline, body):
-    SLIDES.append((sid, part, short, headline, body))
+    """part: the part number (1-6), or (number, sub-topic) for the design slides and the discussion."""
+    k, sub = part if isinstance(part, tuple) else (part, "")
+    tag = f"Part {k} of {len(PARTS)} · {PARTS[k - 1][0]}" + (f" · {sub}" if sub else "")
+    SLIDES.append((sid, (f"{k} · {PARTS[k - 1][0]}", tag), short, headline, body))
 
 
 TERMS = [
@@ -933,8 +947,8 @@ TERMS = [
 
 def build_slides():
     terms = "".join(f"<dt>{E(t)}</dt><dd>{E(d)}</dd>" for t, d in TERMS)
-    slide("s01", "Summary", "P3-LLM in one slide",
-          "P3-LLM keeps DRAM processing-in-memory fast at small batches by shrinking every operand and running a "
+    slide("s01", 1, "P3-LLM in one slide",
+          "Summary: P3-LLM keeps DRAM processing-in-memory fast at small batches by shrinking every operand and running a "
           "small compute unit twice per weight read.",
           figure("fig1", fig_summary(),
                  "Figure 1. The three design parts on P3-LLM's system: a host NPU and an HBM-PIM channel. Arrows = "
@@ -959,7 +973,7 @@ def build_slides():
       <dl class="terms">{terms}</dl>
     </details>''')
 
-    slide("s02", "Background · DRAM and AiM", "DRAM hierarchy",
+    slide("s02", 2, "DRAM hierarchy",
           "DRAM is a tree: a channel holds bank groups, a bank group holds banks, and a bank holds rows of columns.",
           figure("fig2", fig_hierarchy(),
                  "Figure 2. Left: one channel with 4 bank groups of 4 banks. Right: the coral bank zoomed in. ACT "
@@ -973,7 +987,7 @@ def build_slides():
       <p>A row is what one ACT opens: 2,048 B in this preset. A column is what one read moves: 32 B here.</p>
     </div>''')
 
-    slide("s03", "Background · DRAM and AiM", "ACT, RD, PRE",
+    slide("s03", 2, "ACT, RD, PRE",
           "Reading one column takes three commands: ACT opens a row, RD moves one column out, and PRE closes the row.",
           fig_actrdpre() + '''
     <div class="points">
@@ -982,7 +996,7 @@ def build_slides():
       <p>PIM depends on this fact. It opens a row once and then computes on every column of it.</p>
     </div>''')
 
-    slide("s04", "Background · DRAM and AiM", "Timing rules",
+    slide("s04", 2, "Timing rules",
           "Timing rules set the earliest moment for each command: tRCD after ACT, CL before the data, tRAS before "
           "PRE and tRP before the next ACT.",
           '''<details class="predict">
@@ -996,7 +1010,7 @@ def build_slides():
       <p>All values here are simulator presets, not JEDEC table values.</p>
     </div>''')
 
-    slide("s05", "Background · DRAM and AiM", "tCCD_S vs tCCD_L",
+    slide("s05", 2, "tCCD_S vs tCCD_L",
           "Two column reads in the same bank group must be tCCD_L apart; reads to different bank groups need only "
           "tCCD_S.",
           figure("fig5", fig_tccd(),
@@ -1011,7 +1025,7 @@ def build_slides():
       <p>Keep this factor of two in mind: P3-LLM's TEP is built on it.</p>
     </div>''')
 
-    slide("s06", "Background · DRAM and AiM", "Stock AiM MAC",
+    slide("s06", 2, "Stock AiM MAC",
           "Stock AiM computes inside the DRAM: one MAC16 command makes all 16 banks multiply one column of weights "
           "by the same input slice.",
           '''<details class="predict">
@@ -1037,7 +1051,7 @@ def build_slides():
       <p>Every MAC16 touches all four bank groups. So two MAC16s always fall under the same-group rule and go tCCD_L apart: stock AiM does one MAC command per tCCD_L.</p>
     </div>''')
 
-    slide("s07", "Background · DRAM and AiM", "Bridge: HBM-PIM",
+    slide("s07", 2, "Bridge: HBM-PIM",
           "P3-LLM builds on Samsung's HBM-PIM, whose MAC idea is AiM's: multiply the open row's columns by an input "
           "held next to the banks.",
           figure("fig7", fig_bridge(),
@@ -1051,7 +1065,7 @@ def build_slides():
       <p>From here on the slides use the paper's word, PCU.</p>
     </div>''')
 
-    slide("s08", "P3-LLM · Motivation", "Compute roof",
+    slide("s08", 3, "Compute roof",
           "An FP16 PIM unit hits its compute roof as soon as the batch reaches 2–4 or attention uses grouped-query "
           "attention.",
           figure("fig8", fig_roofline(),
@@ -1066,7 +1080,7 @@ def build_slides():
       <p>P3-LLM fits 4× the multipliers in the same compute area and clocks them 2× faster. Its roof is 8× higher, 9.84 TOPS (§III-B).</p>
     </div>''')
 
-    slide("s09", "P3-LLM · Motivation", "W4A8KV4P8",
+    slide("s09", 3, "W4A8KV4P8",
           "P3-LLM gives 4 bits to the large, robust operands and 8 bits to the small, fragile ones: W4A8KV4P8.",
           figure("fig9", fig_quadrant(),
                  "Figure 9. The four operands placed by memory size and by sensitivity to quantization, after the "
@@ -1091,7 +1105,7 @@ def build_slides():
       </table>
     </div>''')
 
-    slide("s10", "P3-LLM · Design 1: formats", "KV-cache: INT4-Asym",
+    slide("s10", (4, "1: formats"), "KV-cache: INT4-Asym",
           "Key-cache outliers sit in a few fixed channels, so P3-LLM divides each channel by its prefill maximum "
           "and then stores 4-bit integers.",
           figure("fig10", fig_kv(),
@@ -1105,7 +1119,7 @@ def build_slides():
       <p>RoPE rotates keys by position. Llama-1/2 keys are quantized before RoPE; Llama-3 and Mistral keys after it, because their outlier channels survive RoPE.</p>
     </div>''')
 
-    slide("s11", "P3-LLM · Design 1: formats", "Scores: FP8-S0E4M4",
+    slide("s11", (4, "1: formats"), "Scores: FP8-S0E4M4",
           "Attention scores lie between 0 and 1, so P3-LLM drops the sign bit and gives it to the mantissa: "
           "FP8-S0E4M4.",
           figure("fig11", fig_bits(),
@@ -1118,7 +1132,7 @@ def build_slides():
       <p>Table II, Llama-3.1-8B on Wikitext: FP8-S0E4M4 gives perplexity 5.95, the same as FP16. INT8 gives 6.06 and FP8-E4M3 gives 5.99.</p>
     </div>''')
 
-    slide("s12", "P3-LLM · Design 1: formats", "Weights: BitMoD",
+    slide("s12", (4, "1: formats"), "Weights: BitMoD",
           "Weights use BitMoD: FP4 whose spare −0 code becomes one extra value, ±5 or ±8, chosen per group of 128 "
           "weights.",
           figure("fig12", fig_bitmod(),
@@ -1131,7 +1145,7 @@ def build_slides():
       <p>In the ablation, BitMoD instead of INT4 weights recovers 0.01 and 0.07 perplexity on Llama-2-7B and Llama-3.1-8B (Table VI).</p>
     </div>''')
 
-    slide("s13", "P3-LLM · Design 1: formats", "Activations: FP8-E4M3",
+    slide("s13", (4, "1: formats"), "Activations: FP8-E4M3",
           "Activations are cast straight to FP8-E4M3, whose wide range absorbs outliers without rotations or "
           "smoothing.",
           figure("fig13", fig_act(),
@@ -1144,7 +1158,7 @@ def build_slides():
       <p>A per-token cast to FP8-E4M3 has neither cost. With 4-bit weights it beats INT8 SmoothQuant on all four models: on Llama-3.1-8B, 6.16 against 6.36 (Table III).</p>
     </div>''')
 
-    slide("s14", "P3-LLM · Design 2: PCU and TEP", "1×4×16 PCU",
+    slide("s14", (4, "2: PCU and TEP"), "1×4×16 PCU",
           "The low-precision PCU keeps HBM-PIM's 16 outputs but takes 4 inputs and 64 weights per column: a "
           "1×4×16 dot-product tile.",
           figure("fig14", fig_pcu(),
@@ -1157,7 +1171,7 @@ def build_slides():
       <p>The PE has no floating-point multipliers and no exponent alignment. It does 4 MACs per cycle at 1.08× the area of an FP16 PE (Table VIII).</p>
     </div>''')
 
-    slide("s15", "P3-LLM · Design 2: PCU and TEP", "TEP at tCCD_S",
+    slide("s15", (4, "2: PCU and TEP"), "TEP at tCCD_S",
           "TEP clocks the PCU at tCCD_S, so each weight column, read once per tCCD_L, serves two input vectors.",
           '''<details class="predict">
       <summary>Before you press play: at batch 1 there is only one input vector. What does P3-LLM's PCU do in the second tCCD_S slot of each window?</summary>
@@ -1175,7 +1189,7 @@ def build_slides():
       <div class="stat"><p class="metric">1.6×</p><p>speed from TEP, batch 2 and 4 (Fig. 15)</p></div>
     </div>''')
 
-    slide("s16", "P3-LLM · Design 3: dataflow", "Operator split and fused scales",
+    slide("s16", (4, "3: dataflow"), "Operator split and fused scales",
           "The NPU keeps the FP16 operators and the dequantization, and P3-LLM folds each scale into a neighbouring "
           "operator, so PIM computes only in low precision.",
           figure("fig16", fig_dataflow(),
@@ -1189,7 +1203,7 @@ def build_slides():
       <p>P·V: the value scale S_V is folded into the scores, after division by its maximum S_Vmax so the scores stay in [0, 1]. The NPU multiplies S_Vmax back after P·V (§V-C).</p>
     </div>''')
 
-    slide("s17", "P3-LLM · Evaluation", "Setup",
+    slide("s17", 5, "Setup",
           "The evaluation simulates 4 NPU cores with 16 HBM2 pseudo-channels and compares P3-LLM against three "
           "systems with the same NPU and DRAM.",
           figure("fig17", fig_setup(),
@@ -1202,7 +1216,7 @@ def build_slides():
       <p>Accuracy: eight models, perplexity on Wikitext-2 and C4 at 2K context, plus MMLU, ARC-Challenge and GSM8K.</p>
     </div>''')
 
-    slide("s18", "P3-LLM · Evaluation", "Model quality",
+    slide("s18", 5, "Model quality",
           "Even with more operands quantized, P3-LLM loses less perplexity than QuaRot and QoQ.",
           figure("fig18", fig_quality(),
                  "Figure 18. Mean perplexity increase over FP16 across eight models, from the paper's Table IV (2K "
@@ -1214,7 +1228,7 @@ def build_slides():
       <p>The gap is largest on Llama-3.2-3B, where calibrated integer methods overfit (§VI-B).</p>
     </div>''')
 
-    slide("s19", "P3-LLM · Evaluation", "Speed and energy",
+    slide("s19", 5, "Speed and energy",
           "Across batch 1–8 at 4K context, P3-LLM averages 4.9× the speed and 3.5× the energy efficiency of HBM-PIM.",
           figure("fig19", fig_speed(),
                  "Figure 19. Average speedup (Fig. 9) and energy-efficiency gain (Fig. 10) of P3-LLM over each "
@@ -1226,7 +1240,7 @@ def build_slides():
       <p>P3-LLM is also 3.4× faster than Pimba enhanced to W8A8KV8 (Fig. 12). From batch 8, P3-LLM moves the linear layers back to the NPU (Fig. 16).</p>
     </div>''')
 
-    slide("s20", "P3-LLM · Evaluation", "Area",
+    slide("s20", 5, "Area",
           "The wider PCU costs 1.1 points of HBM die area: 17.5 % against HBM-PIM's 16.4 %.",
           figure("fig20", fig_area(),
                  "Figure 20. (a) HBM area overhead from Table VII; the dashed line is the 25 % limit the paper cites "
@@ -1237,7 +1251,7 @@ def build_slides():
       <p>The count includes only HBM-PIM's MAC hardware. Its instruction decoder and other operators are left out (§VI-C).</p>
     </div>''')
 
-    slide("s21", "Discussion [BRAINSTORM]", "Discussion points",
+    slide("s21", (6, "[BRAINSTORM]"), "Discussion points",
           "Points to discuss: quantization gives most of the gain, and TEP, the PIM-side idea, stops at two inputs "
           "per weight read.",
           figure("fig21", fig_ablation(),
@@ -1289,6 +1303,8 @@ section.slide > h2 { border-top: 0; padding-top: 0; font-size: 1.5rem; line-heig
 .points p + p { margin-top: 0; }
 .parts { display: grid; gap: 0.4rem; }
 .points-list { display: grid; gap: 0.5rem; }
+.outline-parts { display: grid; gap: 0.15rem; padding-left: 1.4rem; font-family: var(--font-mono); font-size: var(--step--1); color: var(--ink-soft); }
+.outline-parts b { color: var(--ink); font-weight: 600; }
 .keys-hint { font-family: var(--font-mono); font-size: var(--step--1); color: var(--pencil); }
 .f-tint { fill: var(--tint); }
 .t-onbar { fill: var(--paper); font-family: var(--font-mono); font-size: 13px; }
@@ -1392,16 +1408,16 @@ def main():
 
     build_slides()
     nav, parts_seen = [], None
-    for i, (sid, part, short, _, _) in enumerate(SLIDES, 1):
+    for i, (sid, (part, _), short, _, _) in enumerate(SLIDES, 1):
         if part != parts_seen:
             nav.append(f'<li class="part" aria-hidden="true">{E(part)}</li>')
             parts_seen = part
         nav.append(f'<li><a href="#{sid}"><span class="n">{i:02d}</span>{E(short)}</a></li>')
     sections = []
-    for i, (sid, part, short, headline, body) in enumerate(SLIDES, 1):
+    for i, (sid, (_, tag), short, headline, body) in enumerate(SLIDES, 1):
         sections.append(f'''
   <section class="slide" id="{sid}" aria-labelledby="{sid}-h">
-    <p class="slide-tag"><span class="no">{i:02d} / {len(SLIDES)}</span>{E(part)}</p>
+    <p class="slide-tag"><span class="no">{i:02d} / {len(SLIDES)}</span>{E(tag)}</p>
     <h2 id="{sid}-h">{E(headline)}</h2>
     {body}
   </section>''')
@@ -1432,6 +1448,7 @@ def main():
     <h1>P3-LLM</h1>
     <p class="question">How does P3-LLM make DRAM processing-in-memory fast for small-batch LLM decoding?</p>
     <p class="answer">It shrinks every operand to 4 or 8 bits in a format chosen per operand, so a small PCU with 4× the multipliers fits in the DRAM. That PCU runs twice per column read and uses each weight for two requests.</p>
+    <ol class="outline-parts" aria-label="The talk in six parts">{"".join(f"<li><b>{E(lab)}</b> · {E(sub)}</li>" for lab, sub in PARTS)}</ol>
     <p class="keys-hint" hidden>Keys: → next slide · ← previous slide</p>
   </header>
 {"".join(sections)}

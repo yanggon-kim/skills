@@ -7,8 +7,9 @@
 
    Its page (assets/reference/p3llm-intro.html) predates the prototype format, so the slide content that the
    format now keeps in the HTML (titles, band bullets, speaker notes, step captions) lives here; the figures
-   still come from the page (deck_figs_p3llm.py), never redrawn. The structure is the skill's: title, outline,
-   a divider before every part with the next part highlighted, figure-first content slides with 2-3 bullets
+   still come from the page (deck_figs_p3llm.py), never redrawn. The structure is the skill's: title, then the
+   outline with part 1 (Summary) highlighted, which is also the Summary part's divider, then the summary
+   slide ("Summary: ..."), a divider before every later part with that part highlighted, figure-first content slides with 2-3 bullets
    in the fixed band, storyboards as one Morph-linked slide per frame, two methodology slides before the
    results, a closing slide; provenance in the notes ("Figure: ..."), the author's own reading tagged on the
    slide with the deck's own tag.
@@ -54,18 +55,20 @@ const { pres, C, NAVY, GOLD, nb, band, drawFig, notes, newSlide, stat, cards, ta
 
 // ------------------------------------------------------------------ the library's slide types, by figure name
 const PARTS = [
+  ["Summary", "the paper in one slide"],
   ["Background: DRAM and AiM", "hierarchy, ACT/RD/PRE, timing, stock AiM, HBM-PIM"],
   ["Motivation", "the compute roof of FP16 PIM, W4A8KV4P8"],
   ["Design", "four formats, the PCU and TEP, the dataflow"],
   ["Evaluation", "methodology, quality, speed and energy, area"],
   ["Discussion", "where the gain comes from, open questions"],
 ];
-const outlineSlide = (section, hi, text) => d.outlineSlide(section, PARTS, hi, text);
+// slide 2 (overview = true) is the outline and the Summary part's divider at once: Summary highlighted
+const outlineSlide = (section, hi, text, overview = false) => d.outlineSlide(section, PARTS, hi, text, overview ? { kind: "outline" } : {});
 const figSlide = (section, o) => d.figSlide(section, { ...o, id: o.fig, fig: FIG[o.fig] });
 const storySlides = (section, o) => d.storySlides(section, { ...o, id: o.story, story: FIG[o.story] });
 
 // ================================================================== the deck
-const S_OPEN = "Opening", S_BG = "Background", S_MOT = "Motivation", S_DES = "Design", S_EVAL = "Evaluation", S_DISC = "Discussion";
+const S_OPEN = "Opening", S_SUM = "Summary", S_BG = "Background", S_MOT = "Motivation", S_DES = "Design", S_EVAL = "Evaluation", S_DISC = "Discussion";
 
 // ---- 1 title
 d.section(S_OPEN);
@@ -77,22 +80,23 @@ d.titleSlide(S_OPEN, {
   notes: "Today's paper is P3-LLM, by Yuzong Chen, Chao Fang, Xilai Dai, Yuheng Wu, Thierry Tambe, Marian Verhelst and Mohamed Abdelfattah, from Cornell, KU Leuven and Stanford. I am using version 4 on arXiv, number 2511.06838, from May 2026. " +
     "The paper asks one question: how can DRAM processing-in-memory stay fast for LLM decoding on an edge device once the batch is larger than one? " +
     "Its answer has three parts, the three circles on the right. First, a set of number formats that puts every operand into 4 or 8 bits, with a format chosen per operand. Second, a small low-precision compute unit inside the DRAM that runs twice per weight read; the paper calls it the throughput-enhanced PCU, or TEP. Third, a dataflow that hides the dequantization work on the host. " +
-    "I will first give the DRAM and PIM background we need, then the motivation, the three design parts, the evaluation, and finally some points for discussion. Every number I quote comes from the paper, and I will say which section, figure or table it comes from. DRAM sizes and timings in the background are simulator presets that I use for illustration, not JEDEC values.",
+    "I will start with the whole paper on one slide, then give the DRAM and PIM background we need, the motivation, the three design parts, the evaluation, and finally some points for discussion. Every number I quote comes from the paper, and I will say which section, figure or table it comes from. DRAM sizes and timings in the background are simulator presets that I use for illustration, not JEDEC values.",
 });
 
-// ---- 2 outline
-outlineSlide(S_OPEN, -1,
-  "Here is the plan for the talk, in five parts. Part one is background: how a DRAM is organised, which commands read it, which timing rules space those commands, and how a stock PIM design, SK hynix's AiM, computes inside the DRAM. It ends with Samsung's HBM-PIM, which P3-LLM builds on. " +
-  "Part two is the motivation: why FP16 PIM units run out of compute as soon as the batch grows, and which operands can be shrunk without losing accuracy. " +
-  "Part three is the design: four number formats, the low-precision compute unit with its throughput trick called TEP, and the dataflow that folds the scales away. " +
-  "Part four is the evaluation, starting with how the authors model the hardware, then accuracy, speed, energy and area. " +
-  "Part five is discussion: where the speedup really comes from, and a few open questions I would like us to talk about. " +
-  "Each part starts with this outline again, with the next part highlighted, so you always know where we are. If you already know DRAM timing well, part one will go quickly; I keep it because TEP only makes sense once tCCD_S and tCCD_L are clear.");
+// ---- 2 outline, which also opens part 1 (Summary)
+d.section(S_SUM);
+outlineSlide(S_SUM, 0,
+  "Here is the plan for the talk, in six parts. Part one, highlighted, is a summary: the whole paper on one slide, which comes next. Part two is background: how a DRAM is organised, which commands read it, which timing rules space those commands, and how a stock PIM design, SK hynix's AiM, computes inside the DRAM. It ends with Samsung's HBM-PIM, which P3-LLM builds on. " +
+  "Part three is the motivation: why FP16 PIM units run out of compute as soon as the batch grows, and which operands can be shrunk without losing accuracy. " +
+  "Part four is the design: four number formats, the low-precision compute unit with its throughput trick called TEP, and the dataflow that folds the scales away. " +
+  "Part five is the evaluation, starting with how the authors model the hardware, then accuracy, speed, energy and area. " +
+  "Part six is discussion: where the speedup really comes from, and a few open questions I would like us to talk about. " +
+  "Each later part starts with this outline again, with that part highlighted, so you always know where we are. If you already know DRAM timing well, part two will go quickly; I keep it because TEP only makes sense once tCCD_S and tCCD_L are clear.", true);
 
 // ---- 3 summary
 {
-  const sl = newSlide("CONTENT", S_OPEN, "content");
-  sl.addText("Shrink every operand; use each weight read twice", { placeholder: "title" });
+  const sl = newSlide("CONTENT", S_SUM, "content");
+  sl.addText("Summary: shrink every operand; use each weight read twice", { placeholder: "title" });
   band(sl, [
     "Decoding reads every weight once per token, so it waits on DRAM; FP16 PIM loses its gain as the batch or the GQA group nears 4 (§III-B).",
     "P3-LLM adds W4A8KV4P8 formats (§IV), a low-precision PCU with TEP (§V-A, §V-D) and fused dequantization (§V-C).",
@@ -105,14 +109,14 @@ outlineSlide(S_OPEN, -1,
     ["17.5 %", "HBM area overhead; HBM-PIM 16.4 % (Table VII)"],
     ["0.25", "mean Wikitext ppl loss; QuaRot, QoQ 0.30 (Table IV)"]].forEach(([m, l, hot], i) =>
     stat(sl, sx, AREA.y + i * (AREA.h / 4), sw, m, l, hot));
-  notes(sl, "This slide is the whole paper in one picture. On the left is the host, a neural processing unit or NPU, which runs everything that needs FP16 or FP32: LayerNorm, rotary embeddings, softmax and the scales. On the right is one HBM-PIM channel. Between an even bank and an odd bank sits a PIM compute unit, the PCU. The banks stream 4-bit weights and 4-bit KV-cache into the PCU, the NPU sends 8-bit activations or attention scores, and the PCU sends 32-bit sums back. " +
+  notes(sl, "In one sentence: P3-LLM shrinks every operand and uses each weight read twice. This slide is the whole paper in one picture. On the left is the host, a neural processing unit or NPU, which runs everything that needs FP16 or FP32: LayerNorm, rotary embeddings, softmax and the scales. On the right is one HBM-PIM channel. Between an even bank and an odd bank sits a PIM compute unit, the PCU. The banks stream 4-bit weights and 4-bit KV-cache into the PCU, the NPU sends 8-bit activations or attention scores, and the PCU sends 32-bit sums back. " +
     "The three numbered badges are the three design parts. Badge one is the W4A8KV4P8 formats, from Section IV. Badge two is the low-precision PCU and the throughput-enhanced PCU, TEP, from Sections V-A and V-D. Badge three is fused dequantization on the NPU, Section V-C. " +
     "The four numbers on the right are the headline results. Speed is 4.9 times that of HBM-PIM, Figure 9. Energy efficiency is 3.5 times, Figure 10. The HBM area overhead is 17.5 percent against 16.4 percent, Table VII. And the mean Wikitext perplexity loss is 0.25, where QuaRot and QoQ lose 0.30, Table IV. Keep the 4.9 times in mind; in the discussion we will ask how much of it comes from the hardware idea and how much from quantization.", "Redrawn from the paper's Fig. 6(a) and §I.");
 }
 
 // ---- Background
 d.section(S_BG);
-outlineSlide(S_BG, 0, "Part one, background. P3-LLM's main hardware trick depends on DRAM timing details, so we need some vocabulary first: how a DRAM is organised, the three commands that read it, the timing rules between them, and how a stock PIM design, SK hynix's AiM, computes inside the DRAM. We end with Samsung's HBM-PIM, the design P3-LLM extends. All DRAM sizes and timings in this part are one simulator preset, LPDDR5-6400 AiM in Ramulator 2.0, not JEDEC values.");
+outlineSlide(S_BG, 1, "Part two, background. P3-LLM's main hardware trick depends on DRAM timing details, so we need some vocabulary first: how a DRAM is organised, the three commands that read it, the timing rules between them, and how a stock PIM design, SK hynix's AiM, computes inside the DRAM. We end with Samsung's HBM-PIM, the design P3-LLM extends. All DRAM sizes and timings in this part are one simulator preset, LPDDR5-6400 AiM in Ramulator 2.0, not JEDEC values.");
 
 figSlide(S_BG, {
   fig: "fig_hierarchy",
@@ -222,7 +226,7 @@ figSlide(S_BG, {
 
 // ---- Motivation
 d.section(S_MOT);
-outlineSlide(S_MOT, 1, "Part two, motivation, which is Section III of the paper. Two questions. First, why does an FP16 PIM unit lose its advantage as soon as the batch grows or the model uses grouped-query attention? Second, which of the four operands, weights, activations, KV-cache and attention scores, can be shrunk without hurting accuracy?");
+outlineSlide(S_MOT, 2, "Part three, motivation, which is Section III of the paper. Two questions. First, why does an FP16 PIM unit lose its advantage as soon as the batch grows or the model uses grouped-query attention? Second, which of the four operands, weights, activations, KV-cache and attention scores, can be shrunk without hurting accuracy?");
 
 figSlide(S_MOT, {
   fig: "fig_roofline",
@@ -276,7 +280,7 @@ figSlide(S_MOT, {
 
 // ---- Design
 d.section(S_DES);
-outlineSlide(S_DES, 2, "Part three, the design, Sections IV and V of the paper. First the four number formats, one per operand: INT4 asymmetric for the KV-cache, a new unsigned FP8 for attention scores, BitMoD for weights and FP8-E4M3 for activations. Then the low-precision PCU and TEP, its throughput trick. Then the dataflow that folds the dequantization into neighbouring operators.");
+outlineSlide(S_DES, 3, "Part four, the design, Sections IV and V of the paper. First the four number formats, one per operand: INT4 asymmetric for the KV-cache, a new unsigned FP8 for attention scores, BitMoD for weights and FP8-E4M3 for activations. Then the low-precision PCU and TEP, its throughput trick. Then the dataflow that folds the dequantization into neighbouring operators.");
 
 figSlide(S_DES, {
   fig: "fig_kv",
@@ -398,7 +402,7 @@ figSlide(S_DES, {
 
 // ---- Evaluation
 d.section(S_EVAL);
-outlineSlide(S_EVAL, 3, "Part four, the evaluation, Section VI of the paper. I start with three slides on methodology and setup, because every hardware result in this paper is modelled, not measured on silicon, so we should know how. Then model quality, speed and energy, and area.");
+outlineSlide(S_EVAL, 4, "Part five, the evaluation, Section VI of the paper. I start with three slides on methodology and setup, because every hardware result in this paper is modelled, not measured on silicon, so we should know how. Then model quality, speed and energy, and area.");
 
 {
   // methodology (1/2): the hardware-cost chain left to right, then two facts that qualify the area numbers
@@ -505,7 +509,7 @@ figSlide(S_EVAL, {
 
 // ---- Discussion
 d.section(S_DISC);
-outlineSlide(S_DISC, 4, "Part five, discussion. I first show where the speedup comes from, using the paper's own ablation, and then six open questions in two groups, hardware and method. From here on, points tagged BRAINSTORM are our reading, not the paper's claims.");
+outlineSlide(S_DISC, 5, "Part six, discussion. I first show where the speedup comes from, using the paper's own ablation, and then six open questions in two groups, hardware and method. From here on, points tagged BRAINSTORM are our reading, not the paper's claims.");
 
 figSlide(S_DISC, {
   fig: "fig_ablation",

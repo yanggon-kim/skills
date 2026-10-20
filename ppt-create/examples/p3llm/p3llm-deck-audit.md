@@ -17,7 +17,7 @@ Status: **ok** = matches the paper · **fixed** = was wrong or not the paper's c
 | 1 | Title, seven authors, Cornell / KU Leuven / Stanford, arXiv 2511.06838v4, 2026 (N: May 2026) | p. 1 header, arXiv stamp "3 May 2026" | ok |
 | 1 | Three parts: W4A8KV4P8 formats (§IV); low-precision PCU + TEP, 4× multipliers at tCCD_S (§V-A, §V-D); fused dequantization on the NPU (§V-C) | §I contributions; §V-A, §V-C, §V-D | ok |
 | 1 | N: the question is fast PIM decoding at batch > 1 on the edge | §I ¶2–3 (low-batch edge, GQA, arithmetic intensity > 1) | ok |
-| 2 | Outline: five parts, Background … Discussion | (deck structure) | ok |
+| 2 | Outline: six parts, Summary (highlighted: slide 2 also opens part 1), Background … Discussion; dividers say "part k of 6" | (deck structure) | ok |
 | 3 | B: decoding waits on DRAM; FP16 PIM loses its gain as batch or GQA group nears 4 | §III-B ("benefits … gradually disappear as BS and G approach 4") | fixed (was "hit their compute roof already at batch 2–4", not the paper's statement) |
 | 3 | F: host NPU does FP16/FP32 work (LayerNorm, RoPE, softmax, scales); even/odd bank share a PCU; 4-bit W, KV from banks; 8-bit A, P from the NPU; 32-bit sums back | Fig. 6(a, b); §V-A ("16 32-bit outputs") | ok |
 | 3 | 4.9× speed vs HBM-PIM; 7.8× NPU; 2.0× Ecco | §VI-C Speedup, Fig. 9 | ok |
