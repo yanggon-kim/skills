@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{DECK_TITLE}}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--
+  ppt-create HTML prototype. Copy this file (or let scripts/proto.py fill it), keep the <style> and <script>
+  blocks, and write the slides inside <main class="deck">. The format is in references/html-prototype.md.
+  Each slide's .canvas previews the deck slide at 10 x 5.625 in: title one line at 20 pt, the area for the
+  figure / table, the band with 2-3 bullets at 16 pt, the footer. Speaker notes sit under each canvas.
+  html_to_spec.py reads this markup; the canvas styling is only a preview.
+-->
+<style>
+:root {
+  --ink: #57585B;      /* dk1: body text */
+  --navy: #00375B;     /* accent6: headings, emphasis, highlight outline and text */
+  --gold: #FFC72B;     /* accent5: the one highlight */
+  --tint: rgba(255, 199, 43, 0.4); /* gold at 60 % transparency */
+  --c2: #2774AE;       /* accent1: second category; header rule; table header */
+  --c3: #8AB8E8;       /* accent4: third category; hairline; table borders */
+  --idle: #DAE6F4;     /* accent3: idle fills, "ours" rows */
+  --pencil: #898989;   /* accent2: secondary strokes and labels */
+  --page: #eef1f5;
+  --deck-head: Helvetica, "Helvetica Neue", Arial, "Liberation Sans", sans-serif;
+  --deck-body: Arial, Helvetica, "Liberation Sans", sans-serif;
+  --pt: 0.13889cqw;    /* 1 pt on a 10 in wide slide */
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: #222; font-family: var(--deck-body); line-height: 1.45; }
+.shell { display: grid; grid-template-columns: minmax(0, 1fr); max-width: 78rem; margin: 0 auto; padding: 0 16px; }
+@media (min-width: 70rem) { .shell { grid-template-columns: 14rem minmax(0, 1fr); column-gap: 2rem; } }
+.proto-head { padding: 1.5rem 0 0.5rem; }
+.proto-head .label, .index .label { font-size: 0.8rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--pencil); margin: 0; }
+.proto-head h1 { font-family: var(--deck-head); color: var(--navy); margin: 0.2rem 0; font-size: 1.6rem; }
+.proto-head p { margin: 0.2rem 0; color: #444; }
+.index { font-size: 0.85rem; padding-top: 1rem; }
+.index ol { list-style: none; padding: 0; margin: 0.4rem 0; display: flex; flex-wrap: wrap; gap: 0.25rem; }
+.index a { display: block; text-decoration: none; color: #444; padding: 0.1rem 0.4rem; border-left: 2px solid transparent; }
+.index a .n { color: var(--pencil); margin-right: 0.35rem; font-variant-numeric: tabular-nums; }
+.index a[aria-current="true"] { border-left-color: var(--gold); color: var(--navy); background: #fff; }
+.index .part { width: 100%; color: var(--pencil); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 0.5rem; }
+.index .warn { color: #b3261e; }
+@media (min-width: 70rem) { .index { position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; padding: 1.5rem 0; }
+  .index ol { flex-direction: column; flex-wrap: nowrap; } }
+.deck { display: grid; gap: 2.5rem; padding: 1rem 0 4rem; min-width: 0; }
+.parts-def { display: none; }
+
+/* one slide: the canvas, then notes and provenance */
+.slide { display: grid; gap: 0.6rem; scroll-margin-top: 1rem; }
+.slide-tag { font-size: 0.8rem; color: var(--pencil); margin: 0; display: flex; gap: 0.8rem; flex-wrap: wrap; }
+.slide-tag .no { color: var(--navy); font-weight: 600; }
+.slide-tag .flag { color: #b3261e; font-weight: 600; }
+.canvas { container-type: inline-size; position: relative; width: 100%; aspect-ratio: 16 / 9; background: #fff; overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15); font-family: var(--deck-body); color: var(--ink); }
+.canvas > * { position: absolute; margin: 0; }
+.canvas .foot-logo { left: 3.75cqw; top: 53cqw; font: 700 calc(11 * var(--pt)) var(--deck-head); color: var(--c2); letter-spacing: 0.02em; }
+.canvas .foot-no { left: 95cqw; top: 53.1cqw; width: 5cqw; font-size: calc(9 * var(--pt)); color: var(--pencil); }
+.notes { background: #fff; border-left: 3px solid var(--c3); padding: 0.5rem 0.9rem; font-size: 0.95rem; }
+.notes summary { cursor: pointer; color: var(--navy); font-size: 0.85rem; }
+.notes p { margin: 0.4rem 0; }
+.source { margin: 0; font-size: 0.8rem; color: #555; }
+.source::before { content: "Provenance (speaker notes only): "; color: var(--pencil); }
+.overflow { outline: 2px dashed #b3261e; outline-offset: 2px; }
+
+/* content and story slides: title, header rule */
+.canvas h2 { left: 7cqw; top: 2.2cqw; width: 85cqw; height: 3.6cqw; display: flex; align-items: flex-end; white-space: nowrap;
+  font: 700 calc(20 * var(--pt)) / 1 var(--deck-head); color: #58595B; }
+.slide[data-kind="content"] .canvas::before, .slide[data-kind="story"] .canvas::before { content: ""; position: absolute;
+  left: 7cqw; top: 6.4cqw; width: 85cqw; height: 0.4cqw; background: var(--c2); }
+.slide[data-kind="content"] .canvas::after { content: ""; position: absolute; left: 7cqw; top: 40.7cqw; width: 85cqw; height: 0.12cqw; background: var(--c3); }
+.area { left: 7cqw; top: 8cqw; width: 85cqw; height: 32cqw; display: flex; align-items: center; justify-content: center; gap: 1.5cqw; }
+.area > figure { margin: 0; flex: 1 1 auto; height: 100%; min-width: 0; display: flex; align-items: center; justify-content: center; }
+.area svg { width: 100%; height: 100%; display: block; }
+.band { left: 7cqw; top: 41.4cqw; width: 85cqw; height: 10.6cqw; padding: 0 0 0 1.875cqw; list-style: none;
+  font-size: calc(16 * var(--pt)); line-height: 1.05; }
+.band li { position: relative; }
+.band li + li { margin-top: calc(3 * var(--pt)); }
+.band li::before { content: "•"; position: absolute; left: -1.875cqw; }
+.band .see { color: var(--navy); font-weight: 700; }
+
+/* tables: full width at the top of the area */
+.area:has(> table) { align-items: flex-start; }
+.area table { width: 100%; border-collapse: collapse; font-size: calc(13 * var(--pt)); line-height: 1.17; }
+.area table[data-font="14"] { font-size: calc(14 * var(--pt)); }
+.area table[data-font="12"], .area table.dense { font-size: calc(12 * var(--pt)); }
+.area th, .area td { border: 1px solid var(--c3); padding: 0.5cqw 0.75cqw; text-align: left; vertical-align: top; }
+.area th { background: var(--c2); color: #fff; font-weight: 700; }
+.area td:first-child { font-weight: 700; }
+.area table[data-bold-first="false"] td:first-child { font-weight: 400; }
+.area tr.ours td { background: var(--idle); }
+
+/* headline numbers: a row across the area, or a column beside a figure */
+.stats { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4.5cqw; align-self: center; width: 100%; }
+.stat { border-top: 0.3cqw solid var(--pencil); padding-top: 0.5cqw; display: grid; gap: 0.6cqw; }
+.stat.hot { border-top-color: var(--gold); }
+.stat .metric { font: 700 calc(54 * var(--pt)) / 1.1 var(--deck-head); color: var(--ink); }
+.stat.hot .metric { color: var(--navy); }
+.stat .label { font-size: calc(16 * var(--pt)); }
+.area > figure + .stats { flex: 0 0 23.5cqw; grid-auto-flow: row; gap: 2cqw; height: 100%; align-content: start; }
+.area > figure + .stats .metric { font-size: calc(20 * var(--pt)); }
+.area > figure + .stats .label { font-size: calc(12 * var(--pt)); }
+
+/* cards: up to three across the area */
+.cards { list-style: none; padding: 0; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 1.5cqw; width: 100%; height: 100%; counter-reset: card; }
+.cards li { background: rgba(218, 230, 244, 0.5); padding: 1.2cqw 1.5cqw; counter-increment: card; display: flex; flex-direction: column; gap: 1cqw; }
+.cards li::before { content: counter(card); width: 4cqw; height: 4cqw; border-radius: 50%; background: var(--gold); border: 1px solid var(--navy);
+  display: grid; place-items: center; font: 700 calc(15 * var(--pt)) var(--deck-head); color: var(--navy); }
+.cards b { font-size: calc(17 * var(--pt)); color: var(--navy); }
+.cards span { font-size: calc(16 * var(--pt)); }
+
+/* storyboard slides: figure area on the left, step column on the right */
+.farea { left: 7cqw; top: 8cqw; width: 60.5cqw; height: 44cqw; display: flex; align-items: center; justify-content: center; }
+.farea svg { width: 100%; height: 100%; display: block; }
+.stepcol { left: 69.5cqw; top: 8.4cqw; width: 22.5cqw; height: 43.6cqw; }
+.stepcol .dots { display: flex; gap: 0.8cqw; height: 2cqw; }
+.stepcol .dots i { width: 2cqw; height: 2cqw; border-radius: 50%; background: var(--idle); }
+.stepcol .dots i.done { background: var(--pencil); }
+.stepcol .dots i.on { background: var(--gold); outline: 1px solid var(--navy); }
+.stepcol .steplabel { margin: 1cqw 0 0; height: 7.2cqw; font-size: calc(12 * var(--pt)); color: var(--pencil); }
+.stepcol .steplabel b { display: block; font-size: calc(16 * var(--pt)); color: var(--navy); line-height: 1.1; }
+.stepcol .stage-caption { margin: 0.6cqw 0 0; height: 32.8cqw; overflow: hidden; font-size: calc(16 * var(--pt)); line-height: 1.05; }
+.player { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; font-size: 0.85rem; }
+.player button { font: inherit; padding: 0.2rem 0.7rem; border: 1px solid var(--c3); background: #fff; color: var(--navy); border-radius: 3px; cursor: pointer; }
+.player button:disabled { opacity: 0.4; cursor: default; }
+.storyboard { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); gap: 0.6rem; counter-reset: frame; }
+.storyboard .frame { background: #fff; border: 1px solid var(--idle); padding: 0.4rem 0.6rem; font-size: 0.85rem; counter-increment: frame; cursor: pointer; }
+.storyboard .frame::before { content: counter(frame) " · " attr(data-step); color: var(--navy); font-weight: 600; }
+.storyboard .frame.is-current { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
+.storyboard .frame svg { width: 100%; height: auto; display: block; }
+.storyboard .frame-caption { margin: 0.3rem 0; }
+.storyboard .frame .notes { padding: 0.2rem 0.5rem; font-size: 0.8rem; }
+
+/* title, outline / divider / appendix index, closing */
+.slide[data-kind="title"] .canvas::before { content: "UCLA"; position: absolute; left: 7.1cqw; top: 5.2cqw; font: 700 calc(36 * var(--pt)) var(--deck-head); color: var(--c2); }
+.slide[data-kind="title"] .canvas::after { content: ""; position: absolute; left: 7cqw; top: 20cqw; width: 85cqw; height: 13.4cqw;
+  border-top: 0.4cqw solid var(--c2); border-bottom: 0.4cqw solid var(--c2); }
+.canvas h1 { left: 7cqw; top: 20.7cqw; width: 85cqw; font: 700 calc(36 * var(--pt)) / 1.1 var(--deck-head); color: #58595B; }
+.canvas .subtitle { left: 7cqw; top: 26.6cqw; width: 85cqw; font-size: calc(16 * var(--pt)); line-height: 1.1; }
+.canvas .byline { left: 7cqw; top: 34.5cqw; width: 39.5cqw; font-size: calc(12 * var(--pt)); }
+.canvas .byline p { margin: 0; }
+.canvas .presenter { left: 7cqw; top: 49cqw; font: 700 calc(12 * var(--pt)) var(--deck-body); color: var(--navy); }
+.canvas .date { left: 7cqw; top: 51cqw; font-size: calc(12 * var(--pt)); }
+.key-points { left: 49.5cqw; top: 34.5cqw; width: 42.5cqw; list-style: none; padding: 0; counter-reset: kp; }
+.key-points li { counter-increment: kp; position: relative; padding-left: 5cqw; height: 5cqw; display: flex; flex-direction: column; justify-content: center; }
+.key-points li::before { content: counter(kp); position: absolute; left: 0; top: 0.8cqw; width: 3.6cqw; height: 3.6cqw; border-radius: 50%; background: var(--gold);
+  border: 1px solid var(--navy); display: grid; place-items: center; font: 700 calc(13.5 * var(--pt)) var(--deck-head); color: var(--navy); }
+.key-points b { font: 700 calc(15 * var(--pt)) var(--deck-head); color: var(--navy); }
+.key-points span { font-size: calc(12 * var(--pt)); }
+.outline-title { left: 7cqw; top: 20.5cqw; width: 28.5cqw; height: 6.1cqw; display: flex; align-items: flex-end; font: 700 calc(36 * var(--pt)) / 1 var(--deck-head); color: #58595B; }
+.outline-rule { left: 7cqw; top: 27.6cqw; width: 28.5cqw; height: 0.4cqw; background: var(--c2); }
+.outline-kicker { left: 7cqw; top: 29cqw; width: 28.5cqw; font-size: calc(16 * var(--pt)); }
+.outline-kicker.next { color: var(--navy); }
+.outline-rows { left: 36.5cqw; top: 4.7cqw; width: 55.5cqw; list-style: none; padding: 0; }
+.outline-rows li { display: flex; align-items: center; gap: 1.85cqw; padding: 0.9cqw 1.5cqw; border-radius: 0.6cqw; color: var(--pencil); }
+.outline-rows li .dot { flex: 0 0 5.25cqw; height: 5.25cqw; border-radius: 50%; display: grid; place-items: center; background: var(--idle);
+  font: 700 calc(16.5 * var(--pt)) var(--deck-head); color: var(--pencil); }
+.outline-rows li b { display: block; font-size: calc(19.5 * var(--pt)); font-weight: 400; }
+.outline-rows li span { font-size: calc(13.5 * var(--pt)); }
+.outline-rows.all li { color: var(--ink); }
+.outline-rows.all li b { font-weight: 700; }
+.outline-rows.all .dot { background: var(--navy); color: #fff; }
+.outline-rows li.on { background: var(--idle); color: var(--ink); }
+.outline-rows li.on b { font-weight: 700; color: var(--navy); }
+.outline-rows li.on .dot { background: var(--gold); outline: 1px solid var(--navy); color: var(--navy); }
+.outline-rows.many li { padding: 0.4cqw 1.5cqw; }
+.outline-rows.many li .dot { flex-basis: 3.4cqw; height: 3.4cqw; font-size: calc(12 * var(--pt)); }
+.outline-rows.many li b { font-size: calc(16 * var(--pt)); }
+.outline-rows.many li span { font-size: calc(12 * var(--pt)); }
+.slide[data-kind="closing"] .canvas h2 { top: 20.5cqw; height: 6.1cqw; font-size: calc(36 * var(--pt)); }
+.slide[data-kind="closing"] .canvas::before { content: ""; position: absolute; left: 7cqw; top: 27.6cqw; width: 85cqw; height: 0.4cqw; background: var(--c2); }
+.canvas .recap { left: 7cqw; top: 28.5cqw; width: 49cqw; font-size: calc(16 * var(--pt)); line-height: 1.1; }
+.canvas .citation { left: 7cqw; top: 44cqw; width: 49cqw; font-size: calc(12 * var(--pt)); }
+.questions { left: 58.5cqw; top: 28.5cqw; width: 33.5cqw; list-style: none; padding: 0; }
+.questions li { position: relative; padding-left: 5.7cqw; min-height: 6.2cqw; margin-bottom: 1cqw; display: flex; align-items: center;
+  font: 700 calc(16 * var(--pt)) / 1.1 var(--deck-body); color: var(--navy); }
+.questions li::before { content: "?"; position: absolute; left: 0; top: 0.8cqw; width: 4.2cqw; height: 4.2cqw; border-radius: 50%; background: var(--gold);
+  border: 1px solid var(--navy); display: grid; place-items: center; font: 700 calc(15 * var(--pt)) var(--deck-head); }
+
+/* figure vocabulary (scripts/svg_shapes.py maps the same classes to theme colours) */
+svg text { font-family: var(--deck-body); }
+.f-paper, .f-sheet, .f-white { fill: #fff; } .f-idle { fill: var(--idle); } .f-ink { fill: var(--ink); }
+.f-accent { fill: var(--gold); stroke: var(--navy); stroke-width: 1; } .f-tint { fill: var(--tint); stroke: var(--navy); stroke-width: 1; }
+.f-c2, .f-teal { fill: var(--c2); } .f-c3, .f-mustard { fill: var(--c3); } .f-pencil { fill: var(--pencil); } .f-none { fill: none; }
+.s-ink { stroke: var(--ink); } .s-pencil { stroke: var(--pencil); } .s-c2, .s-teal { stroke: var(--c2); } .s-c3, .s-mustard { stroke: var(--c3); }
+rect.s-accent, circle.s-accent, ellipse.s-accent { stroke: var(--navy); } line.s-accent, polyline.s-accent { stroke: var(--gold); }
+svg [class*="s-"] { stroke-width: 1.5; } svg .thick { stroke-width: 2.5; } svg .dashed { stroke-dasharray: 5 4; }
+.t-label { fill: var(--ink); font-size: 15px; } .t-mono { fill: var(--ink); font-size: 13px; }
+.t-head { fill: var(--navy); font-size: 15px; font-weight: 700; } .t-accent { fill: var(--navy); font-size: 15px; font-weight: 700; }
+.t-onbar { fill: #fff; font-size: 13px; }
+.farea .t-mono, .farea .t-onbar, .storyboard .t-mono, .storyboard .t-onbar { font-size: 15px; }
+svg .hot > rect { fill: var(--tint); stroke: var(--navy); stroke-width: 2.5; } svg .hot > text { fill: var(--navy); }
+svg .pend > rect { fill: var(--idle); stroke: var(--pencil); } svg .pend > text { fill: var(--pencil); }
+svg .off { opacity: 0; }
+svg * { transition: fill 180ms ease, opacity 180ms ease; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" aria-hidden="true" style="position:absolute"><defs>
+  <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#57585B"></path></marker>
+  <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#FFC72B"></path></marker>
+  <marker id="arrow-c2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2774AE"></path></marker>
+  <marker id="arrow-pencil" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#898989"></path></marker>
+</defs></svg>
+<div class="shell">
+<nav class="index" aria-label="Slides"><p class="label">Slides</p><ol></ol></nav>
+<div>
+<header class="proto-head">
+  <p class="label">HTML prototype · 10 × 5.625 in · notes under each slide</p>
+  <h1>{{DECK_TITLE}}</h1>
+  <p class="summary"></p>
+</header>
+{{DECK_BODY}}
+</div>
+</div>
+<script>
+/* Prototype behaviour: deck slide numbers (a storyboard of n frames spans n slides), the outline, divider
+   and appendix-index canvases drawn from the parts list, a storyboard player per story slide (elements with
+   the same data-key tween between frames, as Morph will), fit flags (a title wider than its line, a band or
+   caption taller than its box), the slide index and the left / right arrow keys. */
+(function () {
+  var $ = function (sel, root) { return (root || document).querySelector(sel); };
+  var $$ = function (sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); };
+  var deck = $("main.deck");
+  if (!deck) return;
+  var parts = $$(".parts-def > li", deck).map(function (li) {
+    return { id: li.getAttribute("data-part"), label: ($("b", li) || li).textContent, sub: $("span", li) ? $("span", li).textContent : "" };
+  });
+  var slides = $$("section.slide", deck);
+  var main = slides.filter(function (s) { return !s.hasAttribute("data-appendix"); });
+  var appx = slides.filter(function (s) { return s.hasAttribute("data-appendix"); });
+  var NUM = ["No", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function canvasOf(s) { var c = $(".canvas", s); if (!c) { c = el("div", "canvas"); s.insertBefore(c, s.firstChild); } return c; }
+
+  // the appendix index slide is the deck's: add it to the page before the first appendix slide
+  if (appx.length && !$('section.slide[data-kind="appendix-index"]', deck)) {
+    var ix = el("section", "slide"); ix.setAttribute("data-kind", "appendix-index"); ix.setAttribute("data-auto", "");
+    appx[0].parentNode.insertBefore(ix, appx[0]);
+    slides = $$("section.slide", deck);
+  }
+
+  // deck slide numbers
+  var no = 0, numbers = new Map();
+  slides.forEach(function (s) {
+    var n = s.getAttribute("data-kind") === "story" ? Math.max(1, $$(".storyboard .frame", s).length) : 1;
+    numbers.set(s, [no + 1, no + n]); no += n;
+  });
+  var byAppx = {};
+  appx.forEach(function (s) { byAppx[s.getAttribute("data-appendix")] = s; });
+
+  function outlineCanvas(s, hi, rows, opts) {
+    var c = canvasOf(s);
+    c.innerHTML = "";
+    c.appendChild(el("p", "outline-title", opts.title || "Outline"));
+    c.appendChild(el("div", "outline-rule"));
+    c.appendChild(el("p", "outline-kicker" + (hi >= 0 ? " next" : ""), opts.kicker || (hi < 0 ? (NUM[rows.length] || rows.length) + " parts" : "Next: part " + (hi + 1) + " of " + rows.length)));
+    var ol = el("ol", "outline-rows" + (hi < 0 ? " all" : "") + (rows.length > 5 ? " many" : ""));
+    rows.forEach(function (r, i) {
+      var li = el("li", i === hi ? "on" : "");
+      li.appendChild(el("span", "dot", r.mark || String(i + 1)));
+      var t = el("div"); t.appendChild(el("b", "", r.label)); if (r.sub) t.appendChild(el("span", "", r.sub)); li.appendChild(t); ol.appendChild(li);
+    });
+    c.appendChild(ol);
+  }
+
+  slides.forEach(function (s) {
+    var kind = s.getAttribute("data-kind");
+    if (kind === "outline") outlineCanvas(s, -1, parts, {});
+    if (kind === "divider") {
+      var id = s.getAttribute("data-part"), hi = parts.findIndex(function (p) { return p.id === id; });
+      outlineCanvas(s, hi, parts, {});
+    }
+    if (kind === "appendix-index") {
+      outlineCanvas(s, -1, appx.map(function (a) {
+        var id = a.getAttribute("data-appendix"), from = main.filter(function (m) { return m.getAttribute("data-see") === id; })[0];
+        return { mark: id, label: ($("h2", a) || a).textContent, sub: from ? "from slide " + numbers.get(from)[0] : "" };
+      }), { title: "Appendix", kicker: "Backup details" });
+    }
+    // appendix titles and pointers, as the deck writes them
+    if (s.hasAttribute("data-appendix")) { var h = $(".canvas h2", s); if (h && !h.dataset.done) { h.textContent = s.getAttribute("data-appendix") + " · " + h.textContent; h.dataset.done = "1"; } }
+    var see = s.getAttribute("data-see"), last = $$(".band > li", s).pop();
+    if (see && last && !$(".see", last)) last.appendChild(el("span", "see", " → appendix " + see));
+    // footer
+    if (["content", "story", "outline", "divider", "appendix-index"].indexOf(kind) >= 0) {
+      var c = canvasOf(s), r = numbers.get(s);
+      c.appendChild(el("span", "foot-logo", "UCLA"));
+      c.appendChild(el("span", "foot-no", r[0] === r[1] ? String(r[0]) : r[0] + "–" + r[1]));
+    } else if (kind === "closing") canvasOf(s).appendChild(el("span", "foot-logo", "UCLA"));
+    // tag line above the canvas
+    var r2 = numbers.get(s), tag = el("p", "slide-tag");
+    tag.appendChild(el("span", "no", r2[0] === r2[1] ? "slide " + r2[0] : "slides " + r2[0] + "–" + r2[1]));
+    tag.appendChild(el("span", "", (s.getAttribute("data-part") || "") + (s.hasAttribute("data-appendix") ? " · appendix " + s.getAttribute("data-appendix") : "") + " · " + kind));
+    s.insertBefore(tag, s.firstChild);
+    if (!s.id) s.id = "s" + r2[0];
+  });
+
+  // storyboard players
+  var NUMATTR = ["x", "y", "width", "height", "cx", "cy", "r", "rx", "ry", "x1", "y1", "x2", "y2"];
+  var reduce = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  function keyed(root) { var m = {}; $$("[data-key]", root).forEach(function (e) { m[e.getAttribute("data-key")] = e; }); return m; }
+  $$('section.slide[data-kind="story"]', deck).forEach(function (s) {
+    var frames = $$(".storyboard .frame", s), c = canvasOf(s);
+    if (!frames.length || !$("svg", frames[0])) return;
+    var stage = $(".farea", c) || c.appendChild(el("div", "farea"));
+    var col = $(".stepcol", c) || c.appendChild(el("div", "stepcol"));
+    col.innerHTML = "";
+    var dots = col.appendChild(el("div", "dots")), lab = col.appendChild(el("p", "steplabel")), cap = col.appendChild(el("p", "stage-caption"));
+    frames.forEach(function () { dots.appendChild(el("i")); });
+    var svg = $("svg", frames[0]).cloneNode(true); stage.innerHTML = ""; stage.appendChild(svg);
+    var live = keyed(svg), cur = 0, n = frames.length, raf = 0, timer = 0;
+    var bar = el("div", "player"), bPrev = el("button", "", "←"), bPlay = el("button", "", "Play"), bNext = el("button", "", "→"), cnt = el("span");
+    [bPrev, bPlay, bNext, cnt].forEach(function (b) { bar.appendChild(b); });
+    s.insertBefore(bar, c.nextSibling);
+    function show(i, animate) {
+      cancelAnimationFrame(raf); cur = i;
+      $$("i", dots).forEach(function (d, j) { d.className = j === i ? "on" : j < i ? "done" : ""; });
+      lab.innerHTML = ""; lab.appendChild(document.createTextNode("Step " + (i + 1) + " of " + n));
+      lab.appendChild(el("b", "", frames[i].getAttribute("data-step") || ""));
+      cap.textContent = ($(".frame-caption", frames[i]) || { textContent: "" }).textContent;
+      cnt.textContent = "frame " + (i + 1) + " of " + n + " = deck slide " + (numbers.get(s)[0] + i);
+      bPrev.disabled = i === 0; bNext.disabled = i === n - 1;
+      frames.forEach(function (f, j) { f.classList.toggle("is-current", j === i); });
+      var target = keyed($("svg", frames[i])), tracks = [];
+      Object.keys(target).forEach(function (k) {
+        var e = live[k], t = target[k]; if (!e) return;
+        NUMATTR.forEach(function (a) { var b0 = parseFloat(e.getAttribute(a)), b1 = parseFloat(t.getAttribute(a)); if (!isNaN(b0) && !isNaN(b1) && b0 !== b1) tracks.push([e, a, b0, b1]); });
+        e.setAttribute("class", t.getAttribute("class") || "");
+      });
+      function finish() { Object.keys(target).forEach(function (k) { var e = live[k], t = target[k]; if (!e) return;
+        Array.prototype.forEach.call(t.attributes, function (a) { if (a.name !== "id") e.setAttribute(a.name, a.value); });
+        if (!t.children.length) e.textContent = t.textContent; }); }
+      if (!animate || reduce || !tracks.length) { finish(); return; }
+      var t0 = null;
+      raf = requestAnimationFrame(function step(ts) {
+        if (t0 === null) t0 = ts; var p = Math.min(1, (ts - t0) / 600), q = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+        tracks.forEach(function (t) { t[0].setAttribute(t[1], String(t[2] + (t[3] - t[2]) * q)); });
+        if (p < 1) raf = requestAnimationFrame(step); else finish();
+      });
+    }
+    function stop() { clearTimeout(timer); timer = 0; bPlay.textContent = "Play"; }
+    function tick() { if (cur >= n - 1) { stop(); return; } show(cur + 1, true); timer = setTimeout(tick, 2200); }
+    bPrev.addEventListener("click", function () { stop(); show(Math.max(0, cur - 1), true); });
+    bNext.addEventListener("click", function () { stop(); show(Math.min(n - 1, cur + 1), true); });
+    bPlay.addEventListener("click", function () { if (timer) { stop(); return; } if (cur >= n - 1) show(0, false); bPlay.textContent = "Pause"; timer = setTimeout(tick, 800); });
+    frames.forEach(function (f, j) { f.addEventListener("click", function () { stop(); show(j, true); }); });
+    show(0, false);
+  });
+
+  // fit flags: what will not fit the deck's boxes at the deck's sizes
+  function flag(s, e, why) { e.classList.add("overflow"); var t = $(".slide-tag", s); t.appendChild(el("span", "flag", why)); s.dataset.warn = "1"; }
+  function check() {
+    $$(".flag", deck).forEach(function (f) { f.remove(); });
+    $$(".overflow", deck).forEach(function (e) { e.classList.remove("overflow"); });
+    slides.forEach(function (s) {
+      delete s.dataset.warn;
+      var h = $(".canvas h2", s);
+      if (h && h.scrollWidth > h.clientWidth + 1 && s.getAttribute("data-kind") !== "closing") flag(s, h, "title longer than one line");
+      var b = $(".band", s); if (b && b.scrollHeight > b.clientHeight + 1) flag(s, b, "band over 4 lines");
+      var cp = $(".stage-caption", s); if (cp && cp.scrollHeight > cp.clientHeight + 1) flag(s, cp, "caption too long");
+      var a = $(".area", s); if (a && a.scrollHeight > a.clientHeight + 1) flag(s, a, "area overflows");
+    });
+    buildIndex();
+  }
+
+  // index and keys
+  function buildIndex() {
+    var ol = $(".index ol"); if (!ol) return; ol.innerHTML = ""; var lastPart = null, warn = 0;
+    slides.forEach(function (s) {
+      var p = s.hasAttribute("data-appendix") || s.getAttribute("data-kind") === "appendix-index" ? "Appendix" : (s.getAttribute("data-part") || "");
+      if (p !== lastPart) { ol.appendChild(el("li", "part", p)); lastPart = p; }
+      var a = el("a"); a.href = "#" + s.id; var r = numbers.get(s);
+      a.appendChild(el("span", "n", String(r[0])));
+      var t = $(".canvas h2", s) || $(".canvas h1", s) || $(".outline-title", s);
+      a.appendChild(document.createTextNode(t ? t.textContent : s.getAttribute("data-kind")));
+      if (s.dataset.warn) { a.classList.add("warn"); warn++; }
+      var li = el("li"); li.appendChild(a); ol.appendChild(li);
+    });
+    var sum = $(".proto-head .summary");
+    if (sum) sum.textContent = slides.length + " prototype slides = " + no + " deck slides (storyboards expand to one slide per frame) · "
+      + parts.length + " parts · " + appx.length + " appendix slides · " + (warn ? warn + " slides flagged" : "no fit flags");
+  }
+  function current() { var idx = 0; slides.forEach(function (s, i) { if (s.getBoundingClientRect().top <= 80) idx = i; }); return idx; }
+  document.addEventListener("keydown", function (e) {
+    if (e.altKey || e.ctrlKey || e.metaKey || (e.key !== "ArrowRight" && e.key !== "ArrowLeft")) return;
+    if (e.target.closest && e.target.closest("input, textarea, button")) return;
+    var i = current() + (e.key === "ArrowRight" ? 1 : -1); i = Math.max(0, Math.min(slides.length - 1, i));
+    e.preventDefault(); slides[i].scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+  });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(check); else check();
+  window.addEventListener("resize", function () { clearTimeout(window.__fitT); window.__fitT = setTimeout(check, 200); });
+})();
+</script>
+</body>
+</html>
