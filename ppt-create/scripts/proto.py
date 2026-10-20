@@ -68,7 +68,8 @@ def _n(v):
 
 def R(x, y, w, h, cls="f-white s-ink", key=None):
     """Rectangle. cls: one fill class (f-white f-idle f-ink f-accent f-tint f-c2 f-c3 f-pencil f-none) and
-    optionally a stroke class (s-ink s-pencil s-accent s-c2 s-c3) plus 'thick' / 'dashed' / 'off'."""
+    optionally a stroke class (s-ink s-pencil s-accent s-c2 s-c3) plus 'thick' / 'dashed' / 'off' ('grid' on a gridline:
+    the deck cuts it at labels)."""
     return f'<rect{_k(key)} x="{_n(x)}" y="{_n(y)}" width="{_n(w)}" height="{_n(h)}" class="{cls}"></rect>'
 
 

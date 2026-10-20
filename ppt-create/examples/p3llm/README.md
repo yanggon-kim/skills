@@ -22,7 +22,7 @@ live in `build_p3llm_deck.js`, and the figures needed a few deck-only label edit
 ```bash
 SK=~/.claude/skills/ppt-create; bash $SK/scripts/setup.sh WORK
 node $SK/examples/p3llm/build_p3llm_deck.js p3llm-intro.pptx --work WORK
-WORK/venv/bin/python $SK/scripts/deck_qa.py p3llm-intro.pptx WORK/p3llm-intro.meta.json   # all PASS; WARN lines 33, whitespace 1 (s39)
+WORK/venv/bin/python $SK/scripts/deck_qa.py p3llm-intro.pptx WORK/p3llm-intro.meta.json   # all PASS, no warnings
 python3 $SK/examples/p3llm/build_p3llm_intro.py p3llm-intro.html                          # needs the concept-explainer skill's template
 ```
 
@@ -45,7 +45,8 @@ python3 $SK/examples/p3llm/build_p3llm_intro.py p3llm-intro.html                
   "simulator preset" mark kept inside the DRAM timing figures (`qa.restricted` allows it there only).
 - The author's own reading carries the deck's tag on the slide and in the notes; schematic drawings say
   so in the notes. The audit marks these rows "our reading".
-- Its known cosmetic leftovers are what the re-layout procedure would fix next, and what QA warns about:
-  gridlines and leader lines crossing labels (`lines`, 33 on slides 11–16, 32, 39, 40, 53–55) and the
-  tall perplexity dot plot of slide 39, 49.5 % empty (`whitespace`). The deck was approved with them;
-  the whitespace thresholds are calibrated so that slide 39 is its only whitespace warning.
+- Labels clear of lines, with no QA warning left: chart gridlines carry the class `grid` and are cut at
+  their labels (slides 32, 39, 53–55); the timing frames' rule markers start at the lane of the command
+  they mark and stop at the time axis (11–16, the same keys on every frame); a moved label clears the
+  roofline's operator guide (32) and the PCU's zoom leader (40). The perplexity dot plot (39) is drawn
+  at about 2.4 : 1 with one legend line, 41.6 % empty against the 42 % threshold.

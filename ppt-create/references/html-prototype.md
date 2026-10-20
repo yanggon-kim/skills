@@ -168,7 +168,8 @@ Colour only through classes (no inline colours): fills `f-white` (`f-paper`, `f-
 (light blue-gray) · `f-ink` · `f-accent` (gold, navy outline: **the one thing to look at**) · `f-tint`
 (light gold) · `f-c2` (blue, second category) · `f-c3` (light blue, third) · `f-pencil` (gray) ·
 `f-none`; strokes `s-ink` · `s-pencil` · `s-accent` (navy on shapes, gold on lines) · `s-c2` · `s-c3`;
-modifiers `thick`, `dashed`, `off` (hidden in this frame). Text: `t-label` (15 px), `t-mono` (13 px; 15 px
+modifiers `thick`, `dashed`, `off` (hidden in this frame), `grid` (on a `<line>`: a chart gridline or reference
+line, which the deck cuts where it meets a label and the prototype knocks out with a halo). Text: `t-label` (15 px), `t-mono` (13 px; 15 px
 in storyboards), `t-head` and `t-accent` (bold navy), `t-onbar` (white, **only on dark fills** `f-c2`,
 `f-ink`, `f-pencil`; the deck turns it navy elsewhere). The aliases `f-teal`/`s-teal` = c2 and
 `f-mustard`/`s-mustard` = c3 are accepted. `<svg data-text-scale="0.9">` scales every label of a dense

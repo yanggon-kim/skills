@@ -117,6 +117,11 @@ Look at every slide and fix in the prototype, in this order:
    legends inside.
 4. **Labels clear of lines** (QA `lines`, `edges`): a label sits beside a curve, between gridlines or past
    their end, never on them; an arrow ends short of the text it points at; a label fits inside its box.
+   Gridlines and reference lines get the class `grid`: on a figure slide `drawFig` cuts them where they meet
+   a label (`gridPieces` in `deck_lib.js`: the label's box at its final, floor-raised size plus 0.3 em), so
+   value labels may sit across them. Data lines, curves and leaders never get `grid`: move the label or
+   re-route the leader. Storyboard frames are not cut (the pieces would break Morph's pairing): keep their
+   labels off their gridlines in the drawing, e.g. stop timing markers at the axis above the tick numbers.
 5. **Highlight**: exactly one gold element per slide or frame, on the thing the title talks about.
 6. Rebuild, re-run QA and re-render; repeat until both are clean.
 
@@ -133,14 +138,15 @@ Look at every slide and fix in the prototype, in this order:
 | structure | title not first, a point list or badge on the title slide, outline not second or not opening the Summary section, slide 3 not the summary slide or its title not starting "Summary", a later part without a divider, closing count ≠ 1, appendix misplaced | reorder the prototype; add the summary slide; move title-slide points to the summary slide |
 | fit | a title over one line, a text box too small for its text (an all-caps style, such as the divider kicker, measured in capitals), a table below the area | shorten, split, or move to the appendix |
 | overlap | two texts overlap (each text's ink: measured width placed by its alignment, lines placed by the anchor, trimmed to the glyphs, so empty box padding never counts) | move or shorten one label; a label raised to 12 pt needs more room |
-| lines (WARN) | a line or connector passes through a text's ink: gridlines, arrows, curves over labels | put the label beside the curve, between gridlines or past their end; end the arrow short of the text |
+| lines (WARN) | a line or connector passes through a text's ink: gridlines, arrows, curves over labels | mark gridlines `grid` (cut at labels); put the label beside the curve or leader, or past its end; end the arrow short of the text |
 | edges (WARN) | a text mostly inside a drawn shape runs out over its edge | shorten the label or widen the box |
 | whitespace (WARN) | the share of the area farther than 0.25 in from every element (shape, text ink, line) is above 25 % on a table slide or 42 % on a figure slide or storyboard frame | the figure's proportions, the table's rows (re-layout step 3) |
 
 WARN does not change the exit status; look at each in the render and fix it or accept it. The
 whitespace thresholds are calibrated on the approved reference deck (`assets/reference/`): its frames
-reach 40 %, its figure slides 39.5 % except slide 39 (49.5 %, a tall dot plot), its tables 3 %; that
-slide and 33 gridline crossings (timing grids s11–16, charts s28, s35, s36, s49–51) are its warnings.
+reach 40 %, its figure slides 41.6 % (slide 39, a dot plot redrawn at 2.4 : 1 after it sat at 49.5 % as a
+tall 1.9 : 1 plot), its tables 3.1 %. It passes every check with no warnings: its 33 gridline crossings
+went with `grid` cuts (charts), markers stopped at the axis (timing frames) and moved labels.
 
 ## Writing a builder by hand
 

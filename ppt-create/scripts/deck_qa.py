@@ -69,8 +69,8 @@ TAGS = r"Paper's|After the paper|[Ss]chematic|Redrawn|Adapted from|[Ss]ource:|Co
 FOOTER_WORDS = ("edit in Slide Master",)
 WS_REACH = 0.25  # in: an element "uses" the area within this distance of it (gaps inside a figure count as used)
 # warn when more than this share of the area is empty. Calibrated on the approved reference deck
-# (assets/reference/p3llm-intro.pptx): its frames reach 40.2 %, its tables 3 %, its figure slides 39.5 %
-# except slide 35 (49.5 %, a tall dot plot with bands left and right), which is its only warning.
+# (assets/reference/p3llm-intro.pptx): its frames reach 40.2 %, its tables 3.1 %, its figure slides 41.6 % (slide 39,
+# a dot plot redrawn at the area's proportions; 49.5 % when it was tall and narrow, the deck's one warning then).
 WS_WARN = {"table": 0.25, "content": 0.42, "frame": 0.42}
 OVERLAP_MIN = 0.02  # in: two text inks that overlap by more than this in both directions FAIL
 

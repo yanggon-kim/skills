@@ -180,6 +180,8 @@ svg text { font-family: var(--deck-body); }
 .s-ink { stroke: var(--ink); } .s-pencil { stroke: var(--pencil); } .s-c2, .s-teal { stroke: var(--c2); } .s-c3, .s-mustard { stroke: var(--c3); }
 rect.s-accent, circle.s-accent, ellipse.s-accent { stroke: var(--navy); } line.s-accent, polyline.s-accent { stroke: var(--gold); }
 svg [class*="s-"] { stroke-width: 1.5; } svg .thick { stroke-width: 2.5; } svg .dashed { stroke-dasharray: 5 4; }
+/* gridlines (class "grid") stop at labels: a white halo knocks them out here; the deck cuts them (drawFig) */
+svg:has(line.grid) text:not(.t-onbar) { paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; }
 .t-label { fill: var(--ink); font-size: 15px; } .t-mono { fill: var(--ink); font-size: 13px; }
 .t-head { fill: var(--navy); font-size: 15px; font-weight: 700; } .t-accent { fill: var(--navy); font-size: 15px; font-weight: 700; }
 .t-onbar { fill: #fff; font-size: 13px; }

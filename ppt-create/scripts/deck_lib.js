@@ -59,6 +59,41 @@ const NUMBERED = ["DIVIDER", "CONTENT", "FRAME"]; // raw layouts whose slides sh
 const PRELIM_TAG = "Preliminary note · presenter's primer, not the paper";
 const PRELIM_BOX = { x: 4.2, y: 0.04, w: R - 4.2, h: 0.17 };
 
+/* Gridline knockout. A line the prototype draws with the class "grid" (a chart gridline or reference line) is cut
+   where it would run through a label: the gap is the label's text box at its final, floor-raised size (0.6 em per
+   character plus 0.3 em each side, 0.6 em above and below its middle), so the label reads on a clear background and
+   QA `lines` stays clean. gridPieces returns the kept parts of the line as [t0, t1] fractions; parts shorter than
+   2 SVG units are dropped. drawFig applies it on figure slides only: on storyboard frames the pieces would differ
+   from frame to frame and break Morph's pairing, so a storyboard keeps its labels off its gridlines in the drawing. */
+function labelBoxes(shapes, s) {
+  return shapes.filter((t) => t.t === "text").map((t) => {
+    const fsE = Math.max(MIN_PT, t.size * s * 72) / (s * 72), w = t.s.length * fsE * 0.6 + fsE * 0.6;
+    const x = t.anchor === "middle" ? t.x - w / 2 : t.anchor === "end" ? t.x - w : t.x - fsE * 0.3;
+    const yc = t.y - t.size * 0.33;
+    return [x, yc - fsE * 0.6, x + w, yc + fsE * 0.6];
+  });
+}
+function segInRect(x1, y1, x2, y2, r) { // Liang-Barsky: the [t0, t1] part of the segment inside r, or null
+  const dx = x2 - x1, dy = y2 - y1;
+  let t0 = 0, t1 = 1;
+  for (const [p, q] of [[-dx, x1 - r[0]], [dx, r[2] - x1], [-dy, y1 - r[1]], [dy, r[3] - y1]]) {
+    if (p === 0) { if (q < 0) return null; continue; }
+    const t = q / p;
+    if (p < 0) t0 = Math.max(t0, t); else t1 = Math.min(t1, t);
+    if (t0 > t1) return null;
+  }
+  return [t0, t1];
+}
+function gridPieces(sh, boxes) {
+  let iv = [[0, 1]];
+  for (const r of boxes) {
+    const hit = segInRect(sh.x1, sh.y1, sh.x2, sh.y2, r);
+    if (hit) iv = iv.flatMap(([a, b]) => [[a, Math.min(b, hit[0])], [Math.max(a, hit[1]), b]]);
+  }
+  const len = Math.hypot(sh.x2 - sh.x1, sh.y2 - sh.y1);
+  return iv.filter(([a, b]) => (b - a) * len >= 2);
+}
+
 function loadPptxgen(work) {
   const nm = path.join(work, "node_modules");
   process.env.NODE_PATH = [nm, process.env.NODE_PATH].filter(Boolean).join(path.delimiter);
@@ -170,7 +205,8 @@ function createDeck(opts = {}) {
   }
 
   /* Draw one parsed SVG figure into `box` (inches). morph: name keyed elements "!!key" and the static ones
-     "!!u<n>", so Morph can pair every element across the frame slides of a storyboard. */
+     "!!u<n>", so Morph can pair every element across the frame slides of a storyboard. Gridlines (class "grid")
+     are cut at labels on figure slides (gridPieces); a cut part k > 0 is named "<name>.<k>". */
   function drawFig(slide, fig, box, opt = {}) {
     const [vx, vy, vw, vh] = fig.bb || fig.vb; // the content bounds, so the figure fills the box
     const s = Math.min(box.w / vw, box.h / vh);
@@ -180,6 +216,7 @@ function createDeck(opts = {}) {
     let un = 0;
     const id = opt.id || "fig";
     const filled = []; // filled shapes drawn so far, to pick the text colour on top of them
+    const boxes = opt.morph || fig.image ? [] : labelBoxes(fig.shapes, s);
     if (fig.image) { // an embedded picture (a figure outside the shape vocabulary)
       slide.addImage({ data: fig.image, x: r2(ox), y: r2(oy), w: r2(vw * s), h: r2(vh * s), objectName: `${id}:image` });
       return { x: ox, y: oy, w: vw * s, h: vh * s, scale: s };
@@ -204,12 +241,17 @@ function createDeck(opts = {}) {
         slide.addShape(sh.t === "rect" ? pres.shapes.RECTANGLE : pres.shapes.OVAL, o);
         if (sh.fill) filled.push({ ...b, fill: sh.fill });
       } else if (sh.t === "line") {
-        const x1 = X(sh.x1), y1 = Y(sh.y1), x2 = X(sh.x2), y2 = Y(sh.y2);
-        slide.addShape(pres.shapes.LINE, {
-          objectName, x: r2(Math.min(x1, x2)), y: r2(Math.min(y1, y2)), w: r2(Math.abs(x2 - x1)), h: r2(Math.abs(y2 - y1)),
-          flipH: x2 < x1, flipV: y2 < y1,
-          line: { color: COL[sh.stroke], width: pt(sh.sw * s * 72), ...(sh.dash ? { dashType: "dash" } : {}),
-            ...(sh.arrow ? { endArrowType: "triangle" } : {}) },
+        const parts = sh.grid && boxes.length ? gridPieces(sh, boxes) : [[0, 1]];
+        parts.forEach(([a, b], k) => {
+          const x1 = X(sh.x1 + (sh.x2 - sh.x1) * a), y1 = Y(sh.y1 + (sh.y2 - sh.y1) * a);
+          const x2 = X(sh.x1 + (sh.x2 - sh.x1) * b), y2 = Y(sh.y1 + (sh.y2 - sh.y1) * b);
+          slide.addShape(pres.shapes.LINE, {
+            objectName: k ? `${objectName}.${k}` : objectName,
+            x: r2(Math.min(x1, x2)), y: r2(Math.min(y1, y2)), w: r2(Math.abs(x2 - x1)), h: r2(Math.abs(y2 - y1)),
+            flipH: x2 < x1, flipV: y2 < y1,
+            line: { color: COL[sh.stroke], width: pt(sh.sw * s * 72), ...(sh.dash ? { dashType: "dash" } : {}),
+              ...(sh.arrow && b === 1 ? { endArrowType: "triangle" } : {}) },
+          });
         });
       } else if (sh.t === "text") {
         const fs_ = sh.size; // px in SVG units
@@ -448,4 +490,4 @@ function createDeck(opts = {}) {
   };
 }
 
-module.exports = { createDeck, GEOM, M, R, CW, F, K, AREA, BAND, FAREA, FCOL, TITLE_PT, TEXT_PT, LABEL_PT, PRELIM_TAG };
+module.exports = { createDeck, labelBoxes, gridPieces, GEOM, M, R, CW, F, K, AREA, BAND, FAREA, FCOL, TITLE_PT, TEXT_PT, LABEL_PT, PRELIM_TAG };

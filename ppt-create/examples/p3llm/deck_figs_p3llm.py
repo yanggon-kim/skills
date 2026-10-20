@@ -43,15 +43,11 @@ DECK_TEXT = {
     "fig_hierarchy": {"row: ACT opens": "ACT opens"},
     "fig_ablation": {"Fig. 15: average over 5 models at batch 2 and 4, each step over the one before":
                      "average over 5 models at batch 2 and 4; each step over the one before"},
-    # the 12 per-row labels collide once raised to 12 pt: one legend line replaces them (DECK_ADD)
-    "fig_act": {"FP16": None, "W4 + FP8-E4M3": None, "W4 + INT8-SQ": None},
     "fig_speed": {"coral = speedup (Fig. 9) · teal = energy efficiency (Fig. 10)": "coral = speedup · teal = energy efficiency"},
 }
-# the one compact "simulator preset" mark the deck keeps, in figures that show DRAM timing values; a legend line
+# the one compact "simulator preset" mark the deck keeps, in figures that show DRAM timing values
 DECK_ADD = {
     "fig_tccd": [dict(t="text", x=630.0, y=28.0, s="simulator preset", anchor="end", color="inksoft", size=13, bold=False, name=None)],
-    "fig_act": [dict(t="text", x=14.0, y=14.0, s="hollow = FP16 · teal = W4 + FP8-E4M3 · coral = W4 + INT8-SQ", anchor="start",
-                     color="ink", size=13, bold=False, name=None)],
     "fig_timing": [dict(t="text", x=472.0, y=24.0, s="timings: simulator preset", anchor="end", color="inksoft", size=13, bold=False, name=None)],
 }
 # text scale for figures whose labels fill their boxes (stays above the deck's 12 pt floor after scaling)

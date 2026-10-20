@@ -238,6 +238,21 @@ def fig_actrdpre():
 
 
 # ---- Fig 4: timing rules = the DRAM explainer's Figure B2 frames, reused
+def _markers_to_axis(fr):
+    """The rule markers (g0-g2) of one timing frame start at the lane of the command they mark and stop at the time
+    axis (y 184): from y 40 to 208 they ran through the other lane's command labels and the tick numbers. The
+    bracket under the tick numbers still spans the same two times. Same keys on every frame (Morph); idempotent."""
+    cmds = [(float(x), float(y)) for x, y in
+            re.findall(r'<g data-key="\w+" class="cmd(?: hot| pend)?" transform="translate\(([\d.]+) ([\d.]+)\)">', fr)]
+
+    def fix(m):
+        x = float(m.group(2))
+        lanes = {y for cx, y in cmds if abs(cx - x) < 0.2}
+        y1 = 90.0 if lanes == {94.0} else 40.0  # a BG 1 command: start below the BG 0 lane
+        return f'{m.group(1)}y1="{y1:.1f}" x2="{m.group(3)}" y2="184.0"'
+    return re.sub(r'(<line data-key="g\d" x1="([\d.]+)" )y1="[\d.]+" x2="([\d.]+)" y2="[\d.]+"', fix, fr)
+
+
 def fig_timing():
     if EXPLAINER and os.path.isfile(EXPLAINER):
         src = open(EXPLAINER, encoding="utf-8").read()
@@ -248,7 +263,7 @@ def fig_timing():
         frames = re.findall(r'<li class="frame"><svg viewBox="0 0 480 250" role="img" aria-labelledby="b2f\d-title.*?</li>',
                             src, re.S)
     assert len(frames) == 6, len(frames)
-    frames = [re.sub(r'\brd(\d)-(title|desc)\b', r'b2f\1-\2', f) for f in frames]
+    frames = [_markers_to_axis(re.sub(r'\brd(\d)-(title|desc)\b', r'b2f\1-\2', f)) for f in frames]
     return timeline("tl4", frames,
                     "Figure 4. Commands to one bank in bank group 0 and one in bank group 1, to scale in ns. "
                     "Timings are simulator presets (LPDDR5-6400 AiM in Ramulator 2.0), not JEDEC values. Lanes: "
@@ -563,7 +578,7 @@ def fig_roofline():
         return y0 - (y0 - y1) * p / PMAX
     b = []
     for p in (0, 2, 4, 6, 8, 10):
-        b.append(L(x0, Y(p), x1, Y(p), "s-pencil dashed" if p else "s-ink"))
+        b.append(L(x0, Y(p), x1, Y(p), "s-pencil dashed grid" if p else "s-ink"))
         b.append(T(x0 - 8, Y(p) + 5, str(p), "t-mono", "end"))
     for i in (0, 5, 10, 15, 20, 25, 30, 35):
         b.append(T(X(i), y0 + 20, str(i), "t-mono", "middle"))
@@ -579,7 +594,8 @@ def fig_roofline():
     # HBM-PIM roof
     b.append(PL([(X(0), Y(0)), (X(1), Y(1.23)), (X(IMAX), Y(1.23))], "s-teal thick f-none"))
     b.append(T(X(20), Y(1.23) + 20, "HBM-PIM roof 1.23 TOPS", "t-label"))
-    b.append(T(X(5) + 10, Y(6.15) + 4, "slope 1.23 TB/s", "t-mono"))
+    # beside the knee, under the roof: on the slope it ran across the GQA G8 guide and the 6 TOPS gridline
+    b.append(T(X(8) + 8, Y(8.9) + 9, "slope 1.23 TB/s", "t-mono"))
     # approximate operator positions (read from Fig. 4)
     for (i, lab, ly) in ((1, "MHA BS1", 22), (4, "GQA G4 BS4", 40), (8, "GQA G8 BS8", 58)):
         b.append(L(X(i), y0, X(i), ly + 4, "s-mustard dashed"))
@@ -716,26 +732,28 @@ def fig_bitmod():
 def fig_act():
     data = [("Llama-2-7B", 5.12, 5.24, 5.37), ("Llama-2-13B", 4.57, 4.66, 4.76),
             ("Llama-3.1-8B", 5.84, 6.16, 6.36), ("Llama-3.2-3B", 7.28, 7.64, 7.87)]
-    x0, x1, lo, hi = 230, 600, 4.4, 8.0
+    # wide and low, near the deck's content area (8.5 x 3.2 in): one legend line instead of a format label per row,
+    # three sub-rows of 14 px per model; value labels sit right of their dots (the deck cuts the gridlines there)
+    x0, x1, lo, hi = 150, 586, 4.4, 8.0
+    top, pitch, gap = 28, 14, 10
+    ybot = top + 4 * 3 * pitch + 3 * gap
 
     def X(v):
         return x0 + (x1 - x0) * (v - lo) / (hi - lo)
-    b = []
-    y = 30
+    b = [T(14, 16, "hollow = FP16 · teal = W4 + FP8-E4M3 · coral = W4 + INT8-SQ", "t-mono")]
     for v in (4.5, 5.5, 6.5, 7.5):
-        b.append(L(X(v), 20, X(v), 300, "s-pencil dashed"))
-        b.append(T(X(v), 318, f"{v}", "t-mono", "middle"))
+        b.append(L(X(v), top, X(v), ybot, "s-pencil dashed grid"))
+        b.append(T(X(v), ybot + 16, f"{v}", "t-mono", "middle"))
+    y = top
     for name, f16, fp8, i8 in data:
-        b.append(T(14, y + 20, name, "t-head"))
-        for k, (lab, v, cls) in enumerate((("FP16", f16, "f-sheet s-ink"), ("W4 + FP8-E4M3", fp8, "f-teal"),
-                                            ("W4 + INT8-SQ", i8, "f-accent"))):
-            yy = y + 4 + 22 * k
-            b.append(T(120, yy + 5, lab, "t-mono"))
-            b.append(C(X(v), yy, 6, cls))
-            b.append(T(X(v) + 12, yy + 5, f"{v:.2f}", "t-mono"))
-        y += 72
-    b.append(T(x0, 338, "Wikitext-2 perplexity (lower is better)", "t-mono"))
-    return svg("0 0 640 345", "f13", "Activation formats compared, Table III",
+        b.append(T(14, y + 1.5 * pitch + 5, name, "t-head"))
+        for k, (v, cls) in enumerate(((f16, "f-sheet s-ink"), (fp8, "f-teal"), (i8, "f-accent"))):
+            yy = y + pitch / 2 + pitch * k
+            b.append(C(X(v), yy, 5, cls))
+            b.append(T(X(v) + 10, yy + 4.5, f"{v:.2f}", "t-mono"))
+        y += 3 * pitch + gap
+    b.append(T(x0, ybot + 34, "Wikitext-2 perplexity (lower is better)", "t-mono"))
+    return svg(f"0 0 640 {ybot + 40:g}", "f13", "Activation formats compared, Table III",
                "For four models, Wikitext-2 perplexity with FP16, with 4-bit weights and FP8-E4M3 activations, and "
                "with 4-bit weights and INT8 SmoothQuant activations. FP8-E4M3 is closer to FP16 on every model.",
                "".join(b))
@@ -761,7 +779,7 @@ def fig_pcu():
         x = 20 + 37.5 * i
         b.append(R(x, 140, 32, 28, "f-tint s-accent thick" if i == 0 else "f-idle s-pencil"))
         b.append(T(x + 16, 159, "PE", "t-mono", "middle"))
-    b.append(T(20, 186, "16 PEs = 16 outputs, as in HBM-PIM", "t-mono"))
+    b.append(T(48, 186, "16 PEs = 16 outputs, as in HBM-PIM", "t-mono"))  # right of the PE-zoom leader (x 36)
     b.append(L(36, 168, 36, 204, "s-accent dashed"))
     b.append(R(20, 206, 600, 112, "f-none s-accent"))
     b.append(T(30, 226, "one PE: a 4-way dot product", "t-accent"))
@@ -938,7 +956,7 @@ def fig_quality():
         b.append(T(px, 24, name, "t-head"))
         b.append(L(px, 34, px, 250, "s-ink"))
         for v in (0.2, 0.4):
-            b.append(L(px + k * v, 34, px + k * v, 250, "s-pencil dashed"))
+            b.append(L(px + k * v, 34, px + k * v, 250, "s-pencil dashed grid"))
         for v in (0, 0.2, 0.4):
             b.append(T(px + k * v, 268, f"{v:.1f}", "t-mono", "middle"))
     y = 44
@@ -964,7 +982,7 @@ def fig_speed():
     x0, k = 130, 50
     b = []
     for v in range(0, 9):
-        b.append(L(x0 + k * v, 30, x0 + k * v, 236, "s-pencil dashed" if v != 1 else "s-ink dashed"))
+        b.append(L(x0 + k * v, 30, x0 + k * v, 236, "s-pencil dashed grid" if v != 1 else "s-ink dashed grid"))
         b.append(T(x0 + k * v, 254, f"{v}×", "t-mono", "middle"))
     y = 40
     for lab, sp, en in rows:
@@ -986,7 +1004,7 @@ def fig_area():
     b.append(T(10, 24, "(a) HBM area overhead", "t-head"))
     x0, k = 96, 7.0  # px per percent
     for v in (0, 10, 20, 30):
-        b.append(L(x0 + k * v, 36, x0 + k * v, 150, "s-pencil dashed"))
+        b.append(L(x0 + k * v, 36, x0 + k * v, 150, "s-pencil dashed grid"))
         b.append(T(x0 + k * v, 168, f"{v} %", "t-mono", "middle"))
     for i, (lab, v, cls) in enumerate((("HBM-PIM", 16.4, "f-idle s-pencil"), ("P3-LLM", 17.5, "f-accent"))):
         y = 50 + 46 * i
@@ -1488,6 +1506,8 @@ svg .hot > rect { fill: var(--tint); stroke: var(--accent); stroke-width: 2.5; }
 svg .hot > text { fill: var(--accent-ink); }
 svg .pend > rect { fill: var(--idle); stroke: var(--pencil); }
 svg .pend > text { fill: var(--pencil); }
+/* gridlines (class "grid") stop at labels: a halo in the sheet colour knocks them out; the deck cuts them instead */
+svg:has(line.grid) text:not(.t-onbar) { paint-order: stroke; stroke: var(--sheet); stroke-width: 4px; stroke-linejoin: round; }
 .table-scroll { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; font-size: var(--step--1); line-height: 1.45; }
 caption { caption-side: top; text-align: left; font-family: var(--font-mono); font-size: var(--step--1); color: var(--ink-soft); padding-bottom: 0.5rem; }
