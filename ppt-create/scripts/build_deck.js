@@ -6,7 +6,8 @@
           JSON (OUT-name.raw.pptx, OUT-name.meta.json) land there; deck_qa.py reads the sidecar.
    Then:  DIR/venv/bin/python deck_qa.py OUT.pptx DIR/<name>.meta.json
 
-   Every slide type comes from deck_lib.js, so a spec deck and a hand-written builder share one geometry,
+   A part marked "preliminary" in the spec (the presenter's primer, part 2) becomes a preliminary section: deck_lib.js
+   tags each of its slides. Every slide type comes from deck_lib.js, so a spec deck and a hand-written builder share one geometry,
    one palette and one set of type floors. Slide kinds: title, outline (which opens the Summary part), divider, content (area: figure,
    figure-stats, table, stats, cards), story (one Morph-linked slide per frame), closing, appendix-index, and
    appendix slides (content or story with an "appendix" id: titled "A1 · ...", after the closing slide). */
@@ -32,10 +33,12 @@ const OUT = path.resolve(args[1]);
 const d = lib.createDeck({ work, brand, ...spec.meta, ...(spec.options || {}) });
 const { M, AREA } = lib;
 const PARTS = spec.parts.map((p) => [p.label, p.sub]);
+// the Preliminary Note (the presenter's primer, not the paper): its section tags every slide in it
+const PRELIM = new Set(spec.parts.filter((p) => p.preliminary).map((p) => p.id));
 let current = null;
 function section(name) {
   if (name !== current) {
-    d.section(name);
+    d.section(name, { preliminary: PRELIM.has(name) });
     current = name;
   }
   return name;

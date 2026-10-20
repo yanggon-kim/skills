@@ -381,44 +381,174 @@ def fig_aim():
                     hold=2400)
 
 
-# ---- Fig 7: AiM vs HBM-PIM
-def fig_bridge():
+# ---- Background (the paper's §II), figure 1 of 4: LLM decoding, after the paper's Fig. 1(a)
+def fig_llm():
     b = []
-    b.append(R(10, 14, 300, 266, "f-sheet s-ink"))
-    b.append(T(22, 38, "SK hynix AiM (stock)", "t-head"))
-    b.append(R(28, 52, 264, 24, "f-teal"))
-    b.append(T(36, 69, "global buffer: the input", "t-onbar"))
-    for i in range(4):
-        x = 28 + 68 * i
-        b.append(R(x, 100, 56, 56, "f-idle s-pencil"))
-        b.append(T(x + 28, 133, "bank", "t-mono", "middle"))
-        b.append(L(x + 28, 156, x + 28, 172, "s-teal", mark="mkt"))
-        b.append(R(x, 176, 56, 34, "f-tint s-accent"))
-        b.append(T(x + 28, 198, "PU", "t-label", "middle"))
-        b.append(PL([(x + 62, 76), (x + 62, 193), (x + 60, 193)], "s-pencil dashed f-none", mark="mkp"))
-    b.append(T(22, 234, "one PU per bank", "t-mono"))
-    b.append(T(22, 252, "BF16 multipliers + adder tree", "t-mono"))
-    b.append(T(22, 270, "4 of 16 banks drawn", "t-mono"))
-    b.append(R(330, 14, 300, 266, "f-sheet s-ink"))
-    b.append(T(342, 38, "Samsung HBM-PIM (P3-LLM's base)", "t-head"))
-    for j in range(2):
-        x = 350 + 140 * j
-        b.append(R(x, 52, 120, 40, "f-idle s-pencil"))
-        b.append(T(x + 60, 77, "even bank", "t-mono", "middle"))
-        b.append(R(x, 110, 120, 52, "f-tint s-accent"))
-        b.append(T(x + 60, 132, "PCU", "t-label", "middle"))
-        b.append(T(x + 60, 152, "+ input reg", "t-mono", "middle"))
-        b.append(R(x, 180, 120, 40, "f-idle s-pencil"))
-        b.append(T(x + 60, 205, "odd bank", "t-mono", "middle"))
-        b.append(L(x + 60, 92, x + 60, 108, "s-teal", mark="mkt"))
-        b.append(L(x + 60, 180, x + 60, 164, "s-teal", mark="mkt"))
-    b.append(T(342, 244, "one PCU per bank pair, 8 per channel", "t-mono"))
-    b.append(T(342, 264, "16 FP16 multipliers (SIMD)", "t-mono"))
-    b.append(T(10, 300, "teal = weights, 256 bits per column access · dashed = input", "t-mono"))
-    return svg("0 0 640 310", "f7", "Stock AiM next to Samsung HBM-PIM",
-               "Left: AiM has one PU under every bank and a shared global buffer that holds the input. Right: "
-               "HBM-PIM has one PCU between an even and an odd bank, with its own input register; 8 PCUs per "
-               "channel, 16 FP16 multipliers each. Both read 256 bits of weights per column access.", "".join(b))
+    b.append(T(8, 18, "prefill: the N_T-token prompt at once", "t-mono"))
+    b.append(R(8, 28, 88, 36, "f-sheet s-ink"))
+    b.append(T(52, 51, "prompt", "t-mono", "middle"))
+    b.append(L(96, 46, 110, 46, "s-ink", mark="mk"))
+    b.append(R(112, 28, 104, 36, "f-idle s-pencil"))
+    b.append(T(164, 51, "embedding", "t-mono", "middle"))
+    b.append(L(216, 46, 230, 46, "s-ink", mark="mk"))
+    b.append(R(240, 22, 132, 36, "f-idle s-pencil"))
+    b.append(R(234, 28, 132, 36, "f-tint s-accent thick"))
+    b.append(T(300, 51, "decoder layer", "t-label", "middle"))
+    b.append(T(380, 51, "× L", "t-accent"))
+    b.append(L(410, 46, 424, 46, "s-ink", mark="mk"))
+    b.append(R(426, 28, 92, 36, "f-idle s-pencil"))
+    b.append(T(472, 51, "LM head", "t-mono", "middle"))
+    b.append(L(518, 46, 532, 46, "s-ink", mark="mk"))
+    b.append(R(534, 28, 98, 36, "f-sheet s-accent thick"))
+    b.append(T(583, 51, "new token", "t-mono", "middle"))
+    b.append(PL([(583, 64), (583, 86), (164, 86), (164, 68)], "s-accent thick f-none", mark="mka"))
+    b.append(T(632, 108, "decode: each new token goes back in, one per step", "t-accent", "end"))
+    # one decoder layer, zoomed
+    b.append(R(8, 122, 624, 122, "f-none s-pencil dashed"))
+    b.append(T(18, 142, "inside one decoder layer", "t-head"))
+    ops = [(18, 112, "W_Q, W_K, W_V"), (144, 64, "RoPE"), (222, 56, "Q·Kᵀ"), (292, 74, "softmax"),
+           (380, 50, "P·V"), (444, 48, "W_O"), (506, 126, "MLP")]
+    for i, (x, w, lab) in enumerate(ops):
+        lin = lab.startswith("W_") or lab == "MLP"
+        b.append(R(x, 152, w, 26, "f-sheet s-ink" if lin else "f-idle s-pencil"))
+        b.append(T(x + w / 2, 170, lab, "t-mono", "middle"))
+        if i < len(ops) - 1:
+            b.append(L(x + w, 165, ops[i + 1][0] - 2, 165, "s-ink", mark="mk"))
+    b.append(T(624, 198, "W_gate, W_up, W_down", "t-mono", "end"))
+    b.append(PL([(74, 178), (74, 222), (220, 222)], "s-teal f-none", mark="mkt"))
+    b.append(T(84, 216, "new V", "t-mono"))
+    b.append(PL([(176, 178), (176, 210), (220, 210)], "s-teal f-none", mark="mkt"))
+    b.append(T(184, 204, "K", "t-mono"))
+    b.append(R(222, 204, 208, 26, "f-teal"))
+    b.append(T(326, 222, "KV-cache: all past K, V", "t-onbar", "middle"))
+    b.append(L(250, 204, 250, 180, "s-teal", mark="mkt"))
+    b.append(L(405, 204, 405, 180, "s-teal", mark="mkt"))
+    return svg("0 0 640 248", "fb1", "LLM inference: prefill, decoding and one decoder layer",
+               "Top: the prompt passes through the embedding table, L decoder layers and the LM head to give a new "
+               "token; in decoding each new token goes back in. Bottom: one decoder layer: the Q, K and V "
+               "projections, RoPE, Q times K transpose, softmax, P times V, the output projection and the MLP; the new "
+               "key after RoPE and the new value enter the KV-cache, which feeds Q times K transpose and P times V.", "".join(b))
+
+
+# ---- Background, figure 2 of 4: multi-head vs grouped-query attention, after the paper's Fig. 1(b)
+def fig_gqa():
+    b = []
+    for px, title, gqa in ((8, "multi-head attention (MHA)", False), (328, "grouped-query attention (GQA)", True)):
+        b.append(R(px, 8, 304, 220, "f-none s-pencil"))
+        b.append(T(px + 12, 30, title, "t-head"))
+        for lab, y in (("Q", 46), ("K", 110), ("V", 146)):
+            b.append(T(px + 12, y + 18, lab, "t-head"))
+        qx = [px + 36 + 33 * i for i in range(8)]
+        for i, x in enumerate(qx):
+            b.append(R(x, 46, 29, 26, "f-idle s-pencil"))
+            b.append(T(x + 14.5, 64, f"q{i}", "t-mono", "middle"))
+        if gqa:
+            kx = [(px + 36 + 66 * j, 62) for j in range(4)]
+        else:
+            kx = [(x, 29) for x in qx]
+        for j, (x, w) in enumerate(kx):
+            b.append(R(x, 110, w, 26, "f-teal"))
+            b.append(T(x + w / 2, 128, f"k{j}", "t-onbar", "middle"))
+            b.append(R(x, 146, w, 26, "f-mustard"))
+            b.append(T(x + w / 2, 164, f"v{j}", "t-onbar", "middle"))
+        for i, x in enumerate(qx):
+            kxj, kw = kx[i // 2] if gqa else kx[i]
+            b.append(L(x + 14.5, 72, kxj + kw / 2, 108, "s-pencil"))
+        if gqa:
+            b.append(T(px + 12, 198, "N_A = 8, N_KV = 4: G = N_A / N_KV = 2", "t-mono"))
+            b.append(T(px + 12, 218, "KV-cache: G× smaller", "t-accent"))
+        else:
+            b.append(T(px + 12, 198, "N_A = N_KV = 8 heads", "t-mono"))
+            b.append(T(px + 12, 218, "KV-cache: 8 K, V heads per token", "t-mono"))
+    return svg("0 0 640 236", "fb2", "Multi-head attention and grouped-query attention",
+               "Left: eight query heads, each with its own key and value head. Right: eight query heads share four "
+               "key and value heads, two query heads per key-value head, so the KV-cache is two times smaller.",
+               "".join(b))
+
+
+# ---- Background, figure 3 of 4: PIM for LLM decoding, after the paper's Fig. 2
+def fig_pim():
+    b = []
+    b.append(T(8, 18, "one PIM channel (coral = PCU)", "t-head"))
+    for g, (gx, gy) in enumerate(((8, 28), (152, 28), (8, 150), (152, 150))):
+        b.append(R(gx, gy, 136, 88, "f-none s-pencil"))
+        b.append(T(gx + 6, gy + 15, f"bank group {g}", "t-mono"))
+        for dx, dy in ((6, 22), (70, 22), (6, 55), (70, 55)):
+            b.append(R(gx + dx, gy + dy, 60, 18, "f-idle s-pencil"))
+            b.append(T(gx + dx + 30, gy + dy + 14, "bank", "t-mono", "middle"))
+            b.append(R(gx + dx, gy + dy + 18, 60, 12, "f-tint s-accent"))
+    b.append(R(8, 122, 280, 22, "f-teal"))
+    b.append(T(148, 138, "peripheral + global buffer (GB)", "t-onbar", "middle"))
+    # the two PCU designs
+    b.append(R(304, 8, 328, 112, "f-sheet s-ink"))
+    b.append(T(316, 30, "Samsung HBM-PIM: SIMD", "t-head"))
+    b.append(R(316, 44, 84, 26, "f-mustard"))
+    b.append(T(358, 62, "input reg", "t-onbar", "middle"))
+    b.append(L(400, 57, 414, 57, "s-ink", mark="mk"))
+    b.append(R(416, 44, 112, 26, "f-tint s-accent"))
+    b.append(T(472, 62, "16 × FP16 mul", "t-mono", "middle"))
+    b.append(L(528, 57, 540, 57, "s-ink", mark="mk"))
+    b.append(R(542, 44, 82, 26, "f-idle s-pencil"))
+    b.append(T(583, 62, "FP32 acc", "t-mono", "middle"))
+    b.append(T(316, 92, "weights: 16 × 16 bit from the bank", "t-mono"))
+    b.append(T(316, 112, "input reuse: one input × 16 weights", "t-accent"))
+    b.append(R(304, 132, 328, 112, "f-sheet s-ink"))
+    b.append(T(316, 154, "SK hynix AiM: adder tree", "t-head"))
+    b.append(R(316, 168, 60, 26, "f-teal"))
+    b.append(T(346, 186, "GB", "t-onbar", "middle"))
+    b.append(L(376, 181, 388, 181, "s-ink", mark="mk"))
+    b.append(R(390, 168, 112, 26, "f-tint s-accent"))
+    b.append(T(446, 186, "16 × BF16 mul", "t-mono", "middle"))
+    b.append(L(502, 181, 514, 181, "s-ink", mark="mk"))
+    b.append(R(516, 168, 108, 26, "f-idle s-pencil"))
+    b.append(T(570, 186, "adder tree", "t-mono", "middle"))
+    b.append(T(316, 216, "weights: 16 × 16 bit; input from the GB", "t-mono"))
+    b.append(T(316, 236, "output reuse: 16 products → one sum", "t-accent"))
+    return svg("0 0 640 250", "fb3", "PIM for LLM decoding: HBM-PIM and AiM",
+               "Left: one PIM channel with four bank groups of four banks, a PIM compute unit at each bank, and the "
+               "peripheral logic with the global buffer in the middle. Right: HBM-PIM's PCU, an input register and "
+               "16 FP16 multipliers with FP32 accumulators, reuses one input across 16 weights; AiM's PCU, fed from "
+               "the global buffer, has 16 BF16 multipliers and an adder tree that sums 16 products into one output.",
+               "".join(b))
+
+
+# ---- Background, figure 4 of 4: quantization, Eq. 1 of the paper, with an example of our own
+def fig_quant():
+    b = []
+    boxes = [(8, 110, "X: a group"), (134, 156, "Δ = |X|max / Q_max"), (306, 188, "X_Q = Round(X / Δ, Q)"),
+             (510, 122, "X̃ = X_Q · Δ")]
+    for i, (x, w, lab) in enumerate(boxes):
+        b.append(R(x, 14, w, 34, "f-tint s-accent" if i == 2 else "f-sheet s-ink"))
+        b.append(T(x + w / 2, 36, lab, "t-mono", "middle"))
+        if i < 3:
+            b.append(L(x + w, 31, boxes[i + 1][0] - 2, 31, "s-ink", mark="mk"))
+    for x, lab in ((63, "operands"), (212, "scale"), (400, "quantize"), (571, "dequantize")):
+        b.append(T(x, 68, lab, "t-mono", "middle"))
+    # the number line: X / Δ above, the nearest value of Q below (example: Q = integers -7 ... 7)
+    def X(v):
+        return 340 + 38 * v
+    b.append(T(8, 104, "example: Q = the integers −7 … 7, so Q_max = 7", "t-mono"))
+    b.append(T(8, 145, "X / Δ", "t-mono"))
+    b.append(T(8, 201, "X_Q", "t-mono"))
+    b.append(L(60, 140, 620, 140, "s-pencil"))
+    b.append(L(60, 196, 620, 196, "s-ink"))
+    for k in range(-7, 8):
+        b.append(L(X(k), 190, X(k), 202, "s-ink"))
+    for k, lab in ((-7, "−7"), (0, "0")):
+        b.append(T(X(k), 220, lab, "t-mono", "middle"))
+    b.append(T(632, 220, "Q_max = 7", "t-mono", "end"))
+    for v in (-7.0, -4.6, -2.3, -0.4, 1.3, 2.8, 3.6, 5.2):
+        q = round(v)
+        b.append(L(X(v), 145, X(q), 190, "s-accent dashed"))
+        b.append(C(X(v), 140, 5, "f-idle s-pencil"))
+        b.append(C(X(q), 196, 5, "f-accent"))
+    b.append(T(X(-7), 128, "largest |X| → −Q_max", "t-mono"))
+    b.append(T(632, 238, "dashed: each value rounds to its nearest Q value", "t-mono", "end"))
+    return svg("0 0 640 246", "fb4", "Quantization and dequantization, Eq. 1",
+               "Top: a group of operands X gets a scale Delta equal to its largest magnitude over Q_max; each value of "
+               "X over Delta is rounded to the closest value of the set Q, and multiplying back by Delta gives the "
+               "dequantized operand. Bottom: an example with Q the integers from minus 7 to 7; dashed lines join each "
+               "scaled value to the integer it rounds to.", "".join(b))
 
 
 # ---- Fig 8: roofline after the paper's Fig. 4
@@ -908,22 +1038,29 @@ def fig_ablation():
 SLIDES = []
 
 
-# The talk's six parts, the same as the deck's outline (build_p3llm_deck.js PARTS): Summary first.
+# The talk's seven parts, the same as the deck's outline (build_p3llm_deck.js PARTS): Summary first, then the
+# Preliminary Note, then the paper's own parts from its Background (§II) on.
+# The Preliminary Note is the presenter's DRAM primer, added at the user's request for lab members who lack the
+# basics: it is not the paper's content (its sources are our DRAM explainer and a simulator preset), it is optional,
+# and it is marked as such on every one of its slides. Background is the paper's §II, in the paper's order.
 PARTS = [
     ("Summary", "the paper in one slide"),
-    ("Background: DRAM and AiM", "hierarchy, ACT/RD/PRE, timing, stock AiM, HBM-PIM"),
+    ("Preliminary Note", "optional: presenter's DRAM primer, not the paper"),
+    ("Background", "Section II: LLM decoding, GQA, PIM, quantization"),
     ("Motivation", "the compute roof of FP16 PIM, W4A8KV4P8"),
     ("Design", "four formats, the PCU and TEP, the dataflow"),
     ("Evaluation", "methodology, quality, speed and energy, area"),
     ("Discussion", "where the gain comes from, open questions"),
 ]
+PRELIM = 2  # the Preliminary Note's part number
+PRELIM_MARK = "optional · presenter's primer, not the paper"
 
 
 def slide(sid, part, short, headline, body):
-    """part: the part number (1-6), or (number, sub-topic) for the design slides and the discussion."""
+    """part: the part number (1-7), or (number, sub-topic) for the design slides and the discussion."""
     k, sub = part if isinstance(part, tuple) else (part, "")
     tag = f"Part {k} of {len(PARTS)} · {PARTS[k - 1][0]}" + (f" · {sub}" if sub else "")
-    SLIDES.append((sid, (f"{k} · {PARTS[k - 1][0]}", tag), short, headline, body))
+    SLIDES.append((sid, (f"{k} · {PARTS[k - 1][0]}", tag, k == PRELIM), short, headline, body))
 
 
 TERMS = [
@@ -1051,36 +1188,72 @@ def build_slides():
       <p>Every MAC16 touches all four bank groups. So two MAC16s always fall under the same-group rule and go tCCD_L apart: stock AiM does one MAC command per tCCD_L.</p>
     </div>''')
 
-    slide("s07", 2, "Bridge: HBM-PIM",
-          "P3-LLM builds on Samsung's HBM-PIM, whose MAC idea is AiM's: multiply the open row's columns by an input "
-          "held next to the banks.",
-          figure("fig7", fig_bridge(),
-                 "Figure 7. Left: stock AiM, one PU per bank, input from the global buffer. Right: HBM-PIM, one PCU "
-                 "per even/odd bank pair, input from a register inside the PCU. Redrawn from the paper's Fig. 2 and "
-                 "Fig. 6(a); 4 of 16 banks drawn.") + '''
+    slide("b01", 3, "LLM decoding",
+          "An LLM runs all its decoder layers once per new token: prefill reads the prompt, and decoding feeds each "
+          "new token back in.",
+          figure("fig_llm", fig_llm(),
+                 "Figure 7. Top: from the prompt to a new token; the coral loop is decoding. Bottom: one decoder "
+                 "layer; boxes with a black outline hold weights. Redrawn from the paper's Fig. 1(a); layer norms and "
+                 "the residual adds are left out.") + '''
     <div class="points">
-      <p>HBM-PIM puts one PIM compute unit (PCU) between an even bank and an odd bank, so a channel has 8 PCUs (§V-A).</p>
-      <p>Each PCU is a 16-way SIMD FP16 MAC. One column access gives it 256 bits, 16 FP16 weights. It reuses one input element across all 16 weights (§II-B).</p>
-      <p>AiM differs in the details: one PU per bank, BF16 numbers, an adder tree and a global buffer.</p>
-      <p>From here on the slides use the paper's word, PCU.</p>
+      <p>Prefilling turns the prompt of N_T tokens into a matrix through an embedding table of size N_VOC × H, runs it through L decoder layers and the LM head, and produces the first output token (§II-A).</p>
+      <p>Decoding takes that token as the next input and repeats the same operations: one new token per step, auto-regressively.</p>
+      <p>A decoder layer has a self-attention module and an MLP. W_Q, W_K and W_V make the queries, keys and values; RoPE rotates Q and K by position; Q·Kᵀ and a softmax give the attention scores P; P·V and W_O give the output. The MLP has three linear layers: W_gate, W_up and W_down.</p>
+      <p>The keys (after RoPE) and values are stored in off-chip memory for the later steps: the KV-cache.</p>
     </div>''')
 
-    slide("s08", 3, "Compute roof",
-          "An FP16 PIM unit hits its compute roof as soon as the batch reaches 2–4 or attention uses grouped-query "
-          "attention.",
+    slide("b02", 3, "GQA",
+          "Grouped-query attention lets several query heads share one key-value head, so the KV-cache shrinks by G×.",
+          figure("fig_gqa", fig_gqa(),
+                 "Figure 8. Left: multi-head attention, one key and value head per query head. Right: grouped-query "
+                 "attention with G = 2. Redrawn from the paper's Fig. 1(b).") + '''
+    <div class="points">
+      <p>The KV-cache stores keys and values for every token, so it becomes large for long contexts (§II-A).</p>
+      <p>Each query is split into N_A heads and each key and value into N_KV heads. Multi-head attention has N_A = N_KV.</p>
+      <p>GQA splits the N_A query heads into G = N_A / N_KV groups that share key-value heads; in Fig. 1(b) each key-value head serves two query heads. The KV-cache shrinks by G×.</p>
+    </div>''')
+
+    slide("b03", 3, "PIM for LLMs",
+          "Commercial PIM puts a compute unit next to every DRAM bank, but FP16 and BF16 units cost 20–27 % of the "
+          "DRAM die.",
+          figure("fig_pim", fig_pim(),
+                 "Figure 9. Left: one PIM channel, 16 banks in 4 bank groups, a PIM compute unit (PCU, coral) at each "
+                 "bank. Right: the PCUs of Samsung's HBM-PIM and SK hynix's AiM. Redrawn from the paper's Fig. 2.") + '''
+    <div class="points">
+      <p>DRAM PIM speeds up decoding because it uses the DRAM's higher internal bandwidth for memory-bound operations. Fig. 2 shows two commercial designs: Samsung's HBM-PIM and SK hynix's AiM (§II-B).</p>
+      <p>A channel has 16 banks in 4 bank groups, with one PCU near each bank; two banks may share a PCU to save area. Each access sends 256 bits, 16 values of 16 bits, from the bank to the PCU. The input vector goes to the PCU's register file in HBM-PIM and to the global buffer in AiM.</p>
+      <p>HBM-PIM's PCU is a 16-way SIMD MAC unit in FP16 that multiplies one input element with 16 weights (input reuse). AiM's PCU uses BF16 and an adder tree (output reuse).</p>
+      <p>These high-precision PCUs take 20–27 % of the DRAM die, because a DRAM process has about 10× lower transistor density and fewer metal layers than logic. So PIM pays off mainly at batch 1 and for multi-head attention, which have no data reuse.</p>
+      <p>P3-LLM's base pairs an even and an odd bank on one PCU, 8 PCUs per channel (§V-A). From here on the slides use the paper's word, PCU.</p>
+    </div>''')
+
+    slide("b04", 3, "Quantization",
+          "Quantization scales a group of operands, rounds each one to a fixed set of values and scales back, at "
+          "the cost of a rounding error.",
+          figure("fig_quant", fig_quant(),
+                 "Figure 10. Top: Eq. 1 of the paper as three steps. Bottom: our own example with Q the integers −7 … 7; "
+                 "the values are illustrative.") + '''
+    <div class="points">
+      <p>Eq. 1: a group X gets the scale Δ = |X|max / Q_max; each X / Δ is rounded to the closest value in the set Q, giving X_Q; X_Q · Δ is the dequantized operand. The rounding leaves an error (§II-C).</p>
+      <p>Mixed precision: weight-only and KV-cache-only methods are near-lossless at 4 bits; weight-activation methods go further to cut compute and memory.</p>
+      <p>Custom number formats adapt better to the value distribution of LLM tensors. NVIDIA and AMD support FP8 in two variants, E4M3 and E5M2.</p>
+    </div>''')
+
+    slide("s08", 4, "Compute roof",
+          "An FP16 PIM unit loses its advantage as the batch size or the GQA group size approaches 4.",
           figure("fig8", fig_roofline(),
-                 "Figure 8. Roofline: peak TOPS against arithmetic intensity, redrawn from the paper's Fig. 4. "
+                 "Figure 11. Roofline: peak TOPS against arithmetic intensity, redrawn from the paper's Fig. 4. "
                  "HBM-PIM and P3-LLM share the 1.23 TB/s internal bandwidth; the NPU line is its 307 GB/s DRAM "
                  "bandwidth (its compute roof is not drawn). Mustard guides mark operators at approximate positions "
                  "read from Fig. 4.") + '''
     <div class="points">
-      <p>Decoding is a GEMV. Each weight serves one multiply per request, so decoding is memory-bound and PIM's internal bandwidth helps (§II-B).</p>
-      <p>FP16 or BF16 PCUs take 20–27 % of the DRAM die. A DRAM process has about 10× lower transistor density than logic, so few PCUs fit (§II-B).</p>
-      <p>HBM-PIM's roof is 1.23 TOPS on 1.23 TB/s. A batch or GQA reuses each weight for more inputs and pushes the operator past the roof's corner (Fig. 4).</p>
+      <p>HBM-PIM has 4× the bandwidth of normal HBM during PIM operations, but its FP16 roof is 1.23 TOPS (§III-B, Fig. 4).</p>
+      <p>A batch or GQA reuses each weight or key for more inputs and pushes the operator past the roof's corner: HBM-PIM's gain fades as the batch size and the GQA group size approach 4 (§III-B).</p>
+      <p>The NPU stays memory-bound even at batch 16 or more, so the system needs more PIM compute (§III-B).</p>
       <p>P3-LLM fits 4× the multipliers in the same compute area and clocks them 2× faster. Its roof is 8× higher, 9.84 TOPS (§III-B).</p>
     </div>''')
 
-    slide("s09", 3, "W4A8KV4P8",
+    slide("s09", 4, "W4A8KV4P8",
           "P3-LLM gives 4 bits to the large, robust operands and 8 bits to the small, fragile ones: W4A8KV4P8.",
           figure("fig9", fig_quadrant(),
                  "Figure 9. The four operands placed by memory size and by sensitivity to quantization, after the "
@@ -1105,7 +1278,7 @@ def build_slides():
       </table>
     </div>''')
 
-    slide("s10", (4, "1: formats"), "KV-cache: INT4-Asym",
+    slide("s10", (5, "1: formats"), "KV-cache: INT4-Asym",
           "Key-cache outliers sit in a few fixed channels, so P3-LLM divides each channel by its prefill maximum "
           "and then stores 4-bit integers.",
           figure("fig10", fig_kv(),
@@ -1119,7 +1292,7 @@ def build_slides():
       <p>RoPE rotates keys by position. Llama-1/2 keys are quantized before RoPE; Llama-3 and Mistral keys after it, because their outlier channels survive RoPE.</p>
     </div>''')
 
-    slide("s11", (4, "1: formats"), "Scores: FP8-S0E4M4",
+    slide("s11", (5, "1: formats"), "Scores: FP8-S0E4M4",
           "Attention scores lie between 0 and 1, so P3-LLM drops the sign bit and gives it to the mantissa: "
           "FP8-S0E4M4.",
           figure("fig11", fig_bits(),
@@ -1132,7 +1305,7 @@ def build_slides():
       <p>Table II, Llama-3.1-8B on Wikitext: FP8-S0E4M4 gives perplexity 5.95, the same as FP16. INT8 gives 6.06 and FP8-E4M3 gives 5.99.</p>
     </div>''')
 
-    slide("s12", (4, "1: formats"), "Weights: BitMoD",
+    slide("s12", (5, "1: formats"), "Weights: BitMoD",
           "Weights use BitMoD: FP4 whose spare −0 code becomes one extra value, ±5 or ±8, chosen per group of 128 "
           "weights.",
           figure("fig12", fig_bitmod(),
@@ -1145,7 +1318,7 @@ def build_slides():
       <p>In the ablation, BitMoD instead of INT4 weights recovers 0.01 and 0.07 perplexity on Llama-2-7B and Llama-3.1-8B (Table VI).</p>
     </div>''')
 
-    slide("s13", (4, "1: formats"), "Activations: FP8-E4M3",
+    slide("s13", (5, "1: formats"), "Activations: FP8-E4M3",
           "Activations are cast straight to FP8-E4M3, whose wide range absorbs outliers without rotations or "
           "smoothing.",
           figure("fig13", fig_act(),
@@ -1158,7 +1331,7 @@ def build_slides():
       <p>A per-token cast to FP8-E4M3 has neither cost. With 4-bit weights it beats INT8 SmoothQuant on all four models: on Llama-3.1-8B, 6.16 against 6.36 (Table III).</p>
     </div>''')
 
-    slide("s14", (4, "2: PCU and TEP"), "1×4×16 PCU",
+    slide("s14", (5, "2: PCU and TEP"), "1×4×16 PCU",
           "The low-precision PCU keeps HBM-PIM's 16 outputs but takes 4 inputs and 64 weights per column: a "
           "1×4×16 dot-product tile.",
           figure("fig14", fig_pcu(),
@@ -1171,7 +1344,7 @@ def build_slides():
       <p>The PE has no floating-point multipliers and no exponent alignment. It does 4 MACs per cycle at 1.08× the area of an FP16 PE (Table VIII).</p>
     </div>''')
 
-    slide("s15", (4, "2: PCU and TEP"), "TEP at tCCD_S",
+    slide("s15", (5, "2: PCU and TEP"), "TEP at tCCD_S",
           "TEP clocks the PCU at tCCD_S, so each weight column, read once per tCCD_L, serves two input vectors.",
           '''<details class="predict">
       <summary>Before you press play: at batch 1 there is only one input vector. What does P3-LLM's PCU do in the second tCCD_S slot of each window?</summary>
@@ -1189,7 +1362,7 @@ def build_slides():
       <div class="stat"><p class="metric">1.6×</p><p>speed from TEP, batch 2 and 4 (Fig. 15)</p></div>
     </div>''')
 
-    slide("s16", (4, "3: dataflow"), "Operator split and fused scales",
+    slide("s16", (5, "3: dataflow"), "Operator split and fused scales",
           "The NPU keeps the FP16 operators and the dequantization, and P3-LLM folds each scale into a neighbouring "
           "operator, so PIM computes only in low precision.",
           figure("fig16", fig_dataflow(),
@@ -1203,7 +1376,7 @@ def build_slides():
       <p>P·V: the value scale S_V is folded into the scores, after division by its maximum S_Vmax so the scores stay in [0, 1]. The NPU multiplies S_Vmax back after P·V (§V-C).</p>
     </div>''')
 
-    slide("s17", 5, "Setup",
+    slide("s17", 6, "Setup",
           "The evaluation simulates 4 NPU cores with 16 HBM2 pseudo-channels and compares P3-LLM against three "
           "systems with the same NPU and DRAM.",
           figure("fig17", fig_setup(),
@@ -1216,7 +1389,7 @@ def build_slides():
       <p>Accuracy: eight models, perplexity on Wikitext-2 and C4 at 2K context, plus MMLU, ARC-Challenge and GSM8K.</p>
     </div>''')
 
-    slide("s18", 5, "Model quality",
+    slide("s18", 6, "Model quality",
           "Even with more operands quantized, P3-LLM loses less perplexity than QuaRot and QoQ.",
           figure("fig18", fig_quality(),
                  "Figure 18. Mean perplexity increase over FP16 across eight models, from the paper's Table IV (2K "
@@ -1228,7 +1401,7 @@ def build_slides():
       <p>The gap is largest on Llama-3.2-3B, where calibrated integer methods overfit (§VI-B).</p>
     </div>''')
 
-    slide("s19", 5, "Speed and energy",
+    slide("s19", 6, "Speed and energy",
           "Across batch 1–8 at 4K context, P3-LLM averages 4.9× the speed and 3.5× the energy efficiency of HBM-PIM.",
           figure("fig19", fig_speed(),
                  "Figure 19. Average speedup (Fig. 9) and energy-efficiency gain (Fig. 10) of P3-LLM over each "
@@ -1240,7 +1413,7 @@ def build_slides():
       <p>P3-LLM is also 3.4× faster than Pimba enhanced to W8A8KV8 (Fig. 12). From batch 8, P3-LLM moves the linear layers back to the NPU (Fig. 16).</p>
     </div>''')
 
-    slide("s20", 5, "Area",
+    slide("s20", 6, "Area",
           "The wider PCU costs 1.1 points of HBM die area: 17.5 % against HBM-PIM's 16.4 %.",
           figure("fig20", fig_area(),
                  "Figure 20. (a) HBM area overhead from Table VII; the dashed line is the 25 % limit the paper cites "
@@ -1251,7 +1424,7 @@ def build_slides():
       <p>The count includes only HBM-PIM's MAC hardware. Its instruction decoder and other operators are left out (§VI-C).</p>
     </div>''')
 
-    slide("s21", (6, "[BRAINSTORM]"), "Discussion points",
+    slide("s21", (7, "[BRAINSTORM]"), "Discussion points",
           "Points to discuss: quantization gives most of the gain, and TEP, the PIM-side idea, stops at two inputs "
           "per weight read.",
           figure("fig21", fig_ablation(),
@@ -1299,6 +1472,7 @@ section.slide > h2 { border-top: 0; padding-top: 0; font-size: 1.5rem; line-heig
 @media (min-width: 60rem) and (min-height: 40rem) { .slide { min-height: calc(100vh - 3rem); align-content: center; } }
 .slide-tag { font-family: var(--font-mono); font-size: var(--step--1); letter-spacing: 0.06em; text-transform: uppercase; color: var(--pencil); }
 .slide-tag .no { color: var(--accent-ink); margin-right: 0.6rem; }
+.slide-tag .prelim { margin-left: 0.6rem; padding: 0.05rem 0.4rem; border: 1px solid var(--accent); color: var(--accent-ink); text-transform: none; letter-spacing: 0; }
 .points { display: grid; gap: 0.5rem; }
 .points p + p { margin-top: 0; }
 .parts { display: grid; gap: 0.4rem; }
@@ -1389,8 +1563,8 @@ LIMITS = """
   <aside class="limits" aria-labelledby="limits-label">
     <p class="label" id="limits-label">Sources, assumptions and limits</p>
     <ul>
-      <li>Every P3-LLM number comes from arXiv 2511.06838v4 and names its section, figure or table. All figures are redrawn. Chart values come from the paper's text and tables; the operator positions on the roofline and the bars of the key-smoothing and operand figures are schematic.</li>
-      <li>The DRAM background is generic. Its sizes and timings are one simulator preset (LPDDR5-6400 AiM in Ramulator 2.0), not JEDEC values; HBM2 uses other values.</li>
+      <li>Every P3-LLM number comes from arXiv 2511.06838v4 and names its section, figure or table. All figures are redrawn. Chart values come from the paper's text and tables; the operator positions on the roofline, the bars of the key-smoothing and operand figures, and the values in the quantization example are schematic.</li>
+      <li>The Preliminary Note (part 2) is the presenter's DRAM primer, added for listeners new to DRAM; it is not the paper's content. Its sizes and timings are one simulator preset (LPDDR5-6400 AiM in Ramulator 2.0), not JEDEC values; HBM2 uses other values. The Background (part 3) is the paper's own Section II.</li>
       <li>The stock AiM run leaves out refresh and the exact command interleaving. TMOD is drawn as one mode switch at each end of the MAC phase.</li>
       <li>Averages such as 4.9× are the paper's averages over five models and batch 1–8 at 4K context. The ablation (Fig. 15) uses batch 2 and 4, so its factors are not parts of the 4.9×.</li>
       <li>The discussion slide is our reading, tagged [BRAINSTORM]; it is not a claim of the paper.</li>
@@ -1408,19 +1582,25 @@ def main():
 
     build_slides()
     nav, parts_seen = [], None
-    for i, (sid, (part, _), short, _, _) in enumerate(SLIDES, 1):
+    for i, (sid, (part, _, pre), short, _, _) in enumerate(SLIDES, 1):
         if part != parts_seen:
-            nav.append(f'<li class="part" aria-hidden="true">{E(part)}</li>')
+            nav.append(f'<li class="part" aria-hidden="true">{E(part)}{" (optional)" if pre else ""}</li>')
             parts_seen = part
         nav.append(f'<li><a href="#{sid}"><span class="n">{i:02d}</span>{E(short)}</a></li>')
     sections = []
-    for i, (sid, (_, tag), short, headline, body) in enumerate(SLIDES, 1):
+    for i, (sid, (_, tag, pre), short, headline, body) in enumerate(SLIDES, 1):
+        # the Preliminary Note's slides carry a mark: the presenter's primer, not the paper's content
+        mark = f'<span class="prelim">{E(PRELIM_MARK)}</span>' if pre else ""
         sections.append(f'''
-  <section class="slide" id="{sid}" aria-labelledby="{sid}-h">
-    <p class="slide-tag"><span class="no">{i:02d} / {len(SLIDES)}</span>{E(tag)}</p>
+  <section class="slide{" prelim" if pre else ""}" id="{sid}" aria-labelledby="{sid}-h">
+    <p class="slide-tag"><span class="no">{i:02d} / {len(SLIDES)}</span>{E(tag)}{mark}</p>
     <h2 id="{sid}-h">{E(headline)}</h2>
     {body}
   </section>''')
+    # figures are numbered in page order
+    fig_no = iter(range(1, 100))
+    sections = [re.sub(r'(<figcaption id="[^"]+">)Figure \d+\.', lambda m: f"{m.group(1)}Figure {next(fig_no)}.", sec)
+                for sec in sections]
 
     defs = ('<svg width="0" height="0" aria-hidden="true" style="position:absolute"><defs>'
             + "".join(f'<marker id="{mid}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" '
@@ -1448,7 +1628,7 @@ def main():
     <h1>P3-LLM</h1>
     <p class="question">How does P3-LLM make DRAM processing-in-memory fast for small-batch LLM decoding?</p>
     <p class="answer">It shrinks every operand to 4 or 8 bits in a format chosen per operand, so a small PCU with 4× the multipliers fits in the DRAM. That PCU runs twice per column read and uses each weight for two requests.</p>
-    <ol class="outline-parts" aria-label="The talk in six parts">{"".join(f"<li><b>{E(lab)}</b> · {E(sub)}</li>" for lab, sub in PARTS)}</ol>
+    <ol class="outline-parts" aria-label="The talk in seven parts">{"".join(f"<li><b>{E(lab)}</b> · {E(sub)}</li>" for lab, sub in PARTS)}</ol>
     <p class="keys-hint" hidden>Keys: → next slide · ← previous slide</p>
   </header>
 {"".join(sections)}

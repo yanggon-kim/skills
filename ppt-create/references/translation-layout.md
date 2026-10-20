@@ -34,6 +34,7 @@ talk.pptx ──deck_qa.py (+ meta)──> PASS/FAIL     ──validate_deck.py�
 |---|---|---|---|---|---|
 | margins | 0.70 | | 8.50 (to 9.20) | | the template's own title and header-rule extent |
 | title box | 0.70 | 0.22 | 8.50 | 0.36 | one 20 pt line, anchored at its bottom: ends at y 0.58, as high as the template allows |
+| Preliminary Note tag | 4.20 | 0.04 | 5.00 | 0.17 | 12 pt bold navy, right-aligned above the title, on the divider and every slide of the presenter's primer (shape "prelim-tag"; rule 12) |
 | header rule | 0.70 | 0.64 | 8.50 | 0.04 | the template's rule, moved up with the title |
 | content area | 0.70 | 0.80 | 8.50 | 3.20 | figure / table / numbers / cards (to y 4.00) |
 | hairline | 0.70 | 4.07 | 8.50 | 0.01 | separates picture from words |
@@ -138,7 +139,7 @@ Look at every slide and fix in the prototype, in this order:
 
 WARN does not change the exit status; look at each in the render and fix it or accept it. The
 whitespace thresholds are calibrated on the approved reference deck (`assets/reference/`): its frames
-reach 40 %, its figure slides 39.5 % except slide 35 (49.5 %, a tall dot plot), its tables 3 %; that
+reach 40 %, its figure slides 39.5 % except slide 39 (49.5 %, a tall dot plot), its tables 3 %; that
 slide and 33 gridline crossings (timing grids s11–16, charts s28, s35, s36, s49–51) are its warnings.
 
 ## Writing a builder by hand

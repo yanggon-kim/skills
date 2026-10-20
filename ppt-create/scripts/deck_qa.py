@@ -16,7 +16,8 @@ Checks, each printed as PASS / FAIL with the offending slides; exit status 1 on 
   structure title first, outline second (it opens the Summary part), the summary slide third with a title
             starting "Summary", no list or badge shapes on the title slide (no ovals, bulleted or numbered
             paragraphs, lone digits: its key points live only on the Summary slide), a divider opening every other part, one closing slide, appendix slides only
-            after the closing slide
+            after the closing slide; a deck about a paper (sidecar "paper") has a Background section; a Preliminary
+            Note (sections marked preliminary) sits whole between Summary and Background, each slide with its tag
   fit       every wrapping text box holds its text (greedy word wrap with Liberation Sans at 97 % of the width),
             every title is one line, every table ends above the band
   overlap   no two texts overlap (each text's ink: its measured width placed by alignment, its lines placed by
@@ -561,6 +562,26 @@ def main():
             new_sec = i == 0 or ms[i - 1]["section"] != m["section"]
             if new_sec and m["section"] != first_section and not m.get("appendix") and m["kind"] not in ("divider", "outline"):
                 res["structure"].append(f"s{i + 1}: part '{m['section']}' opens without a divider")
+        # Background is the source paper's own; the Preliminary Note (the presenter's primer) sits between Summary
+        # and Background, and every one of its slides carries the "prelim-tag" line
+        secs = []
+        for m in ms:
+            if not m.get("appendix") and (not secs or secs[-1] != m["section"]):
+                secs.append(m["section"])
+        bg = [x for x in secs if x.startswith("Background")]
+        if meta.get("paper") and not bg:
+            res["structure"].append("a deck about a paper has no 'Background' section: the paper's own background is always "
+                                    "presented (a presenter's primer is the Preliminary Note, not a substitute)")
+        for p in sorted({m["section"] for m in ms if m.get("preliminary")}):
+            i = secs.index(p)
+            if secs.count(p) > 1:
+                res["structure"].append(f"the Preliminary Note '{p}' is split: present it whole")
+            if i < 1 or not secs[i - 1].startswith("Summary") or (bg and (i + 1 >= len(secs) or not secs[i + 1].startswith("Background"))):
+                res["structure"].append(f"the Preliminary Note '{p}' sits after '{secs[i - 1] if i else '-'}' and before "
+                                        f"'{secs[i + 1] if i + 1 < len(secs) else '-'}': it belongs between Summary and Background")
+            for j, m in enumerate(ms):
+                if m["section"] == p and "prelim-tag" not in [sh.name for sh in prs.slides[j].shapes]:
+                    res["structure"].append(f"s{j + 1}: Preliminary Note slide without its tag (prelim-tag)")
     # the title slide: only title, subtitle, byline, presenter, date and logo; the key points live on the Summary slide
     if len(prs.slides) and (prs.slides[0].slide_layout.name == "Title Opener" or (meta and meta["slides"][0].get("kind") == "title")):
         for b in title_list_marks(prs.slides[0]):

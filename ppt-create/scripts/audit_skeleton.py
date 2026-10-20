@@ -45,12 +45,15 @@ def main():
     a = ap.parse_args()
     prs = Presentation(a.deck)
     rows = []
+    prelim = set()  # Preliminary Note slides (the presenter's primer): checked against its own sources, not the paper
     for no, sl in enumerate(prs.slides, 1):
         figs, title = [], ""
+        if any(sp.name == "prelim-tag" for sp in sl.shapes):
+            prelim.add(no)
         divider = "Section Divider" in sl.slide_layout.name  # outline, dividers, appendix index: structure only
         for sp in sl.shapes:
             nm = sp.name or ""
-            if divider or nm.startswith("Slide Number"):
+            if divider or nm.startswith("Slide Number") or nm == "prelim-tag":
                 continue
             if sp.has_text_frame and sp.is_placeholder and sp.placeholder_format.type is not None and "TITLE" in str(sp.placeholder_format.type):
                 title = sp.text_frame.text.strip()
@@ -87,11 +90,12 @@ def main():
         f.write(f"# Fact audit: {a.deck.split('/')[-1]}\n\n*Checked against: {a.source}.*\n\n")
         f.write("Status: **ok** = matches the source · **fixed** = was wrong, corrected in the prototype (old → new) · "
                 "**author's reading** = the author's inference or depiction, marked as such on the slide or in the notes · "
-                "**background** = general knowledge, checked against (name it) · **todo** = not checked yet. "
+                "**preliminary** = a Preliminary Note row (the presenter's primer), checked against the primer's own sources, "
+                "not the paper · **other source** = general knowledge, checked against (name it) · **todo** = not checked yet. "
                 "Where: T title, B bullet / caption, F figure, Tab table, S stat, C card / question / recap, N notes.\n\n")
         f.write("| slide | where | claim | source location | status |\n|---|---|---|---|---|\n")
         for no, w, c in rows:
-            f.write(f"| {no} | {w} | {cell(c)} |  | todo |\n")
+            f.write(f"| {no} | {w} | {cell(c)} |  | {'todo (preliminary)' if no in prelim else 'todo'} |\n")
     print(a.out, len(rows), "rows")
 
 

@@ -55,6 +55,7 @@ body { margin: 0; background: var(--page); color: #222; font-family: var(--deck-
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15); font-family: var(--deck-body); color: var(--ink); }
 .canvas > * { position: absolute; margin: 0; }
 .canvas .foot-logo { left: 3.75cqw; top: 53cqw; font: 700 calc(11 * var(--pt)) var(--deck-head); color: var(--c2); letter-spacing: 0.02em; }
+.canvas .prelim-tag { left: 42cqw; top: 0.4cqw; width: 50cqw; height: 1.7cqw; text-align: right; font: 700 calc(12 * var(--pt)) / 1.4 var(--deck-body); color: var(--navy); }
 .canvas .foot-no { left: 95cqw; top: 53.1cqw; width: 5cqw; font-size: calc(9 * var(--pt)); color: var(--pencil); }
 .notes { background: #fff; border-left: 3px solid var(--c3); padding: 0.5rem 0.9rem; font-size: 0.95rem; }
 .notes summary { cursor: pointer; color: var(--navy); font-size: 0.85rem; }
@@ -219,12 +220,16 @@ svg * { transition: fill 180ms ease, opacity 180ms ease; }
   var deck = $("main.deck");
   if (!deck) return;
   var parts = $$(".parts-def > li", deck).map(function (li) {
-    return { id: li.getAttribute("data-part"), label: ($("b", li) || li).textContent, sub: $("span", li) ? $("span", li).textContent : "" };
+    return { id: li.getAttribute("data-part"), label: ($("b", li) || li).textContent, sub: $("span", li) ? $("span", li).textContent : "",
+      pre: li.getAttribute("data-preliminary") === "true" };
   });
   var slides = $$("section.slide", deck);
   var main = slides.filter(function (s) { return !s.hasAttribute("data-appendix"); });
   var appx = slides.filter(function (s) { return s.hasAttribute("data-appendix"); });
   var NUM = ["No", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
+  // the Preliminary Note: the presenter's primer (not the paper), tagged on each of its slides as the deck will be
+  var PRELIM_TAG = "Preliminary note · presenter's primer, not the paper";
+  var preIds = parts.filter(function (p) { return p.pre; }).map(function (p) { return p.id; });
   function isSummary(p) { return !!p && (p.id === "Summary" || p.label.indexOf("Summary") === 0); }
   function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
   function canvasOf(s) { var c = $(".canvas", s); if (!c) { c = el("div", "canvas"); s.insertBefore(c, s.firstChild); } return c; }
@@ -285,6 +290,7 @@ svg * { transition: fill 180ms ease, opacity 180ms ease; }
       c.appendChild(el("span", "foot-logo", "UCLA"));
       c.appendChild(el("span", "foot-no", r[0] === r[1] ? String(r[0]) : r[0] + "–" + r[1]));
     } else if (kind === "closing") canvasOf(s).appendChild(el("span", "foot-logo", "UCLA"));
+    if (preIds.indexOf(s.getAttribute("data-part")) >= 0 && kind !== "title" && !$(".prelim-tag", s)) canvasOf(s).appendChild(el("span", "prelim-tag", PRELIM_TAG));
     // tag line above the canvas
     var r2 = numbers.get(s), tag = el("p", "slide-tag");
     tag.appendChild(el("span", "no", r2[0] === r2[1] ? "slide " + r2[0] : "slides " + r2[0] + "–" + r2[1]));
@@ -364,6 +370,10 @@ svg * { transition: fill 180ms ease, opacity 180ms ease; }
     if (!isSummary(parts[0])) flag(ol0, $(".canvas", ol0) || ol0, "no Summary part first");
     else if (!firstMain || firstMain.getAttribute("data-part") !== parts[0].id) flag(firstMain || ol0, $(".canvas", firstMain || ol0) || ol0, "summary slide must follow the outline");
     else { var sh = $(".canvas h2", firstMain); if (sh && sh.textContent.indexOf("Summary") !== 0) flag(firstMain, sh, "title must start with Summary"); }
+    // the Preliminary Note: part 2, right before Background; a paper deck always has the paper's Background
+    var pi = parts.findIndex(function (p) { return p.pre; }), bi = parts.findIndex(function (p) { return !p.pre && (p.id === "Background" || p.label.indexOf("Background") === 0); });
+    if (pi >= 0 && (pi !== 1 || (bi >= 0 && bi !== 2))) flag(ol0, $(".canvas", ol0) || ol0, "Preliminary Note must sit between Summary and Background");
+    if (deck.getAttribute("data-paper") && bi < 0) flag(ol0, $(".canvas", ol0) || ol0, "a paper deck needs the paper's Background part");
     buildIndex();
   }
 

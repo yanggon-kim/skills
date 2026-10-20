@@ -44,7 +44,9 @@ package check; plain `soffice`).
    apart (rule 10).
 2. **Plan the talk** as parts (sections of the outline), then slides. **Part 1 is always "Summary"**:
    one slide right after the outline, titled "Summary: <core message of the talk>", with the talk's key
-   picture or numbers (rule 2). Each slide states **one core
+   picture or numbers (rule 2). For a talk about a paper, the part after Summary is **Background: the
+   paper's own background section, in the paper's order**; extra basics the user asks for go in an
+   optional **Preliminary Note** part between them (rule 12). Each slide states **one core
    message**, and its title *is* that message in a few words ("The cache halves median latency only
    above 64 users", not "Results"). Decide for every slide what the audience must see (the figure or table) and what it
    must hear (the notes). Push every detail that is not needed to follow the argument to the appendix.
@@ -54,11 +56,13 @@ package check; plain `soffice`).
    ```python
    import sys; sys.path.insert(0, f"{SK}/scripts")
    from proto import Deck, Frame, Table, svg, R, T, L, PL, C, E, G
-   d = Deck("Title", subject="...", author="...")        # part 1, "Summary", is built in
-   d.part("Background", "Background: the problem", "what the audience needs first")
+   d = Deck("Title", subject="...", author="...", paper="A. Author et al., ...")  # part 1, "Summary", is built in
+   d.preliminary(sub="optional: presenter's primer, not the paper")   # only when asked: always part 2
+   d.part("Background", "Background", "the paper's Section II, in its order")
    d.title_slide(title=..., subtitle=..., byline=[...], notes=...)   # no key points: those go on the summary
    d.outline(notes=...)                                     # the outline, Summary highlighted
    d.summary("the talk's core message", figure=svg(...), bullets=[...], notes=...)  # -> "Summary: ..."
+   d.divider("Preliminary", notes=...); d.content("...", part="Preliminary", ..., source="the primer's own source")
    d.divider("Background", notes=...)
    d.content("One-line message", part="Background", figure=svg("0 0 600 260", ...), bullets=[...], notes=..., source=...)
    d.story("One-line message", part="Background", frames=[Frame("step", svg(...), "caption", "script"), ...])
@@ -67,7 +71,8 @@ package check; plain `soffice`).
    ```
 4. **Lint it**: `$PY $SK/scripts/html_to_spec.py talk.html --check`. Fix every ERROR; read every WARN
    (no Summary part first, no summary slide right after the outline, a summary title that does not
-   start with "Summary", or a point list on the title slide are ERRORs; title over one line, band over 4 lines, loose viewBox, figure that
+   start with "Summary", a point list on the title slide, a paper deck without Background, or a
+   Preliminary Note anywhere but between Summary and Background are ERRORs; title over one line, band over 4 lines, loose viewBox, figure that
    leaves white space, labels the deck must raise to 12 pt, results without methodology, notes length). A figure that would fill less
    than half its area is an ERROR naming the proportions to redraw at.
 5. **Look at it** in a browser (or a headless screenshot). The canvas flags a title wider than its line or
@@ -155,9 +160,24 @@ Each rule exists because a reviewer of an earlier deck asked for it; the reason 
     notes. Why: a talk about someone else's work must not put words in their mouth.
 11. **Tighten and fact-check after the build.** Check every slide and its notes against the source
     material, claim by claim, in an audit file with one row per claim: slide, claim, source location,
-    status (ok · fixed · author's reading · background). Fix every error found in the prototype, rebuild,
+    status (ok · fixed · author's reading · preliminary · other source). Fix every error found in the prototype, rebuild,
     and keep the audit next to the deck. Why: a deck is quoted from memory by its audience; an error on a
     slide outlives the talk. Procedure: references/audit.md.
+12. **Background is the paper's; a primer is a Preliminary Note.** In a talk about a paper, the
+    **Background** part is always the paper's own background section, presented in the paper's order,
+    with the paper as its source (its figures redrawn, its claims cited). When the user asks for extra
+    basics for an audience that lacks them, that primer is the presenter's material, so it is a separate,
+    optional **Preliminary Note** part: always part 2, between Summary and Background, presented whole, its
+    divider and every slide tagged "Preliminary note · presenter's primer, not the paper", its provenance
+    the primer's own sources, never the paper. A paper figure that the background section discusses moves
+    to Background even if the primer leads up to it. Never relabel a primer as the paper's Background, and
+    never drop the paper's Background because a primer covers similar ground; check that no claim appears
+    in both Background and Motivation. Why: a deck once labelled a presenter-requested DRAM primer
+    "Background" and left out the paper's own §II, so the audience could not tell the paper's background
+    from the presenter's, and the paper's LLM, PIM and quantization background never reached them.
+    `proto.py` places the part (`d.preliminary()`), the lint stops on a misplaced Preliminary Note or a
+    paper deck without Background and warns when a Preliminary slide cites the paper as its source, and QA
+    `structure` checks the sections and the tag on every Preliminary slide.
 
 ## When QA or the render shows a problem
 
@@ -175,6 +195,9 @@ Each rule exists because a reviewer of an earlier deck asked for it; the reason 
 | morph / unkeyed counts | give a `data-key` to every element that appears, disappears or changes; hide with class `off` |
 | structure | title first (no point list or badges on it), outline second, the "Summary: …" slide third, a divider per later part, one closing slide, appendix only after it |
 | summary lint (ERROR) | add `d.summary("core message", …)` right after the outline; title "Summary: …"; never a divider for the Summary part |
+| no Background in a paper deck (lint ERROR, QA structure) | add the paper's own background part, in the paper's order; a presenter's primer does not replace it |
+| Preliminary Note misplaced (lint ERROR, QA structure) | `d.preliminary()` puts it at part 2; keep its slides together between Summary and Background; its tag is drawn automatically |
+| Preliminary slide cites the paper (lint WARN) | name the primer's own source, or move the slide (a paper figure, a paper claim) to Background |
 | title-slide list (lint ERROR, QA structure) | delete the points from the title slide; they belong on the summary slide, and the script that walked them goes to its notes |
 
 ## Files

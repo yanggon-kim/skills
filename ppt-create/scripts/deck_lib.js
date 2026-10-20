@@ -3,6 +3,8 @@
    const { createDeck } = require("<skill>/scripts/deck_lib.js");
    const d = createDeck({ work, title, subject, author });
    d.titleSlide({...}); d.outlineSlide(section, parts, 0, notes, { kind: "outline" }); d.figSlide(section, {...}); ... await d.write(out);
+   d.section("Preliminary Note", { preliminary: true }) opens the optional presenter's primer: every slide in that
+   section (its divider too) gets the PRELIM_TAG line at the top right, and the sidecar marks it for deck_qa.py.
 
    build_deck.js drives this library from a deck spec (html_to_spec.py output); a hand-written builder may
    call it directly (examples/p3llm/build_p3llm_deck.js). Either way the deck is written in two steps,
@@ -51,6 +53,11 @@ const GEOM = {
   dividerColW: 2.85, bandSpcBef: 3, closingBody: [M, 2.85, 4.9, 1.45], logo: [0.71, 0.52, 1.26, 0.41],
 };
 const NUMBERED = ["DIVIDER", "CONTENT", "FRAME"]; // raw layouts whose slides show a slide number
+/* The Preliminary Note: a primer the presenter adds on request for an audience that lacks the basics. It is not the
+   source paper's content (the paper's own background is the "Background" part), so each of its slides says so,
+   in one 12 pt line above the title, right-aligned to the title's right edge. */
+const PRELIM_TAG = "Preliminary note · presenter's primer, not the paper";
+const PRELIM_BOX = { x: 4.2, y: 0.04, w: R - 4.2, h: 0.17 };
 
 function loadPptxgen(work) {
   const nm = path.join(work, "node_modules");
@@ -64,7 +71,8 @@ function loadPptxgen(work) {
 }
 
 /* opts: work (folder made by setup.sh: node_modules, venv), title, subject, author, brand (template folder,
-   default assets/ucla), colorWords ({word: replacement}, applied to notes and figure text, e.g. when the
+   default assets/ucla), paper (the source paper's citation, when the talk presents a paper: deck_qa.py then wants a
+   "Background" section), colorWords ({word: replacement}, applied to notes and figure text, e.g. when the
    prototype's colour words differ from the theme's), nbRules ([[RegExp, replacement]] added to nb()),
    qa ({restricted: [{text, allowIn: [name prefixes]}], extraTags: [regex source], footerWords: [..]}). */
 function createDeck(opts = {}) {
@@ -77,6 +85,8 @@ function createDeck(opts = {}) {
   pres.theme = { headFontFace: "Helvetica", bodyFontFace: "Arial" }; // the raw deck only; the template's theme wins
   const META_DOC = { title: opts.title || "Presentation", subject: opts.subject || "", author: opts.author || "" };
   Object.assign(pres, META_DOC);
+  const PAPER = opts.paper || "";
+  const PRELIM = new Set(); // sections that hold the Preliminary Note
   const C = pres.SchemeColor;
   // palette slots of svg_shapes.py -> scheme colours (see the header comment)
   const COL = {
@@ -120,12 +130,23 @@ function createDeck(opts = {}) {
   const FIGPT = []; // [slide no, figure, scaled pt, set pt] for every figure text
   let SLIDE_NO = 0;
 
-  function section(title) { pres.addSection({ title }); }
+  /* o.preliminary: this section is the Preliminary Note (the presenter's primer, not the paper). */
+  function section(title, o = {}) {
+    pres.addSection({ title });
+    if (o.preliminary) PRELIM.add(title);
+  }
   function newSlide(master, sectionTitle, kind, extra = {}) {
     const sl = pres.addSlide({ masterName: master, sectionTitle });
     SLIDE_NO += 1;
     Object.assign(sl, { _kind: kind, _no: SLIDE_NO, _master: master, _section: sectionTitle, _appendix: !!extra.appendix });
+    if (PRELIM.has(sectionTitle) && master !== "TITLE") prelimTag(sl);
     return sl;
+  }
+  /* The Preliminary Note's tag: one line above the title, on its divider and every one of its slides. */
+  function prelimTag(sl) {
+    sl._prelim = true;
+    sl.addText(PRELIM_TAG, { ...PRELIM_BOX, fontSize: LABEL_PT, bold: true, color: NAVY, align: "right", valign: "middle",
+      margin: 0, isTextBox: true, objectName: "prelim-tag" });
   }
   /* Speaker notes; a figure caption or source moved off the slide is appended ("Figure: ..."). */
   function notes(sl, text, figCaption, label = "Figure") {
@@ -399,9 +420,9 @@ function createDeck(opts = {}) {
     const RAW = path.join(work, `${base}.raw.pptx`), META = path.join(work, `${base}.meta.json`);
     await pres.writeFile({ fileName: RAW });
     const notesWords = Object.fromEntries(NOTES.map(([n, , w]) => [n, w]));
-    fs.writeFileSync(META, JSON.stringify({ ...META_DOC, geometry: GEOM, qa: QA,
+    fs.writeFileSync(META, JSON.stringify({ ...META_DOC, paper: PAPER, geometry: GEOM, qa: QA,
       slides: pres._slides.map((s) => ({ layout: s._master, kind: s._kind, section: s._section, morph: !!s._morph,
-        appendix: !!s._appendix, slideNumber: NUMBERED.includes(s._master), notesWords: notesWords[s._no] || 0 })) }, null, 1));
+        appendix: !!s._appendix, preliminary: !!s._prelim, slideNumber: NUMBERED.includes(s._master), notesWords: notesWords[s._no] || 0 })) }, null, 1));
     const py = path.join(work, "venv", "bin", "python");
     execFileSync(fs.existsSync(py) ? py : "python3", [path.join(__dirname, "transplant.py"), RAW, META, out, "--brand", brand], { stdio: "inherit" });
     const morphSlides = pres._slides.filter((s) => s._morph).map((s) => s._no);
@@ -427,4 +448,4 @@ function createDeck(opts = {}) {
   };
 }
 
-module.exports = { createDeck, GEOM, M, R, CW, F, K, AREA, BAND, FAREA, FCOL, TITLE_PT, TEXT_PT, LABEL_PT };
+module.exports = { createDeck, GEOM, M, R, CW, F, K, AREA, BAND, FAREA, FCOL, TITLE_PT, TEXT_PT, LABEL_PT, PRELIM_TAG };

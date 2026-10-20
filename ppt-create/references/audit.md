@@ -19,7 +19,7 @@ figures), a status legend, then one row per claim:
 
 | slide | where | claim | source location | status |
 |---|---|---|---|---|
-| 9 | B | Probing touches neighbouring slots, so a short probe sequence often stays in one cache line | Knuth §6.4; general architecture knowledge | background |
+| 9 | B | Probing touches neighbouring slots, so a short probe sequence often stays in one cache line | Knuth §6.4; general architecture knowledge | other source |
 | 10 | N | at three-quarters full a miss costs about eight and a half probes | ½(1 + 1/(1 − 0.75)²) = 8.5, Knuth §6.4 | ok |
 | 12 | T | "Accuracy is unchanged" → "Accuracy drops 0.1 points" | Table 4, row 3 | fixed (was "unchanged") |
 
@@ -44,7 +44,7 @@ caption, table row, number, card and every notes sentence that carries a number 
 4. Fix every error **in the prototype** (title, bullet, notes, figure label), record "fixed (old → new)",
    rebuild, re-run QA, re-render the changed slides.
 5. Recount the statuses into the file's header line ("48 rows: ok 35 · fixed 4 · author's reading 3 ·
-   background 6") and report the counts with the deck.
+   other source 6") and report the counts with the deck.
 
 ## Statuses
 
@@ -52,7 +52,14 @@ caption, table row, number, card and every notes sentence that carries a number 
 - **fixed** — was wrong, unsupported, or not the source's claim; corrected (write old → new).
 - **author's reading** — the author's inference, opinion, schematic depiction or arithmetic; it is
   marked as such on the slide and in the notes (below).
-- **background** — general knowledge or a different source (textbook, standard, data sheet); name it.
+- **preliminary** — a row on a Preliminary Note slide (the presenter's primer, part 2): checked against the
+  primer's own sources (named in the file header), never passed off as the paper's claim. A paper fact
+  quoted inside the primer (a forward pointer such as "(§V-D)") is still checked against the paper: **ok**.
+  `audit_skeleton.py` pre-marks these rows "todo (preliminary)".
+- **other source** — general knowledge or a different source (textbook, standard, data sheet); name it.
+- **Background** rows (the paper's own background part) are checked against the paper like every other
+  part: a primer's content never appears there, and the paper's background is never skipped because a
+  primer exists.
 - **todo** — not checked yet. A finished audit has none.
 
 ## Marking the author's own reasoning

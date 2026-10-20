@@ -13,6 +13,11 @@ What it does:
   * the Summary part: every deck's first part is "Summary", right after the title. The outline slide
     is its divider (drawn with Summary highlighted), so the deck never shows two outlines in a row; the
     next slide is the summary slide, titled "Summary: <core message>";
+  * Background and the Preliminary Note: in a deck about a paper (main data-paper), the "Background" part
+    is the paper's own background, in the paper's order, and must exist. A primer the presenter adds on
+    request is the optional Preliminary Note part (data-preliminary on its parts-def entry), always part 2,
+    between Summary and Background; its slides are tagged as the presenter's material and their provenance
+    is the primer's own sources, never the paper;
   * figures: inline SVG -> native-shape records (svg_shapes.py) with content bounds for the crop. A figure
     outside the vocabulary stops the run, naming the element; --png-fallback instead embeds that single
     figure as a picture (rendered by LibreOffice; its text then escapes the type-floor check);
@@ -21,13 +26,15 @@ What it does:
     the slide, no Summary part first in the parts list, no summary slide right after the outline, a
     summary slide whose title does not start with "Summary", a divider for the Summary part (it would
     repeat the outline), a numbered or bullet point list on the title slide (the key points live only on
-    the Summary slide), an appendix slide before the closing slide, a pointer to a missing appendix slide, unequal
+    the Summary slide), a paper deck without a Background part, a Preliminary Note anywhere but part 2
+    (right after Summary, right before Background) or with slides after a later part's, an appendix slide before the closing slide, a pointer to a missing appendix slide, unequal
     unkeyed elements across storyboard frames (Morph pairs them by order), a figure filling under half of
     its area (unless the slide has data-whitespace="reason"). Warnings: a title longer than one 20 pt
     line, a band over 4 lines or with more than 3 bullets, a step caption over 10 lines, loose viewBoxes,
     a figure filling under 75 % of its area, figure labels that the deck must raise to 12 pt, a table
     taller than the area or still under 75 % of it when grown, results without a methodology slide, notes
-    shorter than 40 or longer than 300 words, a Summary part of more than one slide;
+    shorter than 40 or longer than 300 words, a Summary part of more than one slide, a Preliminary Note
+    slide whose provenance (.source) cites the paper;
   * tables grow to fill the area: type up to 18 pt, then taller rows (fit_table).
 """
 import argparse
@@ -62,6 +69,15 @@ LIST_MARK = re.compile(r"^\s*(\d{1,2}[.)]|[•▪‣◦●■–])\s")  # a numb
 def is_summary(part):
     """The Summary part: id or outline label "Summary" (a label may add a sub-heading, "Summary: ...")."""
     return part["id"] == SUMMARY or (part["label"] or "").startswith(SUMMARY)
+
+
+BACKGROUND = "Background"  # in a deck about a paper: the paper's own background part
+# a provenance line that cites the paper (a Preliminary Note slide's sources are the presenter's, not the paper)
+PAPER_CITE = re.compile(r"\bpaper's\b|\b(from|after|in|of) the paper\b|§\s*[IVX\d]|\bFig(ure|s)?\.? ?\d|\bTable [IVX\d]|\bEq\. ?\d|\bSection [IVX\d]")
+
+
+def is_background(part):
+    return part["id"] == BACKGROUND or (part["label"] or "").startswith(BACKGROUND)
 
 # ---------------------------------------------------------------- text measure (Liberation Sans = Arial metrics)
 _FONTS = {}
@@ -276,8 +292,10 @@ def parse(path, png=False, work="."):
     lint = Lint()
     title_tag = soup.find("title")
     meta = {"title": deck.get("data-title") or (clean(title_tag) if title_tag else "Presentation"),
-            "subject": deck.get("data-subject", ""), "author": deck.get("data-author", "")}
-    parts = [{"id": li.get("data-part"), "label": clean(li.find("b")) or clean(li), "sub": clean(li.find("span"))}
+            "subject": deck.get("data-subject", ""), "author": deck.get("data-author", ""),
+            "paper": deck.get("data-paper", "")}
+    parts = [{"id": li.get("data-part"), "label": clean(li.find("b")) or clean(li), "sub": clean(li.find("span")),
+              "preliminary": li.get("data-preliminary") == "true"}
              for li in deck.select("ol.parts-def > li")]
     pid = [p["id"] for p in parts]
     sections = deck.select("section.slide")
@@ -288,6 +306,18 @@ def parse(path, png=False, work="."):
                          "with a Summary part of one slide titled \"Summary: <core message>\" (proto.py adds the part; "
                          "write the slide with Deck.summary(...))")
     sum_id = parts[0]["id"] if parts and is_summary(parts[0]) else None
+    # Background is the paper's; the Preliminary Note is the presenter's primer, part 2, right before Background
+    bg_i = next((i for i, p in enumerate(parts) if is_background(p) and not p["preliminary"]), None)
+    pre = [i for i, p in enumerate(parts) if p["preliminary"]]
+    pre_id = parts[pre[0]]["id"] if pre else None
+    if meta["paper"] and bg_i is None:
+        lint.err("deck", "a deck about a paper (data-paper) has no 'Background' part: the paper's own background, in the "
+                         "paper's order, is always presented; a presenter's primer is the Preliminary Note, not a substitute")
+    if len(pre) > 1:
+        lint.err("deck", f"{len(pre)} Preliminary Note parts: keep one")
+    if pre and (pre[0] != 1 or (bg_i is not None and bg_i != 2)):
+        lint.err("deck", f"the Preliminary Note is part {pre[0] + 1}: it must sit between Summary and Background (part 2, "
+                         f"{'Background part 3' if bg_i is not None else 'right after Summary'}); proto.py's d.preliminary() places it")
 
     def svgtext(el):
         r = el.find("svgref") if el is not None else None
@@ -304,6 +334,11 @@ def parse(path, png=False, work="."):
         where = f"[{len(slides) + 1}] {kind} {clean(canvas.find(['h1', 'h2'])) if canvas else ''}"[:80]
         rec = {"kind": kind, "part": part, "appendix": aid, "notes": notes_of(sec), "src_id": sec.get("id")}
         src_text = clean(sec.select_one(".source"))
+        if pre_id and part == pre_id:
+            rec["preliminary"] = True
+            if src_text and PAPER_CITE.search(src_text):
+                lint.warn(where, f"a Preliminary Note slide cites the paper as its source ({src_text[:60]!r}): the primer is "
+                                 "the presenter's material; name its own sources, or move the slide to the paper's Background")
         if kind == "title":
             rec.update(title=clean(canvas.find("h1")), subtitle=clean(canvas.select_one(".subtitle")),
                        byline=[clean(p) for p in canvas.select(".byline p")],
@@ -458,6 +493,17 @@ def parse(path, png=False, work="."):
         if p in pid:
             seen.add(p)
         out.append(s)
+    if pre_id:
+        later = False
+        for s in slides:
+            if s["appendix"]:
+                continue
+            if s["part"] in pid and pid.index(s["part"]) > pre[0]:
+                later = True
+            elif s["part"] == pre_id and later:
+                lint.err(f"{s['kind']} {(s.get('title') or '')[:40]}", "a Preliminary Note slide after a slide of a later part: "
+                                                                     "the primer is presented whole, between Summary and Background")
+                break
     closing_at = next((i for i, s in enumerate(slides) if s["kind"] == "closing"), len(slides))
     for i, s in enumerate(slides):
         if s["appendix"] and i < closing_at:

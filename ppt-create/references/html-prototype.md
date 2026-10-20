@@ -20,10 +20,12 @@ markup below; the canvas styling is only a preview, so what matters is that the 
 ## Page skeleton and the parts list
 
 ```html
-<main class="deck" data-title="Talk title" data-subject="One line" data-author="Name">
+<main class="deck" data-title="Talk title" data-subject="One line" data-author="Name"
+      data-paper="A. Author et al., Title, Venue 2026">    <!-- a talk about a paper: Background is required -->
   <ol class="parts-def">                       <!-- the outline: one item per part, in order -->
     <li data-part="Summary"><b>Summary</b><span>the talk in one slide</span></li>   <!-- always first -->
-    <li data-part="Background"><b>Background: the problem</b><span>what the audience needs first</span></li>
+    <li data-part="Preliminary" data-preliminary="true"><b>Preliminary Note</b><span>optional: presenter's primer, not the paper</span></li>  <!-- only on request; always part 2 -->
+    <li data-part="Background"><b>Background</b><span>the paper's Section II, in its order</span></li>
     <li data-part="Evaluation"><b>Evaluation</b><span>method, results</span></li>
   </ol>
   <section class="slide" data-kind="title">…</section>
@@ -34,6 +36,20 @@ markup below; the canvas styling is only a preview, so what matters is that the 
 `<span>` a one-line subtitle. **The first part is always `Summary`** (proto.py adds it; the lint stops
 without it). The title slide is the "Opening" section; the outline and the summary slide are the
 "Summary" section; appendix slides are "Appendix".
+
+**Background is the paper's; a primer is the Preliminary Note.** When the talk presents a paper
+(`data-paper`, `Deck(paper=...)`), the part `Background` is the paper's own background section, in the
+paper's order, with the paper as its source; the lint stops on a paper deck without it. When the user asks
+for extra basics for an audience that lacks them (a DRAM primer before a PIM paper, say), that material is
+the presenter's, not the paper's, so it goes in a separate optional part, the **Preliminary Note**
+(`d.preliminary()`, `data-preliminary="true"`): always part 2, between Summary and Background, presented
+whole; its divider and every slide carry the tag "Preliminary note · presenter's primer, not the paper"
+(drawn by the preview and the deck, not written by hand); its `.source` lines name the primer's own sources
+(the presenter's notes, a textbook, a simulator), never the paper. A paper figure the background section
+discusses (a comparison of prior designs, say) belongs in Background even if the primer leads up to it.
+Never relabel a primer as the paper's Background, and never drop the paper's Background because a primer
+covers similar ground. Why: the audience must be able to tell what the paper says from what the presenter
+added, and a reader who skips the primer must still get the paper's own background.
 
 ## Slide kinds
 
@@ -60,6 +76,7 @@ highlighted ("Next: part 2 of 4"). Each carries its own short script (what this 
 outline's names the parts and leads into the summary).
 ```html
 <section class="slide" data-kind="outline" data-part="Summary"><details class="notes" open>…</details></section>
+<section class="slide" data-kind="divider" data-part="Preliminary" data-preliminary="true"><details class="notes" open>…</details></section>
 <section class="slide" data-kind="divider" data-part="Background"><details class="notes" open>…</details></section>
 ```
 
@@ -196,8 +213,9 @@ C(cx, cy, r, cls, key=None); E(cx, cy, rx, ry, cls, key=None)
 G(body, dx=0, dy=0, cls="", key=None)                   # cls "hot" / "pend"
 svg(viewBox, body, title="", desc="", text_scale=None)
 
-d = Deck(title, subject="", author="")       # part 1 "Summary" is built in
+d = Deck(title, subject="", author="", paper="")   # part 1 "Summary" is built in; paper: the source paper's citation
 d.part(id, label=None, sub="")                # d.part("Summary", label, sub) re-labels part 1
+d.preliminary(label="Preliminary Note", sub=…)  # optional presenter's primer: always part 2, its slides part="Preliminary"
 d.title_slide(title, subtitle="", byline=(), notes="", presenter=…, date=…)   # no points: they go in d.summary
 d.outline(notes="")                           # Summary highlighted: also the Summary divider
 d.summary(message, **content_kwargs)          # right after the outline; title "Summary: <message>"
@@ -217,7 +235,9 @@ d.write(path)        # warns about a missing outline / divider / summary / closi
 
 ERROR (no spec is written): no `Summary` part first in the parts list; no summary slide right after the
 outline; a summary slide whose title does not start with "Summary"; a divider for the Summary part; a numbered or
-bullet point list on the title slide (`ol`, `ul`, `li` or a line written "1." / "•"); a slide without notes; provenance words on a slide (`Source:`, `Redrawn`,
+bullet point list on the title slide (`ol`, `ul`, `li` or a line written "1." / "•"); a paper deck
+(`data-paper`) without a `Background` part; a Preliminary Note that is not part 2 right before Background,
+or with a slide after a later part's slide; a slide without notes; provenance words on a slide (`Source:`, `Redrawn`,
 `Adapted from`, `schematic`, …); an appendix slide before the closing slide or a main slide after it; a
 `data-see` to a missing appendix id; a figure outside the vocabulary (without `--png-fallback`); storyboard
 frames with different numbers of unkeyed elements; a table below 12 pt; no title or no closing slide; a
@@ -227,13 +247,15 @@ WARN: a title over one 20 pt line; a band over 4 lines or with more than 3 bulle
 its area; labels that scale below 12 pt; a table taller than the area, or one that fills < 75 % of it
 even at its grown size; results without a methodology
 slide; notes outside 40–300 words; an appendix slide nobody points to; a part without slides; a Summary
-part of more than one slide.
+part of more than one slide; a Preliminary Note slide whose `.source` cites the paper ("the paper's",
+"§", "Fig. 2", "Table I").
 
 ## What the preview does
 
 The template's script numbers slides as the deck will (a storyboard of n frames spans n slides), draws
 the outline (Summary highlighted), dividers and appendix index from the parts list, flags a deck without
-a Summary part first, a summary slide not right after the outline or not titled "Summary…", plays storyboards (←, Play, →; click a
+a Summary part first, a summary slide not right after the outline or not titled "Summary…", a Preliminary
+Note out of place or a paper deck without Background, tags every Preliminary Note slide, plays storyboards (←, Play, →; click a
 frame), flags in red a title wider than its line, a band or caption taller than its box, and an area that
 overflows, lists the slides in a side index, and moves between slides with the arrow keys. Fonts in the
 preview are the browser's Arial / Helvetica, so a line that barely fits may wrap differently in

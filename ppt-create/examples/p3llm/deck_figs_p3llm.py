@@ -27,7 +27,8 @@ from svg_shapes import Unmapped, apply_edits, bounds, parse_svg, parse_timeline,
 PAGE = os.path.join(SKILL, "assets", "reference", "p3llm-intro.html")
 
 # figure -> the id prefix of its <svg> (aria-labelledby="fN-t fN-d") on the page; storyboard -> its <figure> id
-FIGS = {"fig_summary": "f1", "fig_hierarchy": "f2", "fig_tccd": "f5", "fig_bridge": "f7", "fig_roofline": "f8",
+FIGS = {"fig_summary": "f1", "fig_hierarchy": "f2", "fig_tccd": "f5", "fig_llm": "fb1", "fig_gqa": "fb2", "fig_pim": "fb3",
+        "fig_quant": "fb4", "fig_roofline": "f8",
         "fig_quadrant": "f9", "fig_kv": "f10", "fig_bits": "f11", "fig_bitmod": "f12", "fig_act": "f13",
         "fig_pcu": "f14", "fig_dataflow": "f16", "fig_setup": "f17", "fig_quality": "f18", "fig_speed": "f19",
         "fig_area": "f20", "fig_ablation": "f21"}
@@ -37,7 +38,6 @@ STORIES = {"fig_actrdpre": "tl3", "fig_timing": "tl4", "fig_aim": "tl6", "fig_te
 DECK_TEXT = {
     "fig_quadrant": {"memory footprint (Fig. 3a) →": "memory footprint →", "(Fig. 3b)": None},
     "fig_bits": {"activations (§IV-D)": "activations", "attention scores (§IV-B)": "attention scores"},
-    "fig_bridge": {"4 of 16 banks drawn": None},
     # labels that run past their box once raised to the 12 pt floor
     "fig_summary": {"PCU + TEP": "TEP"},
     "fig_hierarchy": {"row: ACT opens": "ACT opens"},

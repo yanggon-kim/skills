@@ -4,12 +4,15 @@
 From Python (the usual route: figures are easier to draw with the helpers):
     import sys; sys.path.insert(0, "<skill>/scripts")
     from proto import Deck, Frame, Table, svg, R, T, L, PL, C, E, G
-    d = Deck("Talk title", subject="One line on the talk", author="Name")   # part 1, "Summary", is built in
-    d.part("Background", "Background: the problem", "what the audience needs first")
+    d = Deck("Talk title", subject="One line on the talk", author="Name",   # part 1, "Summary", is built in
+             paper="A. Author et al., Title, Venue 2026")   # a deck about a paper: its Background part is required
+    d.preliminary(sub="optional: presenter's DRAM primer, not the paper")    # only on request: always part 2
+    d.part("Background", "Background", "the paper's Section II, in its order")
     d.title_slide(title="Talk title", subtitle="...", byline=["Authors", "Venue, year"], notes="script ...")
                                          # title, subtitle, byline, presenter, date only: no key points
     d.outline(notes="script ...")        # the outline, with Summary highlighted: also the Summary divider
     d.summary("core message of the talk", figure=svg(...), bullets=[...], notes="script ...")  # "Summary: ..."
+    d.divider("Preliminary", notes="script ...")            # its slides: part="Preliminary"
     d.divider("Background", notes="script ...")
     d.content("One-line core message", part="Background", figure=svg("0 0 640 300", R(...) + T(...)),
               bullets=["...", "..."], notes="script ...", source="Redrawn from ...", see="A1", role="method")
@@ -19,7 +22,7 @@ From Python (the usual route: figures are easier to draw with the helpers):
     d.write("talk.html")
 
 From JSON:  python3 proto.py CONTENT.json OUT.html
-    {"title": .., "subject": .., "author": .., "parts": [{"id", "label", "sub"}],
+    {"title": .., "subject": .., "author": .., "paper": .., "parts": [{"id", "label", "sub", "preliminary"}],
      "slides": [{"kind": "title" | "outline" | "summary" | "divider" | "content" | "story" | "closing", ...}]}
     ("summary" takes the content fields with "message" in place of "title"; "parts" may omit Summary)
     with the same fields as the methods below ("figure" is an SVG string; a story's "frames" are
@@ -31,6 +34,14 @@ provenance in .source, details to the appendix) are the author's. Every deck's f
 its divider, and the summary slide (d.summary) follows it, titled "Summary: <core message>". Missing
 outline or divider slides are added with a warning, a missing summary slide is warned about here and
 stops html_to_spec.py; appendix slides always go after the closing slide.
+
+Background and the Preliminary Note. In a deck about a paper (Deck(paper=...)), "Background" is always the
+paper's own background section, in the paper's order; html_to_spec.py stops on a paper deck without it. A
+primer the presenter adds on request, for an audience that lacks the basics, is a separate optional part,
+the Preliminary Note (d.preliminary()): always part 2, between Summary and Background, every slide of it
+tagged as the presenter's material ("Preliminary note · presenter's primer, not the paper"), its provenance
+its own sources, never the paper. A primer is never relabelled as the paper's Background, and the paper's
+Background is never dropped because a primer exists.
 """
 import html
 import json
@@ -40,6 +51,8 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SUMMARY = "Summary"  # the first part of every deck (html_to_spec.py stops on a deck without it)
+PRELIM = "Preliminary"  # the optional presenter's primer: part 2, between Summary and Background
+PRELIM_TAG = "Preliminary note · presenter's primer, not the paper"  # on every slide of it (deck_lib.js too)
 TEMPLATE = os.path.join(os.path.dirname(HERE), "assets", "prototype-template.html")
 E_ = html.escape
 
@@ -156,9 +169,12 @@ def _bullets(items):
 
 
 class Deck:
-    def __init__(self, title, subject="", author=""):
-        self.title, self.subject, self.author = title, subject, author
+    def __init__(self, title, subject="", author="", paper=""):
+        """paper: the source paper's citation when the talk presents a paper; the deck must then have a
+        "Background" part that is the paper's own background (html_to_spec.py stops without it)."""
+        self.title, self.subject, self.author, self.paper = title, subject, author, paper
         self.parts = [(SUMMARY, SUMMARY, "the talk in one slide")]  # (id, label, sub); Summary is always first
+        self.prelim = False
         self.slides = []  # (kind, part, html)
         self.appendix_slides = []
         self.warnings = []
@@ -167,9 +183,23 @@ class Deck:
         if pid == SUMMARY:  # re-label the built-in first part; it stays first
             self.parts[0] = (SUMMARY, label or SUMMARY, sub or self.parts[0][2])
             return
+        if pid == PRELIM:
+            self.preliminary(label or "Preliminary Note", sub)
+            return
         self.parts.append((pid, label or pid, sub))
 
+    def preliminary(self, label="Preliminary Note", sub="optional: the presenter's primer, not the paper"):
+        """The optional Preliminary Note: a primer the presenter adds on request for an audience that lacks the
+        basics. It is always part 2 (right after Summary, before Background), whenever this is called; its slides
+        (part="Preliminary") carry the tag PRELIM_TAG, and their .source names the primer's own sources, never
+        the paper. It never replaces the paper's Background."""
+        self.parts = [p for p in self.parts if p[0] != PRELIM]
+        self.parts.insert(1, (PRELIM, label, sub))
+        self.prelim = True
+
     def _add(self, kind, part, body, attrs=""):
+        if part == PRELIM:
+            attrs += ' data-preliminary="true"'
         sec = f'<section class="slide" data-kind="{kind}"' + (f' data-part="{E_(part)}"' if part else "") + f"{attrs}>{body}</section>"
         self.slides.append((kind, part, sec))
 
@@ -283,9 +313,16 @@ class Deck:
             self.warnings.append("no closing slide")
         if not any(k in ("content", "story") and p == SUMMARY for k, p, _ in self.slides):
             self.warnings.append("no summary slide: add Deck.summary(message, ...) after the outline (html_to_spec.py stops without it)")
+        if self.paper and not any(p[0] == "Background" or p[1].startswith("Background") for p in self.parts):
+            self.warnings.append("a deck about a paper needs a 'Background' part: the paper's own background, in its order "
+                                 "(html_to_spec.py stops without it); a presenter's primer goes in d.preliminary(), not there")
+        if self.prelim and not any(p == PRELIM and k in ("content", "story") for k, p, _ in self.slides):
+            self.warnings.append("the Preliminary Note part has no slides")
         order += self.appendix_slides
-        parts = "".join(f'<li data-part="{E_(i)}"><b>{E_(l)}</b><span>{E_(s)}</span></li>' for i, l, s in self.parts)
-        return (f'<main class="deck" data-title="{E_(self.title)}" data-subject="{E_(self.subject)}" data-author="{E_(self.author)}">'
+        parts = "".join(f'<li data-part="{E_(i)}"' + (' data-preliminary="true"' if i == PRELIM else "")
+                        + f'><b>{E_(l)}</b><span>{E_(s)}</span></li>' for i, l, s in self.parts)
+        paper = f' data-paper="{E_(self.paper)}"' if self.paper else ""
+        return (f'<main class="deck" data-title="{E_(self.title)}" data-subject="{E_(self.subject)}" data-author="{E_(self.author)}"{paper}>'
                 f'<ol class="parts-def">{parts}</ol>\n' + "\n".join(order) + "\n</main>")
 
     def write(self, path):
@@ -300,9 +337,12 @@ class Deck:
 
 
 def from_json(spec):
-    d = Deck(spec["title"], spec.get("subject", ""), spec.get("author", ""))
+    d = Deck(spec["title"], spec.get("subject", ""), spec.get("author", ""), spec.get("paper", ""))
     for p in spec.get("parts", []):
-        d.part(p["id"], p.get("label"), p.get("sub", ""))
+        if p.get("preliminary"):
+            d.preliminary(p.get("label") or "Preliminary Note", p.get("sub", ""))
+        else:
+            d.part(p["id"], p.get("label"), p.get("sub", ""))
     for s in spec["slides"]:
         s = dict(s)
         kind = s.pop("kind")

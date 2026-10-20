@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* Worked example: the approved P3-LLM lab deck (56 slides), rebuilt with the skill's library.
+/* Worked example: the approved P3-LLM lab deck (60 slides), rebuilt with the skill's library.
 
    Run:   node build_p3llm_deck.js [OUT.pptx] [--work DIR]
           (default OUT: ./p3llm-intro.pptx; DIR: $DECK_WORK or ./.deck_work, made by scripts/setup.sh)
@@ -9,7 +9,8 @@
    format now keeps in the HTML (titles, band bullets, speaker notes, step captions) lives here; the figures
    still come from the page (deck_figs_p3llm.py), never redrawn. The structure is the skill's: title, then the
    outline with part 1 (Summary) highlighted, which is also the Summary part's divider, then the summary
-   slide ("Summary: ..."), a divider before every later part with that part highlighted, figure-first content slides with 2-3 bullets
+   slide ("Summary: ..."), the Preliminary Note (part 2: the presenter's DRAM primer, not the paper, tagged on every
+   slide), the paper's own Background (§II, part 3), a divider before every later part with that part highlighted, figure-first content slides with 2-3 bullets
    in the fixed band, storyboards as one Morph-linked slide per frame, two methodology slides before the
    results, a closing slide; provenance in the notes ("Figure: ..."), the author's own reading tagged on the
    slide with the deck's own tag.
@@ -43,6 +44,7 @@ if (Object.keys(FIGDATA.fallback).length) {
 const d = lib.createDeck({
   work: WORK,
   title: "P3-LLM for the Lab", subject: "Lab paper discussion: P3-LLM (arXiv 2511.06838v4)", author: "yanggon-kim",
+  paper: "Y. Chen et al., P3-LLM, arXiv 2511.06838v4, 2026", // a paper deck: QA wants its Background section
   colorWords: { coral: "gold", Coral: "Gold", teal: "blue", Teal: "Blue", mustard: "light blue", Mustard: "Light blue", black: "dark gray" },
   nbRules: [[/\b(t|tCCD_[LS]|CL|RL|tRCD|tRRD|tRAS|tRP) = /g, "$1\u00a0=\u00a0"]],
   qa: {
@@ -56,7 +58,8 @@ const { pres, C, NAVY, GOLD, nb, band, drawFig, notes, newSlide, stat, cards, ta
 // ------------------------------------------------------------------ the library's slide types, by figure name
 const PARTS = [
   ["Summary", "the paper in one slide"],
-  ["Background: DRAM and AiM", "hierarchy, ACT/RD/PRE, timing, stock AiM, HBM-PIM"],
+  ["Preliminary Note", "optional: presenter's DRAM primer, not the paper"],
+  ["Background", "Section II: LLM decoding, GQA, PIM, quantization"],
   ["Motivation", "the compute roof of FP16 PIM, W4A8KV4P8"],
   ["Design", "four formats, the PCU and TEP, the dataflow"],
   ["Evaluation", "methodology, quality, speed and energy, area"],
@@ -68,7 +71,7 @@ const figSlide = (section, o) => d.figSlide(section, { ...o, id: o.fig, fig: FIG
 const storySlides = (section, o) => d.storySlides(section, { ...o, id: o.story, story: FIG[o.story] });
 
 // ================================================================== the deck
-const S_OPEN = "Opening", S_SUM = "Summary", S_BG = "Background", S_MOT = "Motivation", S_DES = "Design", S_EVAL = "Evaluation", S_DISC = "Discussion";
+const S_OPEN = "Opening", S_SUM = "Summary", S_PRE = "Preliminary Note", S_BG = "Background", S_MOT = "Motivation", S_DES = "Design", S_EVAL = "Evaluation", S_DISC = "Discussion";
 
 // ---- 1 title
 d.section(S_OPEN);
@@ -78,18 +81,19 @@ d.titleSlide(S_OPEN, {
   byline: ["Y. Chen, C. Fang, X. Dai, Y. Wu, T. Tambe, M. Verhelst, M. S. Abdelfattah", "arXiv 2511.06838v4, 2026 · Cornell, KU Leuven, Stanford"],
   notes: "Today's paper is P3-LLM, by Yuzong Chen, Chao Fang, Xilai Dai, Yuheng Wu, Thierry Tambe, Marian Verhelst and Mohamed Abdelfattah, from Cornell, KU Leuven and Stanford. I am using version 4 on arXiv, number 2511.06838, from May 2026. " +
     "The paper asks one question: how can DRAM processing-in-memory stay fast for LLM decoding on an edge device once the batch is larger than one? " +
-    "I will start with the whole paper on one slide, then give the DRAM and PIM background we need, the motivation, the three design parts, the evaluation, and finally some points for discussion. Every number I quote comes from the paper, and I will say which section, figure or table it comes from. DRAM sizes and timings in the background are simulator presets that I use for illustration, not JEDEC values.",
+    "I will start with the whole paper on one slide. Then comes a short preliminary note on DRAM that I added for those of us new to DRAM; it is not part of the paper. After that I follow the paper: its background, the motivation, the three design parts, the evaluation, and finally some points for discussion. Every number I quote comes from the paper, and I will say which section, figure or table it comes from. DRAM sizes and timings in the preliminary note are simulator presets that I use for illustration, not JEDEC values.",
 });
 
 // ---- 2 outline, which also opens part 1 (Summary)
 d.section(S_SUM);
 outlineSlide(S_SUM, 0,
-  "Here is the plan for the talk, in six parts. Part one, highlighted, is a summary: the whole paper on one slide, which comes next. Part two is background: how a DRAM is organised, which commands read it, which timing rules space those commands, and how a stock PIM design, SK hynix's AiM, computes inside the DRAM. It ends with Samsung's HBM-PIM, which P3-LLM builds on. " +
-  "Part three is the motivation: why FP16 PIM units run out of compute as soon as the batch grows, and which operands can be shrunk without losing accuracy. " +
-  "Part four is the design: four number formats, the low-precision compute unit with its throughput trick called TEP, and the dataflow that folds the scales away. " +
-  "Part five is the evaluation, starting with how the authors model the hardware, then accuracy, speed, energy and area. " +
-  "Part six is discussion: where the speedup really comes from, and a few open questions I would like us to talk about. " +
-  "Each later part starts with this outline again, with that part highlighted, so you always know where we are. If you already know DRAM timing well, part two will go quickly; I keep it because TEP only makes sense once tCCD_S and tCCD_L are clear.", true);
+  "Here is the plan for the talk, in seven parts. Part one, highlighted, is a summary: the whole paper on one slide, which comes next. Part two is a preliminary note that I added; it is not in the paper. It covers how a DRAM is organised, which commands read it, which timing rules space those commands, and how a stock PIM design, SK hynix's AiM, computes inside the DRAM. If you already know DRAM timing well, we can skip it; I keep it because TEP only makes sense once tCCD_S and tCCD_L are clear. " +
+  "Part three is the paper's own background, its Section II: how an LLM decodes, grouped-query attention, PIM for LLMs and quantization. " +
+  "Part four is the motivation: why FP16 PIM units run out of compute as soon as the batch grows, and which operands can be shrunk without losing accuracy. " +
+  "Part five is the design: four number formats, the low-precision compute unit with its throughput trick called TEP, and the dataflow that folds the scales away. " +
+  "Part six is the evaluation, from how the authors model the hardware to accuracy, speed, energy and area. " +
+  "Part seven is discussion: where the speedup really comes from, and a few open questions. " +
+  "Each later part starts with this outline again, with that part highlighted, so you always know where we are.", true);
 
 // ---- 3 summary
 {
@@ -112,11 +116,11 @@ outlineSlide(S_SUM, 0,
     "The four numbers on the right are the headline results. Speed is 4.9 times that of HBM-PIM, Figure 9. Energy efficiency is 3.5 times, Figure 10. The HBM area overhead is 17.5 percent against 16.4 percent, Table VII. And the mean Wikitext perplexity loss is 0.25, where QuaRot and QoQ lose 0.30, Table IV. Keep the 4.9 times in mind; in the discussion we will ask how much of it comes from the hardware idea and how much from quantization.", "Redrawn from the paper's Fig. 6(a) and §I.");
 }
 
-// ---- Background
-d.section(S_BG);
-outlineSlide(S_BG, 1, "Part two, background. P3-LLM's main hardware trick depends on DRAM timing details, so we need some vocabulary first: how a DRAM is organised, the three commands that read it, the timing rules between them, and how a stock PIM design, SK hynix's AiM, computes inside the DRAM. We end with Samsung's HBM-PIM, the design P3-LLM extends. All DRAM sizes and timings in this part are one simulator preset, LPDDR5-6400 AiM in Ramulator 2.0, not JEDEC values.");
+// ---- Preliminary Note: the presenter's DRAM primer (not the paper; optional; tagged on every slide)
+d.section(S_PRE, { preliminary: true });
+outlineSlide(S_PRE, 1, "Part two is a preliminary note, and it is my addition, not the paper's: the tag at the top of each of its slides says so. The paper assumes its readers know DRAM, and P3-LLM's main hardware trick depends on DRAM timing details, so I give the vocabulary first: how a DRAM is organised, the three commands that read it, the timing rules between them, and how a stock PIM design, SK hynix's AiM, computes inside the DRAM. Its sources are our own DRAM explainer and one simulator preset, LPDDR5-6400 AiM in Ramulator 2.0, so the sizes and timings are not JEDEC values. If everyone here knows DRAM timing, we can skip straight to part three, the paper's background.");
 
-figSlide(S_BG, {
+figSlide(S_PRE, {
   fig: "fig_hierarchy",
   title: "DRAM is a tree: channel, bank group, bank, row, column",
   body: [
@@ -129,7 +133,7 @@ figSlide(S_BG, {
     "Remember that the four banks of a bank group share that one I/O path. Two slides from now this sets a timing rule, and P3-LLM builds its throughput trick on that rule. These sizes are a simulator preset for LPDDR5-6400 AiM in Ramulator 2.0, not JEDEC values; HBM has the same levels of hierarchy with different sizes.",
 });
 
-storySlides(S_BG, {
+storySlides(S_PRE, {
   story: "fig_actrdpre",
   title: "ACT opens a row, RD moves a column, PRE closes it",
   caption: "One bank. Coral = the path the current command uses; teal = the row in the row buffer. Sizes: simulator preset (LPDDR5-6400 AiM). Timing is left out here; the next storyboard adds it.",
@@ -142,7 +146,7 @@ storySlides(S_BG, {
   ],
 });
 
-storySlides(S_BG, {
+storySlides(S_PRE, {
   story: "fig_timing",
   title: "Timing rules set when each command may issue",
   titles: ["ACT in BG 0", "ACT in BG 1", "RD", "RD, same group", "RD, other group", "PRE"],
@@ -157,7 +161,7 @@ storySlides(S_BG, {
   ],
 });
 
-figSlide(S_BG, {
+figSlide(S_PRE, {
   fig: "fig_tccd",
   title: "Same bank group: tCCD_L apart; other groups: tCCD_S",
   body: [
@@ -171,7 +175,7 @@ figSlide(S_BG, {
     "The general point comes from the paper. In Section V-D the authors note that tCCD_S is typically about half of tCCD_L across all HBM generations. Stock PIM designs issue one compute command per tCCD_L, as we will see on the next slides. P3-LLM's TEP asks what happens if the compute unit instead runs at tCCD_S.",
 });
 
-storySlides(S_BG, {
+storySlides(S_PRE, {
   story: "fig_aim",
   title: "Stock AiM: one MAC16, one column in all 16 banks",
   titles: ["WRGB", "WRMAC16", "TMOD", "PREA and ACT16", "MAC16 × c", "TMOD", "RDMAC16"],
@@ -190,7 +194,7 @@ storySlides(S_BG, {
 });
 
 {
-  const sl = newSlide("CONTENT", S_BG, "content");
+  const sl = newSlide("CONTENT", S_PRE, "content");
   sl.addText("Only WRGB, WRMAC16 and RDMAC16 use the data bus", { placeholder: "title" });
   table(sl, ["command", "what moves", "data bus"], [
     { cells: ["WRGB", "host → global buffer: one 32 B burst", "yes"] },
@@ -206,39 +210,84 @@ storySlides(S_BG, {
   ]);
   notes(sl, "This table summarises the run we just watched. Only three commands use the data bus between the host and the DRAM: WRGB, which writes the input into the global buffer; WRMAC16, which initialises the MAC registers; and RDMAC16, which returns the results. TMOD only switches mode, twice per run, and PREA and ACT16 close and open rows. " +
     "The command that matters is MAC16, the highlighted row. It moves nothing over the data bus: each bank sends its column to its own PU, and the input comes from the global buffer inside the chip. That is how PIM uses the internal bandwidth of all banks at once. " +
-    "Now the timing consequence. Every MAC16 touches all four bank groups, because all sixteen banks work together. So two consecutive MAC16s always fall under the same-bank-group rule, and they must be tCCD_L apart. Stock AiM therefore issues one MAC command per tCCD_L. P3-LLM's base design, HBM-PIM, has the same property: Section V-D says a PIM command is issued every tCCD_L. Keep this in mind for TEP, which asks how to do more work inside that tCCD_L window.", "One stock AiM run, from our DRAM explainer (Table B2). Sizes: simulator preset (LPDDR5-6400 AiM).");
+    "Now the timing consequence. Every MAC16 touches all four bank groups, because all sixteen banks work together. So two consecutive MAC16s always fall under the same-bank-group rule, and they must be tCCD_L apart. Stock AiM therefore issues one MAC command per tCCD_L. P3-LLM's base design, HBM-PIM, has the same property: Section V-D says a PIM command is issued every tCCD_L. Keep this in mind for TEP, which asks how to do more work inside that tCCD_L window. That ends my preliminary note; next is the paper's own background.", "One stock AiM run, from our DRAM explainer (Table B2). Sizes: simulator preset (LPDDR5-6400 AiM).");
 }
 
+// ---- Background: the paper's own §II, in the paper's order (II-A LLMs and GQA, II-B PIM, II-C quantization)
+d.section(S_BG);
+outlineSlide(S_BG, 2, "Part three is the paper's own background, Section II, in the paper's order. First, Section II-A: how an LLM runs during prefill and decoding, what one decoder layer does, and grouped-query attention, which shrinks the KV-cache. Second, Section II-B: PIM for LLM acceleration, with the two commercial designs the paper compares, Samsung's HBM-PIM and SK hynix's AiM. Third, Section II-C: how quantization works and what earlier work has shown. From here on, everything is the paper's content unless I say otherwise.");
+
 figSlide(S_BG, {
-  fig: "fig_bridge",
-  title: "P3-LLM builds on HBM-PIM: one PCU per bank pair",
+  fig: "fig_llm",
+  title: "Decoding runs every decoder layer once per new token",
   body: [
-    "HBM-PIM puts one PCU between an even and an odd bank, 8 per channel: a 16-way SIMD FP16 MAC fed 256 bits per column access (§II-B, §V-A).",
-    "AiM differs: one PU per bank, BF16, an adder tree, a global buffer. From here on we say PCU, as the paper does.",
+    "Prefill reads the whole prompt at once; decoding feeds each new token back in, one per step (§II-A).",
+    "New keys and values stay in off-chip memory for later steps: the KV-cache.",
   ],
-  caption: "Redrawn from the paper's Fig. 2 and Fig. 6(a); 4 of 16 banks drawn. Teal = weights, 256 bits per column access; dashed = input.",
-  notes: "P3-LLM is not built on AiM but on Samsung's HBM-PIM, so let me bridge the two. On the left is stock AiM again: one PU under every bank, and a shared global buffer that holds the input. On the right is HBM-PIM, redrawn from the paper's Figure 2 and Figure 6(a). " +
-    "HBM-PIM puts one PIM compute unit, a PCU, between an even bank and an odd bank, so a channel of 16 banks has 8 PCUs, as Section V-A describes. Each PCU has its own input register instead of a global buffer. Each PCU is a 16-way SIMD FP16 multiply-accumulate unit. One column access delivers 256 bits, which is 16 FP16 weights, and the PCU reuses one input element across all 16 weights, according to Section II-B. " +
-    "So the MAC idea is the same as AiM's: multiply the open row's columns by an input held next to the banks. AiM differs in the details: one PU per bank, BF16 numbers, an adder tree and a global buffer. And like AiM, HBM-PIM issues one PIM command per tCCD_L. From here on I use the paper's word, PCU, for the compute unit.",
+  caption: "Redrawn from the paper's Fig. 1(a); layer norms and residual adds are left out. Boxes with a black outline hold weights.",
+  notes: "Now the paper's own background, Section II-A, redrawn from its Figure 1(a). The top row is the whole model. In the prefilling stage the user prompt of N_T tokens goes through an embedding table of size N_VOC by H, where N_VOC is the vocabulary size and H the hidden size, then through L decoder layers, then the language-modelling head, which produces the first output token. In the decoding stage, the coral loop, that token goes back in as the next input and the model performs the same operations again: one new token per step, auto-regressively. " +
+    "The bottom row zooms into one decoder layer. Self-attention starts with three linear layers, W_Q, W_K and W_V, which make the query, key and value vectors. In recent models RoPE then rotates the query and the key by position. For every head, Q times K-transpose and a softmax give the attention scores, P; P times V and the output layer W_O give the attention output. The MLP has three more linear layers: W_gate, W_up and W_down. " +
+    "The new key, after RoPE, and the new value are also stored in off-chip memory, the teal box, so that later steps can reuse them. This is the KV-cache.",
+});
+
+figSlide(S_BG, {
+  fig: "fig_gqa",
+  title: "GQA shares key-value heads: the KV-cache shrinks by G×",
+  body: [
+    "The KV-cache holds keys and values of every token, so it grows large at long context (§II-A).",
+    "MHA has N_A = N_KV; GQA has G = N_A / N_KV query heads per key-value head: G× less cache (Fig. 1b).",
+  ],
+  caption: "Redrawn from the paper's Fig. 1(b): eight query heads; four key-value heads on the right, so G = 2.",
+  notes: "Still Section II-A, now Figure 1(b). The KV-cache must store a key and a value for every token, so for long contexts its capacity becomes significant. To reduce it, recent models adopt grouped-query attention, GQA. " +
+    "Each query vector is split into N_A heads and each key and value vector into N_KV heads. On the left is conventional multi-head attention: N_A equals N_KV, so every query head in the top row has its own key head in the teal row and its own value head in the mustard row. Eight query heads mean eight key-value heads to store for every token. " +
+    "On the right is GQA with the paper's example: eight query heads and four key-value heads, so G, which is N_A over N_KV, is two. The paper describes this as partitioning the query heads into G groups whose heads share key-value vectors; in the drawing, each key-value head serves two query heads. Either way the KV-cache shrinks by a factor of G. " +
+    "The paper's introduction adds that models with GQA have an arithmetic intensity above one during decoding. The motivation comes back to that.",
+});
+
+figSlide(S_BG, {
+  fig: "fig_pim",
+  title: "PIM puts a PCU at each bank, but FP16 PCUs are costly",
+  body: [
+    "Decoding is memory-bound, so PIM uses DRAM's internal bandwidth: a PCU at each bank, fed 256 bits per access (§II-B).",
+    "FP16/BF16 PCUs take 20–27 % of the DRAM die, so PIM pays off mainly at batch 1 and for MHA (§II-B).",
+  ],
+  caption: "Redrawn from the paper's Fig. 2. Left: one PIM channel; right: the PCUs of HBM-PIM and AiM.",
+  notes: "Section II-B, PIM for LLM acceleration, redrawn from the paper's Figure 2. PIM suits the decoding stage because decoding is memory-bound and PIM has a higher bandwidth inside the DRAM. The figure shows two commercial designs: Samsung's HBM-PIM and SK hynix's AiM. " +
+    "On the left is one PIM channel: sixteen banks in four bank groups, with a PIM compute unit, a PCU, the coral strip, near each bank. Two banks may share one PCU to save area; P3-LLM's base design pairs an even and an odd bank, eight PCUs per channel, Section V-A. Each bank sends weights or KV-cache to its PCU 256 bits at a time, sixteen 16-bit values. The input goes to the PCU's register file in HBM-PIM, or to the global buffer in AiM, the teal strip. " +
+    "On the right, HBM-PIM's PCU is a 16-way SIMD unit in FP16 that multiplies one input element with sixteen weights: input reuse. AiM's uses BF16 and an adder tree that sums sixteen products into one output: output reuse. " +
+    "The catch: these high-precision PCUs take 20 to 27 percent of the DRAM die, because a DRAM process has about ten times lower transistor density and fewer metal layers than logic. That caps PIM's throughput, so its benefit stays mainly at batch 1 and in multi-head attention, which have no data reuse.",
+});
+
+figSlide(S_BG, {
+  fig: "fig_quant",
+  title: "Quantization: scale, round to a value set, scale back",
+  body: [
+    "Eq. 1: Δ = |X|max / Q_max; X / Δ is rounded to the closest value in Q; X_Q · Δ restores it, with an error (§II-C).",
+    "Weight-only and KV-only methods are near-lossless at 4 bits; custom formats such as FP8 fit LLMs better.",
+  ],
+  caption: "Top: the paper's Eq. 1 in three steps. Bottom: our own example, Q = the integers −7 … 7; the values are illustrative.",
+  notes: "Section II-C, LLM quantization. The top row is the paper's Equation 1 in three steps. Take a group of operands, X. Its scale, Delta, is the largest magnitude in the group divided by Q_max, the largest value in the list of quantization values Q. Each element of X over Delta is rounded to the closest value in Q; that is the quantized operand X_Q, the coral box. Multiplying X_Q by Delta gives back an approximation of X, the dequantized operand, and the rounding leaves an error. " +
+    "The bottom row is my own example, not the paper's: Q is the integers from minus 7 to 7. The largest magnitude lands exactly on minus 7, and every other value moves to its nearest integer along a dashed line; the length of that move is the rounding error. " +
+    "The paper then lists two ways to reduce the error. Mixed precision: weight-only and KV-cache-only methods are near-lossless at 4 bits, and weight-activation methods quantize the activations too. And custom number formats adapt better to the distribution of LLM tensors; industry supports some already, for example FP8 on NVIDIA and AMD in two variants, E4M3 and E5M2.",
 });
 
 // ---- Motivation
 d.section(S_MOT);
-outlineSlide(S_MOT, 2, "Part three, motivation, which is Section III of the paper. Two questions. First, why does an FP16 PIM unit lose its advantage as soon as the batch grows or the model uses grouped-query attention? Second, which of the four operands, weights, activations, KV-cache and attention scores, can be shrunk without hurting accuracy?");
+outlineSlide(S_MOT, 3, "Part four, motivation, which is Section III of the paper. Two questions. First, why does an FP16 PIM unit lose its advantage as soon as the batch grows or the model uses grouped-query attention? Second, which of the four operands, weights, activations, KV-cache and attention scores, can be shrunk without hurting accuracy?");
 
 figSlide(S_MOT, {
   fig: "fig_roofline",
   title: "FP16 PIM's gain fades as batch or GQA group nears 4",
   body: [
     "HBM-PIM's roof is 1.23 TOPS on 1.23 TB/s: batching or GQA soon makes it compute-bound (Fig. 4, §III-B).",
-    "FP16/BF16 PCUs already take 20–27 % of the DRAM die (§II-B).",
+    "Yet the NPU stays memory-bound even at batch 16 and above (§III-B).",
     "P3-LLM: 4× the multipliers at 2× the clock, an 8× roof of 9.84 TOPS (§III-B).",
   ],
   caption: "Redrawn from the paper's Fig. 4. The NPU line is its 307 GB/s DRAM bandwidth (compute roof not drawn). Mustard guides: operator positions, approximate.",
   notes: "Now the motivation, Section III, built on this roofline from the paper's Figure 4. The x-axis is arithmetic intensity, operations per byte of memory traffic; the y-axis is peak throughput in TOPS. HBM-PIM, in teal, has an internal bandwidth of about 1.23 terabytes per second and a compute roof of 1.23 TOPS, so its corner sits near one operation per byte. " +
     "Multi-head attention at batch 1 sits right at that corner, the case PIM was designed for. But as soon as a batch, or grouped-query attention, reuses each weight or key for more inputs, the operator moves right, past the corner, where HBM-PIM is capped by compute. The paper puts it this way: HBM-PIM's advantage gradually disappears as the batch size and the GQA group size approach 4. The mustard guides show GQA with group 4 at batch 4 and group 8 at batch 8; their positions are approximate, read from the figure. " +
-    "Why is the roof so low? Section II-B: FP16 or BF16 PCUs already take 20 to 27 percent of the DRAM die, and a DRAM process has about ten times lower transistor density than logic, so few units fit. " +
-    "P3-LLM's answer, in coral, is a roof eight times higher, 9.84 TOPS: four times the multipliers in the same compute area, because the operands are 4 bits, and clocked twice as fast. The gray line is the NPU with its 307 gigabytes per second of DRAM bandwidth.",
+    "Meanwhile the NPU, the gray line with its 307 gigabytes per second of DRAM bandwidth, stays memory-bound even at batch 16 and above. So the bandwidth inside the DRAM is there; what the system lacks is PIM compute throughput, and the background showed why: the high-precision PCUs are expensive. " +
+    "P3-LLM's answer, in coral, is a roof eight times higher, 9.84 TOPS: four times the multipliers in the same compute area, because the operands are 4 bits, and clocked twice as fast.",
 });
 
 figSlide(S_MOT, {
@@ -278,7 +327,7 @@ figSlide(S_MOT, {
 
 // ---- Design
 d.section(S_DES);
-outlineSlide(S_DES, 3, "Part four, the design, Sections IV and V of the paper. First the four number formats, one per operand: INT4 asymmetric for the KV-cache, a new unsigned FP8 for attention scores, BitMoD for weights and FP8-E4M3 for activations. Then the low-precision PCU and TEP, its throughput trick. Then the dataflow that folds the dequantization into neighbouring operators.");
+outlineSlide(S_DES, 4, "Part five, the design, Sections IV and V of the paper. First the four number formats, one per operand: INT4 asymmetric for the KV-cache, a new unsigned FP8 for attention scores, BitMoD for weights and FP8-E4M3 for activations. Then the low-precision PCU and TEP, its throughput trick. Then the dataflow that folds the dequantization into neighbouring operators.");
 
 figSlide(S_DES, {
   fig: "fig_kv",
@@ -400,7 +449,7 @@ figSlide(S_DES, {
 
 // ---- Evaluation
 d.section(S_EVAL);
-outlineSlide(S_EVAL, 4, "Part five, the evaluation, Section VI of the paper. I start with three slides on methodology and setup, because every hardware result in this paper is modelled, not measured on silicon, so we should know how. Then model quality, speed and energy, and area.");
+outlineSlide(S_EVAL, 5, "Part six, the evaluation, Section VI of the paper. I start with three slides on methodology and setup, because every hardware result in this paper is modelled, not measured on silicon, so we should know how. Then model quality, speed and energy, and area.");
 
 {
   // methodology (1/2): the hardware-cost chain left to right, then two facts that qualify the area numbers
@@ -507,7 +556,7 @@ figSlide(S_EVAL, {
 
 // ---- Discussion
 d.section(S_DISC);
-outlineSlide(S_DISC, 5, "Part six, discussion. I first show where the speedup comes from, using the paper's own ablation, and then six open questions in two groups, hardware and method. From here on, points tagged BRAINSTORM are our reading, not the paper's claims.");
+outlineSlide(S_DISC, 6, "Part seven, discussion. I first show where the speedup comes from, using the paper's own ablation, and then six open questions in two groups, hardware and method. From here on, points tagged BRAINSTORM are our reading, not the paper's claims.");
 
 figSlide(S_DISC, {
   fig: "fig_ablation",
