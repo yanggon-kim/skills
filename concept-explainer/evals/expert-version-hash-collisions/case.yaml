@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: expert-version-hash-collisions
+expected_outcome: |
+  One self-contained HTML page in English for a newcomer, in the usual section order, that explains
+  hashing to a slot and one collision strategy (chaining or open addressing) in plain words, and
+  ends with a section id="deeper" after the limits box: four items (what an expert would do that
+  the reader did not ask, the raw material such as a real hash-table implementation's source or
+  the original paper, named methods and tools such as a benchmark or a load-factor sweep, and an
+  outside check with an expected result), then the request rewritten as a pasteable prompt in a
+  pre.prompt with a copy button. The lesson above the section stays at the newcomer's level.

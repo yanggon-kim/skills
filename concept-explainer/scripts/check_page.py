@@ -5,7 +5,8 @@ Usage: python3 check_page.py page.html [--json]
 
 Reports three groups of findings:
   contract  - artifact page-contract problems (skeleton tags, CDN, theme tokens, leftover slots)
-  structure - the parts a concept-explainer page needs (diagram, interaction, sections)
+  structure - the parts a concept-explainer page needs (diagram, interaction, sections, and the
+              closing "expert's version of your question")
   voice     - sentence length, passive-voice suspects, filler and hype words
               (Korean is counted in space-separated eojeol, with a lower long-sentence limit)
 
@@ -26,7 +27,7 @@ ALLOWED_SCRIPT_HOSTS = (
     "https://code.jquery.com/",
 )
 ALLOWED_STYLE_HOSTS = ("https://fonts.googleapis.com/",)
-EXPECTED_SECTIONS = ["familiar", "problem", "mechanism", "try", "result", "misconception", "recap"]
+EXPECTED_SECTIONS = ["familiar", "problem", "mechanism", "try", "result", "misconception", "recap", "deeper"]
 PROSE_TAGS = {"p", "li", "dd", "dt", "summary", "figcaption", "h1", "h2", "h3", "blockquote"}
 SKIP_TAGS = {"script", "style", "svg", "code", "pre", "kbd", "title"}
 
@@ -53,7 +54,8 @@ class PageParser(HTMLParser):
         self.stack = []
         self.skip_depth = 0
         self.prose_depth = 0
-        self.blocks = []          # (tag, text) for prose blocks
+        self.blocks = []          # (tag, class, text, in_deeper) for prose blocks
+        self.sections = []        # ids of the open <section> elements
         self.current = []
         self.tags = []            # (tag, attrs)
         self.svg_count = 0
@@ -87,6 +89,8 @@ class PageParser(HTMLParser):
                     self.svg_info[-1]["literal_colors"] += 1
             if re.search(r"(fill|stroke)\s*:\s*(#|rgb)", a.get("style") or "", re.I):
                 self.svg_info[-1]["literal_colors"] += 1
+        if tag == "section":
+            self.sections.append(a.get("id") or "")
         if tag in SKIP_TAGS:
             self.skip_depth += 1
         if tag in PROSE_TAGS and not self.skip_depth:
@@ -94,11 +98,14 @@ class PageParser(HTMLParser):
                 self.current = []
                 self.current_tag = tag
                 self.current_class = a.get("class") or ""
+                self.current_deeper = "deeper" in self.sections
             self.prose_depth += 1
         if tag in ("br",) and self.prose_depth:
             self.current.append(" ")
 
     def handle_endtag(self, tag):
+        if tag == "section" and self.sections:
+            self.sections.pop()
         if tag == "svg" and self.in_svg:
             self.in_svg -= 1
         if tag in SKIP_TAGS and self.skip_depth:
@@ -108,7 +115,7 @@ class PageParser(HTMLParser):
             if self.prose_depth == 0:
                 text = re.sub(r"\s+", " ", "".join(self.current)).strip()
                 if text:
-                    self.blocks.append((self.current_tag, self.current_class, text))
+                    self.blocks.append((self.current_tag, self.current_class, text, self.current_deeper))
 
     def handle_data(self, data):
         if self.prose_depth and not self.skip_depth:
@@ -271,24 +278,45 @@ def check(path):
         add("ERROR", "timeline", "autoplay found; the timeline must start paused on frame 1")
     if not any(c in p.classes for c in ("answer",)):
         add("WARN", "structure", "no .answer one-sentence answer under the title")
+    # the expert's version of your question: last section, four items, a pasteable prompt, real sources
+    dp = re.search(r'<section[^>]*\bid="deeper"', nc)
+    if dp:
+        body = nc[dp.start():]
+        end = re.search(r"</section>", body)
+        body = body[:end.end()] if end else body
+        n_items = len(re.findall(r"<dt\b", body))
+        if n_items != 4:
+            add("WARN", "deeper", f"{n_items} items in the expert's version; give the four: what an expert would do, raw material, methods and tools, the outside check")
+        if not re.search(r'<pre[^>]*class="[^"]*\bprompt\b', body):
+            add("WARN", "deeper", 'no <pre class="prompt"> with the rewritten request')
+        if not re.search(r'<a[^>]+href="https?://', body):
+            add("WARN", "deeper", "no links to raw material; link the primary sources you name")
+        if re.search(r'<section[^>]*\bid="(?!deeper")', nc[dp.end():]):
+            add("WARN", "deeper", "a section follows the expert's version; it belongs last on the page")
 
     # ---- voice
     prose = [b for b in p.blocks]
-    text = " ".join(t for _, _, t in prose)
+    text = " ".join(t for _, _, t, _ in prose)
     korean = len(HANGUL.findall(text)) > 0.3 * max(1, len(re.findall(r"\w", text)))
     limit = 15 if korean else 25
     sentences = []
     caption_words = 0
-    for tag, cls, t in prose:
+    deeper_words = 0
+    for tag, cls, t, in_deeper in prose:
         if tag in ("h1", "h2", "h3", "dt"):
             continue
         if "frame-caption" in cls or "frame" in cls.split():
             caption_words += len(t.split())
+        if in_deeper:
+            deeper_words += len(t.split())
         sentences.extend(split_sentences(t))
     counts = [len(s.split()) for s in sentences]
-    words = sum(counts) - caption_words   # captions are the timeline's text; not in the prose budget
+    # captions are the timeline's text and the last section is the upgraded question;
+    # neither is in the lesson's prose budget
+    words = sum(counts) - caption_words - deeper_words
     stats = {
         "timeline_caption_words": caption_words,
+        "deeper_words": deeper_words,
         "language": "ko" if korean else "en",
         "prose_words": words,
         "sentences": len(sentences),
@@ -327,7 +355,8 @@ def check(path):
     if filler_hits:
         add("WARN", "voice", "filler/hype words: " + ", ".join(filler_hits))
 
-    qs = [t for tag, cls, t in prose if "?" in t and tag != "summary" and "question" not in cls and tag != "h1"]
+    qs = [t for tag, cls, t, in_deeper in prose
+          if "?" in t and tag != "summary" and "question" not in cls and tag != "h1" and not in_deeper]
     stats["questions_outside_prompts"] = len(qs)
     if len(qs) > 2:
         add("WARN", "voice", f"{len(qs)} prose blocks contain questions; keep questions to the opening and prediction prompts")
@@ -335,6 +364,8 @@ def check(path):
         add("WARN", "voice", f"only {words} words of prose; the page may be too thin")
     if words > 1500:
         add("WARN", "voice", f"{words} words of prose; the page may be too long for one concept")
+    if deeper_words and not 80 <= deeper_words <= 350:
+        add("WARN", "deeper", f"{deeper_words} words in the expert's version; aim for about 120-300")
 
     return findings, stats
 
@@ -356,6 +387,7 @@ def main():
             print("OK    no findings")
         print()
         cap = f" (+{stats['timeline_caption_words']} in frame captions)" if stats['timeline_caption_words'] else ""
+        cap += f" (+{stats['deeper_words']} in the expert's version)" if stats['deeper_words'] else ""
         print(f"voice: {stats['language']}, {stats['prose_words']} words{cap}, {stats['sentences']} sentences, "
               f"mean {stats['mean_words_per_sentence']} words/sentence, "
               f"{stats['long_sentences']} over {stats['long_sentence_limit']}, "

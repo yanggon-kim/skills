@@ -1,6 +1,6 @@
 ---
 name: concept-explainer
-description: Explains any concept, mechanism, algorithm or idea as one self-contained HTML learning page — plain-voice prose, one diagram of the mechanism, and one interaction where the reader predicts and then checks. When the concept is a process that changes over time, the page shows it as a timeline — a storyboard of frames on one fixed layout, plus an animated player built from them. Saved locally and published as a private claude.ai artifact. Use it whenever the user wants to understand something rather than get a fact — "explain X", "how does X work", "teach me X", "walk me through X step by step", "I don't get X", "X가 뭔지 설명해줘" — in any field (computer architecture, math, statistics, ML, systems, git, physics), even when they never ask for a page or HTML. Not for one-line lookups, debugging a specific bug, line-by-line walkthroughs of the user's code, slide decks, or documents others will edit.
+description: Explains any concept, mechanism, algorithm or idea as one self-contained HTML learning page — plain-voice prose, one diagram of the mechanism, and one interaction where the reader predicts and then checks. When the concept is a process that changes over time, the page shows it as a timeline — a storyboard of frames on one fixed layout, plus an animated player built from them. The page ends with the expert's version of the reader's question — what a professional would ask next, the primary sources, methods and tools they would use, and an outside check — rewritten as a prompt to paste. Saved locally and published as a private claude.ai artifact. Use it whenever the user wants to understand something rather than get a fact — "explain X", "how does X work", "teach me X", "walk me through X step by step", "I don't get X", "X가 뭔지 설명해줘" — in any field (computer architecture, math, statistics, ML, systems, git, physics), even when they never ask for a page or HTML. Not for one-line lookups, debugging a specific bug, line-by-line walkthroughs of the user's code, slide decks, or documents others will edit.
 ---
 
 # Concept explainer
@@ -25,6 +25,13 @@ show change over time, and unlike a video the reader can pause it, step it and r
 and it can be checked and corrected in minutes. A page is
 judged by one question: after reading it, can the reader predict what the mechanism does in a case
 the page did not show? Decoration that does not serve that question is cut.
+
+A beginner's question is rarely the sharpest version of itself, so the page ends with one more
+part: **the expert's version of your question**. It names what a top professional would do that the
+reader did not ask for, the raw material they would start from, the methods and tools they would
+use, and what — other than the AI or the reader — would show the answer is right, and it rewrites
+the request as a prompt that asks for exactly that. It upgrades the question, never the lesson: the
+page above it still answers the request as asked, in plain words for a newcomer.
 
 ## Defaults
 
@@ -70,12 +77,21 @@ A polished page makes a wrong explanation look trustworthy, so accuracy comes fi
   you print it.
 - Anything still uncertain goes into the page's "Assumptions and limits" box, stated plainly. Never
   hide a simplification; name it ("This page ignores caches. Real hardware adds ...").
+- **Look at the request through an expert's eyes.** Answer, for yourself, about this concept and
+  this request: (1) what would a top professional in this field do here that the reader is not
+  asking for; (2) what is the rawest material they would start from (the original paper, the spec,
+  the source code, the measured data) instead of what has already been digested; (3) which specific
+  methods and tools they would use; (4) what, other than you or the reader, would show the result is
+  right. Check every source and tool you name the same way as the facts above — this part sends the
+  reader out into the field, so a wrong link or an invented tool does real harm. The answers feed
+  only the page's last section; they do not change the scope from step 1 or the level of the lesson.
 
 ### 3. Write the prose
 
 Read `references/voice.md` first. Follow the section order in `references/page-structure.md`:
 question → what you already know (background and the words the page uses) → the problem → the
-mechanism → try it → the result → a common misconception → recap → assumptions and limits.
+mechanism → try it → the result → a common misconception → recap → assumptions and limits → the
+expert's version of your question.
 
 The terms are not a glossary at the end. "What you already know" explains the background and then
 defines, one plain line each, every word the rest of the page uses, so the reader meets each word
@@ -85,6 +101,12 @@ Show before you name: the list near the top gives each word a short definition, 
 section still shows each new term working, with its concrete example, before it relies on it.
 The central idea must be findable in under 20 seconds — it sits in the one-sentence answer under
 the title. If a stranger skimming the top of the page cannot find it, rewrite the top.
+
+The last section turns step 2's expert view into four short items and the rewritten request (rules
+in `references/page-structure.md` § The expert's version of your question). Its view is an
+expert's; its words are still for the newcomer. Give every paper, tool or command it names a plain
+half-sentence saying what it is, and write the rewritten prompt in the reader's own voice and
+language, ready to paste.
 
 ### 4. Draw the diagram
 
@@ -171,6 +193,11 @@ Then review the page four ways. Each one alone must teach the same correct menta
 Fix every place where two parts disagree. A diagram that says one thing and a paragraph that says
 another teaches confusion.
 
+Last, read the page once without its final section. The lesson must be complete and plain without
+it; if the expert view leaked upward (harder words, extra scope), move it back down. Then check that
+the final section's links open, that the rewritten prompt names the concept and stands on its own in
+a new conversation, and that the copy button copies it.
+
 ### 8. Save and publish
 
 1. Save the page as `<concept-slug>.html` in the current working directory, unless the user named a
@@ -184,7 +211,8 @@ another teaches confusion.
 ### 9. Report
 
 Reply with the artifact link, the local path, and one or two sentences on what the page covers and
-what it leaves out. Do not paste the explanation into the chat — the page is the answer.
+what it leaves out. Add one line saying the page ends with a sharper version of the request, ready
+to paste. Do not paste the explanation into the chat — the page is the answer.
 
 ## Files in this skill
 

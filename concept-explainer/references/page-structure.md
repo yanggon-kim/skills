@@ -1,7 +1,7 @@
 # Page structure, diagram and interaction
 
 ## Contents
-1. Section order
+1. Section order (with the words this page uses, and the expert's version of your question)
 2. Diagram
 3. Interaction
 4. The four-way review
@@ -12,7 +12,8 @@ The order follows how understanding is built: the reader's question, what they a
 the problem exists, how the mechanism solves it, a chance to test it, and what to take away. Every
 section is short. A typical page carries 600–1,300 words in total, counting captions, terms and the
 limits box (this is what `check_page.py` counts; it warns outside 400–1,500). The core explanation
-(problem + mechanism + result) is about 250–450 of them.
+(problem + mechanism + result) is about 250–450 of them. The last section, the expert's version of
+your question, is counted on its own (about 120–300 words), so it never crowds out the lesson.
 
 | # | section | job | length |
 |---|---|---|---|
@@ -25,6 +26,7 @@ limits box (this is what `check_page.py` counts; it warns outside 400–1,500). 
 | 6 | **A common misconception** | One wrong belief people hold, why it is tempting, and what is true instead. | 3–5 sentences |
 | 7 | **Recap** | Three to five lines, one idea each, in the order the page taught them. | 3–5 bullets |
 | 8 | **Assumptions and limits** | What the page simplified, what it left out, and anything not verified. | 2–5 bullets |
+| 9 | **The expert's version of your question** | The reader's request, upgraded: what a top professional would do that the reader did not ask for, the raw material they start from, their methods and tools, and what outside check shows the answer is right. Ends with the request rewritten as a prompt, ready to paste. | 1–2 sentences + 4 items + the prompt |
 
 ### The words this page uses
 
@@ -43,6 +45,55 @@ page uses it, instead of finding the definitions after the reading is done. Rule
   called ...").
 - **Defined here, shown later.** The definition is a map, not the explanation. The mechanism
   section still shows each new term working before it relies on it.
+
+### The expert's version of your question
+
+A beginner's request is often not the sharpest version of itself. The reader asks what they know to
+ask; an expert would ask something deeper, start from rawer material, use tools the reader has not
+heard of, and trust a check that does not depend on anyone's say-so. This last section shows that
+upgrade, so the reader leaves with a better next question, not only an answer.
+
+It upgrades the **question**, never the **page**. Everything above it answers the request as the
+reader asked it, at the reader's level. Do not let the expert view raise the level of the lesson,
+add scope to it, or change what it explains: a newcomer who stops before this section must still get
+the whole lesson. The section itself stays in the page's plain voice, because the reader of this
+section is still the newcomer.
+
+Answer four questions, each about this concept and this request (generic advice such as "read
+papers" or "run benchmarks" teaches nothing):
+
+1. **What would a top professional do here that the reader did not ask for?** The sharper question
+   and the work it leads to. Often it turns "does X happen?" into "how much, when, and what does it
+   cost?" — for a query-engine page: not "is prefetching done?" but "where does the query's time go,
+   and how many cache misses does each hash-table lookup cost?"
+2. **What raw material would they start from?** Primary sources instead of digested ones: the
+   original paper, the specification, the source code of a real system, a real dataset, the
+   measured trace. Link each one.
+3. **What methods and tools would they use?** Named commands, instruments, techniques or
+   experiments, and in a few words what each one shows (`EXPLAIN ANALYZE` prints the plan with the
+   time each step took).
+4. **What, other than the AI or the reader, would show the result is right?** A measurement, a
+   reproduction, a test, a proof, a primary source. State the result to expect if the page's model
+   is right ("probe time per row jumps when the hash table outgrows the L3 cache"), so the reader
+   can test the page against reality.
+
+Then **rewrite the request** to ask for exactly that, in the reader's own voice and language, as a
+prompt they can paste into a new conversation. It names the concept, the raw material, the methods
+and the outside check, and it still asks for a plain explanation, because the reader has not
+changed — only the question has.
+
+Rules for the section:
+
+- **Real and checked.** Every paper, repository, command and dataset named here passes step 2's
+  fact check. A made-up tool or paper is worse here than anywhere else, because this section exists
+  to send the reader to real sources. If you cannot verify a source, leave it out.
+- **Plain words.** Each source, tool or term the page has not already defined gets a plain
+  half-sentence saying what it is. The term list at the top stays the lesson's list; do not add this
+  section's words to it.
+- **Last on the page.** It follows "Assumptions and limits": the limits say what this page left out,
+  and this section says how an expert would go further.
+- **The prompt is text.** It sits in `<pre class="prompt">`, selectable without JavaScript; the copy
+  button is an extra.
 
 Headings are plain statements or the plain section names above; avoid clever headings. Number the
 sections only when the order is a real sequence the reader follows (it usually is not — the page is

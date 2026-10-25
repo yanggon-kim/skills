@@ -172,6 +172,14 @@ html.js .nojs-only { display: none; }
 .limits { border: 1px dashed var(--pencil); border-radius: 2px; padding: 1rem 1.25rem; display: grid; gap: 0.6rem; font-size: var(--step--1); color: var(--ink-soft); }
 .limits .label { color: var(--ink-soft); }
 
+/* The expert's version of your question: the last section, a door out of the page */
+.deeper .lens { display: grid; gap: 0.9rem; counter-reset: lens; }
+.deeper .lens dt { counter-increment: lens; font-family: var(--font-mono); font-size: var(--step--1); letter-spacing: 0.04em; color: var(--teal); }
+.deeper .lens dt::before { content: counter(lens) " · "; color: var(--pencil); }
+.deeper .lens dd { margin: 0.2rem 0 0; min-width: 0; }
+.deeper .prompt { white-space: pre-wrap; overflow-wrap: anywhere; font-family: var(--font-mono); border-left: 3px solid var(--teal); }
+.deeper .prompt-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; }
+
 /* Timeline (references/timeline.md): a storyboard of frames, and a player built from it */
 .timeline .storyboard { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr)); gap: 1rem; counter-reset: frame; }
 .storyboard .frame { counter-increment: frame; display: grid; gap: 0.4rem; align-content: start; min-width: 0; padding: 0.6rem 0.75rem 0.75rem; background: var(--paper); border: 1px solid var(--idle); border-radius: 2px; }
@@ -320,6 +328,31 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
     </ul>
     <!-- SLOT NOTE: if you checked facts on the web, list the sources here as links. -->
   </aside>
+
+  <section id="deeper" class="deeper">
+    <h2>{{The expert's version of your question}}</h2>
+    <!-- SLOT NOTE: this section upgrades the reader's request, not the page. Everything above
+         answered the request as asked, at the reader's level. Here: what a top professional would
+         ask and do next, still in plain words. Name only real, checked papers, code, data and tools,
+         and give each one a plain half-sentence saying what it is. See references/page-structure.md
+         § The expert's version of your question. -->
+    <p>{{One or two sentences: this page answered your question. An expert would push it further in four ways.}}</p>
+    <dl class="lens">
+      <dt>{{What an expert would do that you did not ask for}}</dt>
+      <dd>{{The sharper question, and the work it leads to. Specific to this concept.}}</dd>
+      <dt>{{The raw material they start from}}</dt>
+      <dd>{{The primary sources, not summaries: the original paper, the source code, the spec, the measured data. Link each one.}}</dd>
+      <dt>{{The methods and tools they use}}</dt>
+      <dd>{{The named commands, instruments or techniques, and what each one shows.}}</dd>
+      <dt>{{What shows the answer is right}}</dt>
+      <dd>{{A check that needs neither the AI nor you: a measurement, a reproduction, a test, a primary source. Say what result to expect if this page's model is right.}}</dd>
+    </dl>
+    <div class="prompt-bar">
+      <p class="label" id="deeper-prompt-label">{{Your request, rewritten}}</p>
+      <button type="button" class="js-only" data-copy="deeper-prompt" data-done="{{Copied}}">{{Copy}}</button>
+    </div>
+    <pre class="prompt" id="deeper-prompt" aria-labelledby="deeper-prompt-label">{{The reader's request rewritten to ask for exactly the four things above, in the reader's own voice and language, ready to paste. It keeps the reader's level: it asks for the deeper work, explained plainly.}}</pre>
+  </section>
 
 </main>
 
@@ -506,6 +539,38 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
     });
     setPlaying(false);
     show(0, false);
+  });
+})();
+</script>
+
+<script>
+/* Copy button for the rewritten prompt. Keep it unchanged. The prompt stays selectable text, so a
+   viewer whose clipboard is refused still gets the whole prompt selected, ready to copy. */
+(function () {
+  document.documentElement.classList.add("js");
+  Array.prototype.forEach.call(document.querySelectorAll("button[data-copy]"), function (btn) {
+    var src = document.getElementById(btn.getAttribute("data-copy"));
+    if (!src) return;
+    var label = btn.textContent;
+    function selectText() {
+      var range = document.createRange();
+      range.selectNodeContents(src);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+    function done() {
+      btn.textContent = btn.getAttribute("data-done") || label;
+      setTimeout(function () { btn.textContent = label; }, 1600);
+    }
+    btn.addEventListener("click", function () {
+      var text = src.textContent;
+      try {
+        navigator.clipboard.writeText(text).then(done, selectText);
+      } catch (e) {
+        selectText();
+      }
+    });
   });
 })();
 </script>
