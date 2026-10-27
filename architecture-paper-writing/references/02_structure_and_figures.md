@@ -379,7 +379,8 @@ tell where one ends, and the column's text is pushed a screen away from both. Th
 - **Spread them across pages as far as the layout allows:** one figure per page first; when a page must carry two,
   they sit in opposite columns.
 - **Each float stays on the page that first cites it or the next**, so spreading never parks a figure pages away
-  from its text.
+  from its text. **Exception:** the one configuration table lives in methodology even when background or motivation
+  cites it first (`11`, *One configuration table*).
 - **How:** move the float's source block (`10` §3), a column or a page later; never shrink a figure, never `\vspace`.
   A `figure*` takes a page's top across both columns, so no column float shares that page's top.
 - **Check:** after every build list the float map (float → page, column, top/bottom); a column with two entries fails.

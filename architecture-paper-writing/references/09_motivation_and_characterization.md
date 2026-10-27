@@ -92,7 +92,7 @@ Every measurement paragraph in the corpus is one of these six. Name the skeleton
 them is usually an argument in disguise.
 
 **S1 — the measurement paragraph (the workhorse; [SS], [CAL], and the model for a measurement subsection):**
-*what is measured and under which condition* → *the number* → *why it happens, in mechanism terms* → *what it forces*. Four sentences, one number
+*what is measured and under which condition, with its parts defined or pointed back to* → *the number* → *why it happens, in mechanism terms* → *what it forces*. Four sentences, one number
 per sentence at most, the mechanism sentence never carrying a number of its own.
 - [SS] §3.2, the whole skeleton in one paragraph: "Results show that neighbor sampling exhibits low caching efficiency with an average 62% last-level cache (LLC)
   miss rate." … "Interestingly, the off-chip memory bandwidth utilization is generally low despite such high memory intensity, consuming only an
@@ -104,6 +104,9 @@ per sentence at most, the mechanism sentence never carrying a number of its own.
   operators (e.g., 24 bytes for distance calculation) are far less than the minimum data access granularity of the processor-memory interface,
   substantially wasting DRAM bandwidth. Such results imply that these compute primitives are memory latency limited, rather than memory
   throughput limited, providing valuable insights on optimizing their system-level bottlenecks."
+- **The setting opens, the finding follows** (`11`, *Setting before finding*): never name a test or variant before describing it, and
+  never use a term a later section defines. Where the section turns from observation to analysis, end on one transition sentence that
+  names and maps the causes that follow (`11`, *Transition sentences at turning points*).
 - **The closing move is always "X rather than Y", never "X, therefore build Z".** The implication names the *property*, and the design follows in
   a later section.
 

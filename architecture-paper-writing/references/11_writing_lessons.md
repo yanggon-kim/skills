@@ -196,7 +196,7 @@ curve; red kept for swap arrows and one operating point; the hatched "n/a" place
 - run-in `\paragraph` heads.
 
 **Where the finding goes.**
-- It moves into the **first sentence** under the head.
+- It moves into the **first sentence** under the head, once the setting is established; a paragraph that must set its own scene states the setting first (see *Setting before finding*).
 - That sentence is a plain declarative with a concrete subject, a plain verb and the scale *in words*.
 - It is general and direct. It is not the measurement itself; the number opens the next sentence.
 - It is not an abstraction or an evaluation, such as "Recency is not the signal" or "The deadline is loose".
@@ -388,3 +388,61 @@ different pages as much as possible." Two stacked figures read as one block and 
 Full rule: `02_structure_and_figures.md` §3 F12; mechanics `10` §3.
 **Example** *(DAC example)*. Fig. 2 (roofline) moved to p. 2; Fig. 4 (stock-command breakdown) moved from the left to
 the right column of its page.
+
+
+## Setting before finding
+
+**Rule.** A paragraph that reports a measurement, a test or a mechanism opens with its setting, then states the finding.
+- **The setting** says what is measured, on what, and how. It also names the parts the finding is about: define each one, or point back to the figure or section that defined it ("the MAC slots of Fig. 1b hold useful and idle beats").
+- **A test or variant is described before it is named.** First say what was replaced by what, then the result, then what the result shows. Never write "a faster-PU test confirms …" before the reader knows what the faster PU is.
+- **A term the paper introduces later must not appear here.** If a later section defines it, either define it in place or do not use it.
+- **Reconciling with "the finding opens the paragraph":** that rule applies once the setting is already in the reader's hands. For example, the previous paragraph set it up, or the subsection opener did. When the paragraph itself must set the scene, the setting comes first and the finding follows within the next sentence or two.
+
+**Why.** The owner (2026-10-27) on the CoRe/CoDe motivation:
+- The crossover paragraph "is very good because it explains the circumstance first".
+- "A faster-PU test confirms …" "comes out of nowhere. The readers would not know what faster-PU is at this moment." The sentences that describe the replaced PU "should come first before mentioning the faster-PU".
+- In the breakdown paragraph, "you must explain the circumstance first like there are MAC command and non-MAC command", because the sentence defining them sat at the back.
+- A brief statement of the experimental setup and of how it was measured is wanted, not cut.
+
+**Example** *(CoDe, ISCA submission)*.
+
+| before | after |
+|---|---|
+| "A faster-PU test confirms that the command count, not the PU's arithmetic, sets the time of a stock GEMM. … Replacing the column-matched stock PU … with a PU four times faster … leaves every stock GEMM at the same number of cycles." | "Replacing stock AiM's PU, one beat per column period, with one four times faster leaves every stock GEMM at the same number of cycles: the command spacing, not the PU clock, sets each MAC slot." |
+| "Useful MAC work fills at most a fifth … The MAC slots hold useful beats and idle beats; the non-MAC commands are …" (the definition comes 6 sentences in) | "A stock GEMM's time divides into MAC slots, which hold useful and idle beats (Fig. 1b), and non-MAC commands: row switches, token load/drain and refresh. We split it on one channel for two kernels … Useful MAC work fills at most a fifth of it." |
+
+## Transition sentences at turning points
+
+**Rule.**
+- **Where:** one transition sentence at each point where the argument changes mode:
+  - observation → analysis;
+  - a list of causes → the first cause;
+  - the end of a section → the components of the next one, for example opportunity → design.
+  Elsewhere, paragraphs follow on without one.
+- **What it carries:** the transition names what follows and maps it, so it carries content: "Stock AiM thus loses useful MAC beats to two root causes: idle beats inside the MAC slots, which set the slot factor, and non-MAC commands between them, which set the sweep factor."
+- **What it never is:** "we explain them one by one next". That sentence fails the sentence test.
+
+**Why.** The owner (2026-10-27): the sentence "Stock AiM thus loses useful MAC beats to two bottlenecks: idle beats inside the MAC slots, and non-MAC commands between them" "is the right transition between observation and analysis … We need transition sentences at important moments, not every time." The owner also asked the opportunity subsection to end by tying each lever to its design component, beat filling and row reuse.
+
+## One configuration table, referred to everywhere
+
+**Rule.** Every hardware and configuration value lives in one methodology table: the platform block (host, DRAM standard and rate, t_CK, column period, channels, banks, row size) above the design block (lanes, PU clock, depth, buffers, area, power).
+- **First use:** where a concept is first used, possibly in background or motivation, the prose defines it and points to the table, e.g. "the command clock CK (t_CK in Table II)".
+- **Later uses:** every later use refers to the table instead of reprinting the value. Values are repeated only where the sentence computes with them.
+- **Float placement:** the table sits in methodology even when earlier sections cite it. This is the one exception to F12's "page that first cites it or the next" (`02` §3 F12).
+
+**Why.** The owner (2026-10-27): "I see this kind of HW configurations are repeating across the paper … have a table at the methodology section for the whole configuration and refer this table across the paper … if you use this concept for the first time … explain it first and refer the table. But, later … use the table for simplicity and reduce the redundancy."
+
+**Example** *(CoDe, ISCA submission)*. "the cycle t_CK is 1.25 ns on the mobile platform and 1 ns on the edge server" was printed in §III, §IV and §VI. After the change it is printed once, in the table, and each section writes "t_CK (Table II)".
+
+## Scope of detail
+
+**Rule.** Cut a detail that does not serve the paragraph's message, even when it is true and sourced:
+- a validation tolerance on a supporting fact ("within 1.84 % on the mobile platform and 2.7 % on the edge server");
+- a side effect outside the claim ("at other M, PIM throughput dips by group quantization");
+- an integration note outside the paper's scope (logic-die processes, hybrid bonding);
+- an extrapolation to a configuration the paper does not evaluate ("HBM3 … leaves a 2.5 ns column, so a 1 GHz PU gets D = 2 there").
+
+What stays: limitations of the configurations the paper does evaluate, and every number another section relies on. Run the promise check (`10`) before each cut.
+
+**Why.** The owner (2026-10-27) marked each of the four examples as "too detailed", "out of scope" or not serving the paper's argument. Each one spends reviewer attention on a question the paper does not answer.

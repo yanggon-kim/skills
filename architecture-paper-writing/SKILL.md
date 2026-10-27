@@ -107,6 +107,17 @@ list to hold in mind while drafting.
   - The first sentence is blunt and general, with a concrete subject, a plain verb and the scale in words: "Hot entries stay hot for hundreds of steps."
   - It is not the measurement itself; the number opens the next sentence. It is never an abstraction or an evaluation.
   - Pace the numbers: one or two per sentence, each followed by its description. Use at most one derived figure per paragraph.
+- **Setting before finding.** A paragraph reporting a measurement, test or mechanism first says what is measured, on what and
+  how, and defines its parts or points back to the figure or section that did. Describe a test (what replaced what) before
+  naming it, and never use a term a later section introduces. The blunt finding opens the paragraph only once the setting is
+  already established (`11`, *Setting before finding*).
+- **Transition sentences at turning points, not everywhere.** Observation → analysis, causes → first cause, section end → next
+  section's components: one sentence that names and maps what follows ("two root causes: idle beats …, which set the slot
+  factor, and non-MAC commands …"), never "we explain them next" (`11`).
+- **One configuration table.** Every platform and design value lives in one methodology table; the first use of a concept
+  defines it and points to the table, later uses cite the table instead of reprinting the value (`11`, `06` §A2).
+- **Scope of detail.** Cut true details that do not serve the paragraph's message: tolerances on supporting facts, side
+  effects, out-of-scope integration notes, extrapolations to configurations not evaluated (`11`, *Scope of detail*).
 - **An evaluative adjective is replaced by the two quantities it compares.** "The deadline is loose" →
   "microseconds of work against a deadline of tens of milliseconds". A cost is stated at its unit and scaled to
   the system in the same sentence.

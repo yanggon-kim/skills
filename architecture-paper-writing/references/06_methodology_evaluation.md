@@ -19,7 +19,9 @@ grepped in the PDF text before it was printed here.
    "**System configuration.** … **Software.** … **Benchmarks.**"; [M] "**Hardware Implementation** … **Experimental Methodology** …
    **Software Setup** … **Baseline** … **Variants**"; [TC] "**Evaluation framework.** … **System configuration.** … **Benchmarks.**";
    [SS] "**Hardware/software platform.** … **CSD platform.** … **Comparison to alternative training systems.** … **Dataset.**"
-2. **The numbers live in a configuration table; prose carries only the one that matters.** [TC] Table I holds the DRAM rows and the text
+2. **The numbers live in a configuration table; prose carries only the one that matters.** House rule (`11`, *One configuration table*):
+   one table holds every platform and design value; a concept's first use defines it in prose and points to the table, every later
+   use cites the table instead of reprinting the value. [TC] Table I holds the DRAM rows and the text
    mentions one: "an aggregate of 819.2 GB/sec". [LazyDP] has no table and one dense sentence instead: "a server containing NVIDIA V100
    GPU (32 GB HBM2, 900 GB/sec bandwidth) and Intel Xeon E5-2698v4 CPU (256 GB of DDR4 DRAM, 68 GB/sec bandwidth) connected with
    PCIe 3.0 (16 GB/sec bandwidth)."
