@@ -1,6 +1,6 @@
 ---
 name: architecture-paper-writing
-description: Writes, rewrites, shortens and reviews computer-architecture and systems papers (ASPLOS, ISCA, MICRO, HPCA, ACM/IEEE two-column formats) one section at a time — abstract, introduction, motivation and workload characterization, design, methodology, evaluation, related work, conclusion — plus figure style, LaTeX floats, page limits and reviewer responses, with six bundled reference papers (Mesorasi, Tensor Casting, SmartSAGE, PACT'20 proactive vision, IEEE CAL characterization, LazyDP) as concrete examples of every rule. Use it whenever the user drafts or edits any part of an architecture paper, asks for "the style of ISCA/MICRO papers", a contribution list, a characterization paragraph from measurements, how to state a measured result, a rebuttal, a de-colloquialized section, a figure in "the LazyDP style", or why a float landed on the wrong page — even when the word "paper" is never said.
+description: Writes, rewrites, shortens and reviews computer-architecture and systems papers (ASPLOS, ISCA, MICRO, HPCA, ACM/IEEE two-column formats) one section at a time — abstract, introduction, motivation and workload characterization, design, methodology, evaluation, related work, conclusion — plus figure style, LaTeX floats, page limits and reviewer responses, with six bundled reference papers (Mesorasi, Tensor Casting, SmartSAGE, PACT'20 proactive vision, IEEE CAL characterization, LazyDP) as concrete examples of every rule. Use it whenever the user drafts or edits any part of an architecture paper, asks for "the style of ISCA/MICRO papers", a contribution list, a characterization paragraph from measurements, how to state a measured result, a rebuttal, a paragraph outline of a paper (outline.md: one message per paragraph, edited before the LaTeX), a de-colloquialized section, a figure in "the LazyDP style", or why a float landed on the wrong page — even when the word "paper" is never said.
 ---
 
 # Architecture paper writing
@@ -17,6 +17,12 @@ each is self-contained and ends with a worked example and a set of guard checks.
 
 ## How to use it
 
+0. **Outline first.** The paper's structure lives in `outline.md`: one entry per source paragraph, each with a
+   one-sentence message and its floats, numbers, citations and promise links, tied to the `.tex` by `% P:<id>`
+   anchors. Capture the outline once from the current draft. After that, make every structural change (add, cut,
+   merge, move a paragraph, change its message, move a float) in the outline first, then edit the `.tex` to
+   match, and commit both together; `scripts/check_outline.py` keeps the two in sync. Wording-only edits need no
+   outline change. Full procedure and format: `references/13_outline_first.md`.
 1. **Name the section and the edit class.** Section decides which reference you open (table
    below). Edit class — *wording*, *number-bearing*, or *structural* (a float, a heading, a
    dataset) — decides how much verification the edit needs; see
@@ -54,6 +60,7 @@ each is self-contained and ends with a worked example and a set of guard checks.
 | Related work | `references/04_introduction.md` §A (the landscape moves) and `references/09_…` §D (how to print a rival's best case) | each rival's mechanism named, its own best number given, then the measured gap | SmartSAGE, LazyDP |
 | Conclusion | `references/07_conclusion.md` | five moves; claim → key idea → what was done → one number → outlook; no result clause; ~115 words | PACT'20 vision, Tensor Casting |
 | Figures, captions, colour | `references/02_structure_and_figures.md` §3; diagrams prototyped in HTML, then PDF (`10` §7) | luminance ramp for what exists, one tint for what you add, red only for small marks, four-spine charts, no hatches; a background concept gets a block diagram + command timeline (F8); a micro-architecture figure is a block diagram, never a flowchart (F9); fill the figure's rectangle — full-height side blocks, packed blocks, "…" arrays, text ≥ caption size (F10); a minimal caption names what is drawn, and the setting and finding go in the paragraph (F11); one float per column of a page, floats spread across pages (F12) | LazyDP Fig. 9(b) and Fig. 11; LoCaLUT Fig. 1, P3-LLM Fig. 7, GROW Fig. 8, TensorDIMM Fig. 6(a) (cited, not bundled) |
+| The paragraph outline: capturing it, editing it, then editing the paper to match | `references/13_outline_first.md` | every paragraph has one entry with one message; every intro promise links to the entry that proves it; `check_outline.py` passes | — |
 | The paper's spine (which section carries which claim) | `references/02_structure_and_figures.md` §1–2 and `references/00_reading_order.md` | L1–L7 | all five Set-A papers |
 | Citations — where the brackets go in a sentence | `references/12_citation_placement.md` | cite an entity at its name, a claim at the smallest clause expressing it; no trailing cluster on a multi-claim sentence | SmartSAGE, LazyDP (related-work landscapes) |
 | Any build, float, page-limit, number-bearing or structural edit; adding a reference | `references/10_production_and_verification.md` | the edit-class matrix; floats fixed by moving source blocks; every cited page must *print* the number | — |
@@ -66,6 +73,8 @@ papers do, which is a short landscape with each rival's own number.
 These are stated fully in `01_sentence_style.md`, `11_writing_lessons.md` and `10`; this is the
 list to hold in mind while drafting.
 
+- **Outline first.** Structure is decided in `outline.md`, then the `.tex` follows it; one message per
+  paragraph, one entry per paragraph, and the two stay in sync (`13`).
 - **The sentence test.** A sentence earns its place with a fact, a number, or a forward reference
   the reader needs. Delete drum-rolls, self-praise, meta-commentary, restatement, and
   personification ("the data tells us", "placement needs more"). The preferred repair is a direct
