@@ -411,6 +411,24 @@ the right column of its page.
 | "A faster-PU test confirms that the command count, not the PU's arithmetic, sets the time of a stock GEMM. … Replacing the column-matched stock PU … with a PU four times faster … leaves every stock GEMM at the same number of cycles." | "Replacing stock AiM's PU, one beat per column period, with one four times faster leaves every stock GEMM at the same number of cycles: the command spacing, not the PU clock, sets each MAC slot." |
 | "Useful MAC work fills at most a fifth … The MAC slots hold useful beats and idle beats; the non-MAC commands are …" (the definition comes 6 sentences in) | "A stock GEMM's time divides into MAC slots, which hold useful and idle beats (Fig. 1b), and non-MAC commands: row switches, token load/drain and refresh. We split it on one channel for two kernels … Useful MAC work fills at most a fifth of it." |
 
+## Plain opener for a term the paper defines
+
+**Rule.** A paragraph that explains a term the paper itself defines (an inefficiency, a mechanism, a factor) opens with one plain sentence that says what the thing is in everyday words.
+- **The opener** uses no symbol, no variable and no term the paper coined: "An idle beat is a clock cycle in which a PU has nothing to compute and waits for the next MAC command."
+- **Then the details**, in order: the setting it lives in (the figure segment or the parts involved), its cause, its formal definition and equation, its value, its cost.
+- **Not:** opening with the equation ("The slot factor $U_\mathrm{MAC} = A \times b \times t_\mathrm{CK}/t_\mathrm{slot}$ counts …") or with the mechanism's citation trail ("In stock PIM a DRAM column command starts every MAC: HBM-PIM executes …").
+- **Reconciling with "Setting before finding":** the plain opener comes first; the setting follows it at once. The opener tells the reader what to look for, the setting tells them where.
+
+**Why.** The owner (2026-10-28) on the CoDe motivation: the idle-beat paragraph should start "like 'idle beats mean un-useful clock of tCK between two MAC commands' … a direct and simple sentence opening without any professional or technical variables that we use", and the non-MAC paragraph likewise. The owner also asked for the opener of the row-sweep material to be "more direct", the plain fact first ("MAC commands need non-MAC commands before and after them"), and the command details after it.
+
+## A figure paragraph: what the figure shows, then the setup, then the details
+
+**Rule.** A paragraph that introduces a figure's experiment opens with what the figure shows ("Fig. 2 plots skinny-GEMM throughput against M …"), then gives the basic setup a reader needs to read it (kernels, sizes, which platform is which), and leaves the remaining details for the end, closing with the pointer to the configuration table or methodology section ("… modelled on the platforms of Table III, which Section V details").
+- **Never** open with the provenance sentence ("Throughput numbers in this section are modelled on …"): it is a detail for the reader who wants more, not the paragraph's message.
+- **Each later paragraph about the figure** explains only the background its own segment needs (for example, useful and idle beats in the idle-beat paragraph; row-switch, load/drain and refresh in the non-MAC paragraph), not a general walk-through of every segment up front.
+
+**Why.** The owner (2026-10-28): "this paragraph talks about the figure 2 experimental setting. So, we need to open it with what figure 2 tries to show. And, leave the details at the end if some reader who wants more detail would go to table III … we start with core message and explain the basic setup. Then, leave the details at the end." For Fig. 3, the general explanation of every segment moved from the setup paragraph into the paragraph of the root cause it belongs to.
+
 ## Transition sentences at turning points
 
 **Rule.**

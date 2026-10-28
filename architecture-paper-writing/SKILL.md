@@ -111,6 +111,11 @@ list to hold in mind while drafting.
   how, and defines its parts or points back to the figure or section that did. Describe a test (what replaced what) before
   naming it, and never use a term a later section introduces. The blunt finding opens the paragraph only once the setting is
   already established (`11`, *Setting before finding*).
+- **Plain opener for a term the paper defines.** Open with one everyday sentence saying what it is, with no symbol or
+  coined term ("An idle beat is a clock cycle in which a PU waits for the next MAC command"), then the setting, cause,
+  definition and equation, value and cost (`11`, *Plain opener*).
+- **A figure paragraph opens with what the figure shows**, then the basic setup, then the details, ending with the pointer
+  to the configuration table or methodology; each later paragraph explains only its own segment's background (`11`).
 - **Transition sentences at turning points, not everywhere.** Observation → analysis, causes → first cause, section end → next
   section's components: one sentence that names and maps what follows ("two root causes: idle beats …, which set the slot
   factor, and non-MAC commands …"), never "we explain them next" (`11`).
