@@ -13,7 +13,7 @@ at hand before touching a section's source.
    `03_abstract.md` → `04_introduction.md` → `09_motivation_and_characterization.md` (the motivating half of Background, and Motivation & Observation) →
    `05_design.md` → `06_methodology_evaluation.md` → `07_conclusion.md`.
 3. **Lessons** — what went wrong when the guides were applied and how the user corrected it: `08_design_section_lessons.md`
-   (the design section) and `11_writing_lessons.md` (every section, one rule per entry). The mechanics of an edit that must
+   (the design section) and `11_writing_lessons.md` (every section; rules grouped A–H in writing order, each with an id). The mechanics of an edit that must
    survive a build — numbers, floats, page limits, references — are `10_production_and_verification.md`.
 
 A guide states rules with a sentence quoted verbatim from a named reference paper; a lessons file states rules with a before → after
@@ -57,8 +57,9 @@ quoted from an earlier draft. When the two disagree, the lessons file is the lat
   how to prove a page is what the build says it is.
 - `12_citation_placement.md` — where a citation goes inside a sentence: entity at its name, claim at the smallest clause,
   one group per category or example; the LaTeX tie and line-breaking consequences of moving one.
-- `11_writing_lessons.md` — the author's corrections on the rendered page, one rule per entry (rule, why, example); the later word
-  when it disagrees with a per-section guide.
+- `11_writing_lessons.md` — the author's corrections on the rendered page, grouped in writing order (A process, B structure, C openers
+  with the opener decision table, D content, E brevity, F sentences, G numbers and figures, H section-specific), one rule per
+  id (rule, why, example); the later word when it disagrees with a per-section guide.
 
 ## The reference papers (the PDFs live in `references/papers/`, indexed in `references/papers/INDEX.md`)
 

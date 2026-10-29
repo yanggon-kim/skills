@@ -17,20 +17,24 @@ each is self-contained and ends with a worked example and a set of guard checks.
 
 ## How to use it
 
-0. **Outline first.** The paper's structure lives in `outline.md`: one entry per source paragraph, each with a
+0. **Outline first, and plan before you edit.** The paper's structure lives in `outline.md`: one entry per source paragraph, each with a
    one-sentence message and its floats, numbers, citations and promise links, tied to the `.tex` by `% P:<id>`
    anchors. Capture the outline once from the current draft. After that, make every structural change (add, cut,
    merge, move a paragraph, change its message, move a float) in the outline first, then edit the `.tex` to
    match, and commit both together; `scripts/check_outline.py` keeps the two in sync. Wording-only edits need no
-   outline change. Full procedure and format: `references/13_outline_first.md`.
+   outline change. Full procedure and format: `references/13_outline_first.md`. When the author is reviewing the
+   draft, turn their comments into an edit plan first (the outline change and the before → after sentence for each
+   comment), edit only after approval, and push only when told to (`11` A1).
 1. **Name the section and the edit class.** Section decides which reference you open (table
    below). Edit class — *wording*, *number-bearing*, or *structural* (a float, a heading, a
    dataset) — decides how much verification the edit needs; see
    `references/10_production_and_verification.md` when the class is not plain wording.
 2. **Read the contract first, then the section guide.** `references/01_sentence_style.md` is
    the sentence-level contract and applies to every sentence of every section.
-   `references/11_writing_lessons.md` is the author's corrections, stated as rules; it is the
-   later word when a section guide disagrees. Then the section's own file.
+   `references/11_writing_lessons.md` is the author's corrections, stated as rules and grouped in writing order
+   (A process, B structure, C openers, D content, E brevity, F sentences, G numbers and figures, H section-specific);
+   it is the later word when a section guide disagrees, and its opener table (C1) decides how every paragraph starts.
+   Then the section's own file.
 3. **Open the reference paper the guide points at** when you need to see a move done well —
    `references/papers/INDEX.md` says which paper is the reference *for what* and gives the page
    ranges of each section, so you can open four pages rather than fourteen. Mind the page-number
@@ -70,81 +74,89 @@ papers do, which is a short landscape with each rival's own number.
 
 ## The cross-cutting contract, in brief
 
-These are stated fully in `01_sentence_style.md`, `11_writing_lessons.md` and `10`; this is the
-list to hold in mind while drafting.
+The full rules, with the author's reasons and before → after examples, are in `11_writing_lessons.md`, grouped in the
+order below and cited by id (`11` C4). Sentence mechanics are in `01`, production mechanics in `10`. When this summary and
+a section guide disagree, `11` wins. Hold this list in mind while drafting, in this order.
 
-- **Outline first.** Structure is decided in `outline.md`, then the `.tex` follows it; one message per
-  paragraph, one entry per paragraph, and the two stay in sync (`13`).
-- **The sentence test.** A sentence earns its place with a fact, a number, or a forward reference
-  the reader needs. Delete drum-rolls, self-praise, meta-commentary, restatement, and
-  personification ("the data tells us", "placement needs more"). The preferred repair is a direct
-  sentence, a colon, and the facts.
-- **No questions to the reader** — neither a sentence ending in "?" nor an "asks whether / the
-  question is" framing. State what the section measures or shows.
-- **Claim only what exists.** Never print an API, register, call or mechanism name that no design
-  document or measurement defines. A mechanism read from source but never exercised is described
-  in present tense with its source cited — never "verified" or "measured", and never hedged as
-  "assumed" or "not run".
-- **Numbers are traced, not typed.** Each traces to a frozen data view, a design document or a
-  verified citation; print both ends of a range, never "up to N"; judge a number against a cited
-  external budget, not an adverb ("clearly", "merely"); a number is printed with its setting in
-  reader order (the setting attached to the noun it qualifies, not a list of settings fronted before the verb).
-- **Define before elaborating.** Name → definition → validity → payoff → implementation → cost. A
-  component is its role. Our mechanism first, the familiar precedent last, as a citation.
-- **A characterization is not an advertisement.** In a motivation section the reference papers
-  mention their own system zero to two times; cap it at one per subsection, placed last, and let
-  the design implication follow the number rather than precede it.
-- **Constrained results are trades, not gaps.** A result achieved under a budget is written as
-  "the same outcome at a fraction of the cost", with the tolerance in the same clause as the cap —
-  never as "N % behind the unconstrained baseline".
-- **Every clause has a subject and a finite verb; name, don't point; every heading is a noun phrase.**
-  - No equation stands as a clause, and a sentence has at most one fronted setting.
-  - Repeat the noun instead of "the two", "both", "it" or "this" when the antecedent is outside the clause. A clarifying repeat is not restatement.
-  - Every heading names a topic, never a sentence or a where/how clause: section and subsection titles ("PIM–Host Crossover") and run-in `\paragraph` heads ("Area family", "Cost of logic in a DRAM die").
+**A. Process**
+- **Plan, then edit, then push on approval** (A1). Structure changes go into `outline.md` first (`13`). When the author is
+  reviewing, answer comments with an edit plan (outline change plus before → after sentence for each comment) and edit
+  only after approval. Push only when told to.
+- **Verify a plan's premise** before executing it (A2); **adopt clean author edits** and flag deviations rather than
+  reverting them (A3).
+- **Cuts drop the clause, never rewrite the fact** (A4); a space request cuts qualifiers, never a number, control or promise
+  (A5); every deletion, merge or move runs the promise check (A6, `10`).
 
-  Full rules in `01_sentence_style.md` §5.
-- **The finding opens the paragraph, under a noun-phrase head.**
-  - The first sentence is blunt and general, with a concrete subject, a plain verb and the scale in words: "Hot entries stay hot for hundreds of steps."
-  - It is not the measurement itself; the number opens the next sentence. It is never an abstraction or an evaluation.
-  - Pace the numbers: one or two per sentence, each followed by its description. Use at most one derived figure per paragraph.
-- **Setting before finding.** A paragraph reporting a measurement, test or mechanism first says what is measured, on what and
-  how, and defines its parts or points back to the figure or section that did. Describe a test (what replaced what) before
-  naming it, and never use a term a later section introduces. The blunt finding opens the paragraph only once the setting is
-  already established (`11`, *Setting before finding*).
-- **Plain opener for a term the paper defines.** Open with one everyday sentence saying what it is, with no symbol or
-  coined term ("An idle beat is a clock cycle in which a PU waits for the next MAC command"), then the setting, cause,
-  definition and equation, value and cost (`11`, *Plain opener*).
-- **A figure paragraph opens with what the figure shows**, then the basic setup, then the details, ending with the pointer
-  to the configuration table or methodology; each later paragraph explains only its own segment's background (`11`).
-- **Transition sentences at turning points, not everywhere.** Observation → analysis, causes → first cause, section end → next
-  section's components: one sentence that names and maps what follows ("two root causes: idle beats …, which set the slot
-  factor, and non-MAC commands …"), never "we explain them next" (`11`).
-- **One configuration table.** Every platform and design value lives in one methodology table; the first use of a concept
-  defines it and points to the table, later uses cite the table instead of reprinting the value (`11`, `06` §A2).
-- **Scope of detail.** Cut true details that do not serve the paragraph's message: tolerances on supporting facts, side
-  effects, out-of-scope integration notes, extrapolations to configurations not evaluated (`11`, *Scope of detail*).
-- **An evaluative adjective is replaced by the two quantities it compares.** "The deadline is loose" →
-  "microseconds of work against a deadline of tens of milliseconds". A cost is stated at its unit and scaled to
-  the system in the same sentence.
-- **Numbers the figure carries are printed at their endpoints;** every figure citation names the thing to
-  look at. Roles are stated positively — what a part does, never what it does not.
-- **Captions are minimal; the paragraph carries the content.** A caption names what is drawn (subject, panel
-  letters with their metrics, an encoding the legend lacks) in one or two lines; the setting, the explanation and
-  the finding are printed once, in the citing paragraph or the methodology. A caption fact printed nowhere else
-  moves into that paragraph. Full rule in `02_structure_and_figures.md` §3 F11; check with `--captions`.
-- **One float per spot.** Two floats never share a column of one page; spread them across pages (one figure per
-  page first, opposite columns next), each on the page that first cites it or the next. Move source blocks, never
-  shrink or add space; list the float map after every build. Full rule in `02` §3 F12, mechanics in `10` §3.
-- **Citation scope is placement.** Cite an entity immediately after its name and a claim immediately after the
-  smallest clause expressing it; split the references when one sentence carries two claims, and give each category
-  or example in a landscape sentence its own group. A cluster at the end of a long sentence claims support for
-  everything in it. A sentence that opens with a system's proper name cites it at the name: "AttAcc~\cite{attacc}
-  runs …", never "AttAcc runs …~\cite{attacc}". Full rules in `12_citation_placement.md` §B.
-- **Terminology discipline.** One canonical name per concept, defined once, with the synonyms you
-  are *not* using listed somewhere you will see them. Readers notice a system called three things.
-- **The banned list**, verified as absent from all six reference papers in the relevant
-  sections: rhetorical questions; italic "Key takeaways:" labels; "clearly"; "it is interesting to
-  note"; "up to N"; "compared to" (use "against"); sentence-initial "So"; "forever".
+**B. Structure**
+- **One role per paragraph, and a visible arc** (B1), e.g. *what is possible → why it is feasible → what the design does*.
+- **Define before use** (B2): every symbol and term at its first appearance. Background defines the prior mechanism and
+  stops; it never previews the design.
+- **Order items so each leads into the next** (B3), and announce the order once.
+- **Never merge findings of different kinds** (B4); **delete rather than merge** a paragraph that does not serve the argument
+  (B5). One paragraph per agenda in a mechanism introduction (B6); the borrowed-mechanism paragraph has its own order (B7).
+- **Every heading is a noun phrase** (B8): section, subsection and run-in heads. **A run-in head marks a sibling topic, and
+  only where it helps** (B9): a paragraph that views the same items from another angle gets no head.
+- **Transitions at turning points; map once, never re-map** (B10). One content-carrying sentence where the argument changes
+  mode, naming and mapping what follows; a section's last paragraph bridges causally into the next ("…; we therefore …").
+  Never "we explain them next", and never repeat a map the reader already has.
+- **One configuration table** (B11): the first use defines a concept and points to the table; later uses cite the table.
+
+**C. Openers** — every paragraph opens with its core message; the opener decision table (C1) says what that is for each kind:
+- a finding whose setting is established → the blunt finding in words, the number next (C2);
+- a measurement or test with a new setting → the setting first, the finding within one or two sentences; describe a test
+  before naming it (C3);
+- a term the paper defines → one plain, symbol-free sentence saying what it is, then setting, cause, equation, value, cost (C4);
+- a figure's experiment → what the figure shows, then the setup, then the details and the table pointer (C5);
+- a cause → "X arises because Y", stated directly (C6);
+- a subsection opener → the frame only (the families or causes and the figure), no numbers (C7);
+- a prior-work family → its defining trade-off or limit (D1); an evaluation result → the claim, then the figure pointer (`06`);
+- a design mechanism → its definition, then validity → payoff → figure → implementation → cost; a component is its role;
+  our mechanism first, the familiar precedent last, as a citation (`05`, `08`).
+
+**D. Content**
+- **Introduce each prior-work family by its defining trade-off or limit** (D1) — the property the paper's design changes.
+- **Mark the paper's own terms as its own** ("We define … as the sweep factor") (D2). **Justify a modelling choice with the
+  prior work it follows**, attributing only what that work does (D3).
+- **Cite the informative statistic** (D4); state a constrained result as a trade, the tolerance in the cap's clause (D5).
+- **Claim only what exists**: no invented interfaces (D6); a mechanism read from source is described in the present tense
+  with its source, never "verified" and never hedged (D7).
+- **Replace an evaluative adjective with the two quantities it compares** (D8); state a cost at its unit and scale it to the
+  system in the same sentence (D9); say what a component does, not what it does not (D10).
+- **Terminology discipline**: one canonical name per concept, defined once; keep a list of the synonyms you are *not*
+  using. Readers notice a system called three things.
+- **A characterization is not an advertisement**: in motivation, mention your own system at most once per subsection, last,
+  and let the implication follow the number (`09`).
+
+**E. Brevity**
+- **The sentence test** (E1): a sentence earns its place with a fact, a number or a needed forward reference. Delete
+  drum-rolls, self-praise, meta-commentary and personification; repair with a direct sentence, a colon and the facts.
+- **No repetition at the sentence level** (E2): say each fact once; point back to a definition instead of re-explaining it.
+  A repeated noun is fine (F2); a repeated claim is not.
+- **Scope of detail** (E3): cut true details that do not serve the message — tolerances, side effects, out-of-scope notes,
+  unevaluated extrapolations — and related work that blurs the paper's distinction.
+- **Shares over raw values; one worked case** (E4). **No audit trail** in method and evaluation prose (E5).
+
+**F. Sentences**
+- **Every clause has a subject and a finite verb**; no equation stands as a clause; at most one fronted setting (F1, `01` §5.1).
+- **Name, don't point** (F2): repeat the noun instead of "the two", "both", "it", "this".
+- **No questions to the reader** (F3). **Cite at the proper noun** (F4, `12`): "AttAcc~\cite{attacc} runs …".
+- **The banned list**, absent from all six reference papers in the relevant sections: rhetorical questions; italic "Key
+  takeaways:" labels; "clearly"; "it is interesting to note"; "up to N"; "compared to" (use "against"); sentence-initial
+  "So"; "forever".
+
+**G. Numbers and figures**
+- **Pace the numbers**: one or two per sentence, each described; at most one derived figure per paragraph (G1). Print both
+  ends of a range, with the setting attached to the noun it qualifies.
+- **A plotted series is printed at its endpoints** (G2); **every figure citation names what to see** (G3).
+- **Minimal captions** (G4): the caption names what is drawn; setting and finding go in the citing paragraph (`02` F11).
+- **One float per spot** (G5, `02` F12); **the figure visual system** (G6): luminance ramp for what exists, one tint for what
+  you add, red only for small marks, no hatches, four spines.
+- **Numbers are traced, rounded once from the source, and asserted** by the script that prints them (G7).
+
+**H. Section-specific**
+- **Introduction** (H1, `04`): landscape opener, subject-first claims, symbols out of §1, verb-led contributions.
+- **Abstract** (H2–H4, `03`): open on the problem, join every move to the last, follow the move order, and state the positive
+  finding rather than negating an alternative the reader has not met.
 
 ## The reference papers
 
@@ -170,8 +182,10 @@ one. Cite a section's page range from `INDEX.md` rather than a single page you c
 
 Every reference ends with a block headed **Worked example (SPLEX, ASPLOS submission)** — the
 sentences, figures and numbers of the paper these rules were forged on, kept as illustrations of
-the rule above them. They show what a compliant paragraph looks like in a real draft; they are not
-rules, and their numbers belong to that paper alone.
+the rule above them. `11_writing_lessons.md` adds examples from two later papers, labelled *DAC*
+and *CoDe* (the DAC draft and the ISCA submission of a command-decoupled PIM). They show what a
+compliant paragraph looks like in a real draft; they are not rules, and their numbers belong to
+those papers alone.
 
 ## When the guides disagree
 
@@ -179,7 +193,11 @@ rules, and their numbers belong to that paper alone.
 author corrected *after* the guides were written. `09` §H lists where the reference papers'
 practice conflicts with these rules and which side wins; the same reasoning applies to any new
 conflict: a reference paper shows what has passed review, the house rule shows what this author
-has decided, and the house rule wins unless the guide says otherwise.
+has decided, and the house rule wins unless the guide says otherwise. Inside `11`, rules never
+contradict each other: where two seem to (a finding-first opener against a setting-first one), the
+opener table `11` C1 says which applies to which kind of paragraph. A new lesson is added to the
+part of `11` where it belongs and mirrored in the same part of the contract above, never appended
+as a separate list.
 
 ## Scope
 

@@ -104,9 +104,9 @@ per sentence at most, the mechanism sentence never carrying a number of its own.
   operators (e.g., 24 bytes for distance calculation) are far less than the minimum data access granularity of the processor-memory interface,
   substantially wasting DRAM bandwidth. Such results imply that these compute primitives are memory latency limited, rather than memory
   throughput limited, providing valuable insights on optimizing their system-level bottlenecks."
-- **The setting opens, the finding follows** (`11`, *Setting before finding*): never name a test or variant before describing it, and
+- **The setting opens, the finding follows** (`11` C3; the opener table `11` C1 covers every paragraph kind): never name a test or variant before describing it, and
   never use a term a later section defines. Where the section turns from observation to analysis, end on one transition sentence that
-  names and maps the causes that follow (`11`, *Transition sentences at turning points*).
+  names and maps the causes that follow, once (`11` B10).
 - **The closing move is always "X rather than Y", never "X, therefore build Z".** The implication names the *property*, and the design follows in
   a later section.
 
@@ -176,7 +176,7 @@ sits at the Zhu end (19–24 median): the Rhu papers reach 34 by stacking subord
 **C3. Density.** **One sentence in three carries a number.** Measured on the corpus with citation brackets and figure/section numbers stripped:
 CAL 37 %, M 36 %, TC 35 %, SS 33 %, PVF 32 %, LazyDP 50 %. Below ~30 % the section is an essay; above ~50 % the mechanism sentences have been
 squeezed out and the reader cannot see why any number is what it is. **Test:** count the sentences of the paragraph and the ones with a number; the
-ratio is between 1:3 and 1:2.
+ratio is between 1:3 and 1:2. The ratio is a section average: subsection openers and framing paragraphs carry no number (`11` C7), and a share of a figure's total replaces a list of raw values (`11` E4).
 
 **C4. The number's place in the sentence.** Late, inside the clause that names the quantity, always with its unit and its comparison anchor.
 - [SS] §3.2: "consuming only an average 21% of 125 GB/sec maximum memory throughput" — share, denominator and unit in one phrase.
@@ -323,7 +323,7 @@ There is **no "Observation 1:" numbering and no boxed summary anywhere in the co
 
 **The house's own sixth device: a noun-phrase run-in whose first sentence states the finding.**
 
-The rule changed on 2026-10-17 (`11_writing_lessons.md`, "Run-in heads are noun phrases").
+The rule changed on 2026-10-17 (`11` B8 and C2).
 - **Before:** SPLEX §3.3 used sentence heads, such as *The latent hot set is small and skewed.*
 - **Now:** the head names the topic and the finding opens the paragraph. Example: head *Hot-set size*, first sentence "The latent hot set is small and skewed."
 

@@ -46,7 +46,7 @@ Synced with: <hash>; body ends p. <N> col <L/R>; refs end p. <M>.
   `meth-`, `eval-`, `rel-`, `conc-`). An id names the content (`mot-idle-beats`), never a position (`mot-p3`),
   so moving a paragraph keeps its id.
 - **Message.** One sentence, under the sentence rules of `01` §5: a concrete subject, a finite verb, the claim as
-  a reader should take it away. It is the paragraph's opening finding (`11`: the finding opens the paragraph),
+  a reader should take it away. It is the paragraph's opening finding (the opener `11` C1 assigns to its kind),
   stated without the numbers. "This paragraph discusses X" is not a message.
 - **Floats / Numbers / Cites.** The figures, tables and equations the paragraph cites, with "(first cite)" where
   it is the first; the printed numbers that matter, each with its source (data view id or the script that prints

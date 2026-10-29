@@ -19,7 +19,7 @@ grepped in the PDF text before it was printed here.
    "**System configuration.** … **Software.** … **Benchmarks.**"; [M] "**Hardware Implementation** … **Experimental Methodology** …
    **Software Setup** … **Baseline** … **Variants**"; [TC] "**Evaluation framework.** … **System configuration.** … **Benchmarks.**";
    [SS] "**Hardware/software platform.** … **CSD platform.** … **Comparison to alternative training systems.** … **Dataset.**"
-2. **The numbers live in a configuration table; prose carries only the one that matters.** House rule (`11`, *One configuration table*):
+2. **The numbers live in a configuration table; prose carries only the one that matters.** House rule (`11` B11):
    one table holds every platform and design value; a concept's first use defines it in prose and points to the table, every later
    use cites the table instead of reprinting the value. [TC] Table I holds the DRAM rows and the text
    mentions one: "an aggregate of 819.2 GB/sec". [LazyDP] has no table and one dense sentence instead: "a server containing NVIDIA V100
@@ -53,7 +53,7 @@ grepped in the PDF text before it was printed here.
    §6.2 Accuracy Results → §6.3 latency.
 3. **One paragraph per figure, one sentence per panel; evaluate the panel that matters.** [PVF] §6.6: "PVF shows the most significant
    energy savings when the front-end dominates … such as the scenario shown in Fig. 10b."
-4. **First sentence = claim, figure pointer second** (the Zhu form; the Rhu papers open on the figure — "Figure 18 summarizes the
+4. **First sentence = claim, figure pointer second** (for a result paragraph; a paragraph that introduces a figure's experiment opens on what the figure shows, `11` C5) (the Zhu form; the Rhu papers open on the figure — "Figure 18 summarizes the
    effectiveness of SmartSAGE" [SS], "Figure 13 summarizes the end-to-end speedup" [TC] — and keep the verdict for the last sentence). We
    adopt claim-first, consistent with §1–§4: [M] "Mesorasi introduces only minimal area overhead … Fig. 18a and Fig. 18b show the speedup
    and the normalized energy consumption"; [M] "Overall, Mesorasi matches or out-performs the original algorithms."

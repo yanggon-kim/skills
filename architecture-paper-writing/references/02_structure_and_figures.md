@@ -101,7 +101,7 @@ meets a design element before the measurement that justifies it.
 | habit | examples in the references | SPLEX example |
 |---|---|---|
 | Signpost adverbs open the decisive sentence | "**Critically**, 𝒩, 𝒜, ℱ are serialized" [M]; "**Fundamentally**, Equ. 2 holds because…" [M]; "**Interestingly**, the off-chip memory bandwidth utilization is generally low" [SS] | one per subsection, not more |
-| First sentence of a paragraph is the claim; the rest is evidence | [SS] §3.2 every paragraph; [TC] §III-A "First… Second… Third…" | rewrite any paragraph whose first sentence is context |
+| First sentence of a paragraph is the claim; the rest is evidence | [SS] §3.2 every paragraph; [TC] §III-A "First… Second… Third…" | rewrite any paragraph whose first sentence is context, unless its kind opens on the setting, the figure or a plain definition (`11` C1) |
 | Numbers carry unit + comparison | "0.05 % of a typical SoC area" [M]; "20× reduction in SSD→DRAM traffic" [SS]; "1.52× slower than a no-transfer ideal" [PVF] | never a bare number |
 | Named artifacts are typeset | `T.Casted`, NS_config, SmartSAGE(HW/SW), Mesorasi-SW/-HW, Ltd-Mesorasi | `SPLEX`, `SPLEX-Free`, `index < N`, `topk_indices` in `\texttt{}` |
 | Variants are system + suffix and introduced in a bullet list before evaluation | [M] §VI "Variants"; [SS] §6 "three design points" | baseline / static / ratio / SPLEX / SPLEX-Free / all-HBM, defined once |
@@ -380,7 +380,7 @@ tell where one ends, and the column's text is pushed a screen away from both. Th
   they sit in opposite columns.
 - **Each float stays on the page that first cites it or the next**, so spreading never parks a figure pages away
   from its text. **Exception:** the one configuration table lives in methodology even when background or motivation
-  cites it first (`11`, *One configuration table*).
+  cites it first (`11` B11).
 - **How:** move the float's source block (`10` §3), a column or a page later; never shrink a figure, never `\vspace`.
   A `figure*` takes a page's top across both columns, so no column float shares that page's top.
 - **Check:** after every build list the float map (float → page, column, top/bottom); a column with two entries fails.

@@ -1,6 +1,6 @@
 # Sentence-style tips — the sentence-level contract
 
-Part of the architecture-paper-writing skill. Governs: every sentence in every section. Read with: references/01_sentence_style.md (always) and references/11_writing_lessons.md.
+Part of the architecture-paper-writing skill. Governs: every sentence in every section. Read with: references/11_writing_lessons.md (the later word; E1–E2 and F1–F4 extend this file).
 
 Distilled from the user's feedback on the v4 §2/§3 rhetoric pass (2026-08-31). This is the
 sentence-level companion to `02_structure_and_figures.md` (which governs structure, figures, and argument
@@ -120,7 +120,7 @@ the owner flagged DAC-paper sentences in which a reader could not find the subje
 - **Run-in `\paragraph` heads are noun phrases too** (owner, 2026-10-17).
   - Good heads: "Area family", "Faster-PU family", "Cost of logic in a DRAM die".
   - Never a sentence, such as "Six designs widen the MAC step with multipliers".
-  - The blunt finding moves into the first sentence under the head (`11_writing_lessons.md`, "Run-in heads are noun phrases; the blunt finding opens the paragraph").
+  - The blunt finding moves into the first sentence under the head (`11` B8 for the head, `11` C1–C2 for the first sentence).
 - **Check:** grep the draft's `\paragraph{` heads. A head with a finite verb ("is", "stays", "wins", "runs", "keep", "stops") is a sentence; rewrite it.
 - A number dropped from a title must still be printed in that subsection's text (promise check, `10`).
 
