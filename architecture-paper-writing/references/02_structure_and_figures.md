@@ -198,9 +198,15 @@ sees colour on the page is looking at our contribution.
   [LazyDP Figs. 10–13]. No despining. Dotted horizontal gridlines behind the data
   (`ls=":"`, `lw=0.5`, gray) — horizontal only.
 - **Series colour = luminance ramp**, in fixed order white → `#E8E8E8` → `#BFBFBF` → `#808080` →
-  black, with **red `#F7B0A0` (edge `#E03127`) for the system** and at most **one blue `#2B5FA8`** for a
-  single distinct category [LazyDP Fig. 11's blue overhead bar]. Every bar keeps a thin black edge
-  so a white bar is still a bar. **No hatches.** An *absent* measurement is marked by text alone
+  black, with the **blue tint `#CFE2F3` (edge `#2B5FA8`) for the system** (`11` G6) — the palette of a
+  stacked breakdown such as black, white, light blue and two grays. **Never one hue per design:** a chart that
+  gives each of five designs its own colour (gray, blue, yellow, green, red) reads as childish, and the hues carry
+  no order. Every bar keeps a thin black edge so a white bar is still a bar. **Hatches only when the ramp runs
+  out:** when more series than the ramp separates cleanly share a chart (five bars per group, or two neighbours
+  too close in luminance), give the gray bars thin black hatch patterns — diagonal, cross, horizontal, dotted —
+  and keep the system's bar a plain blue tint, as Mesorasi Fig. 18 does (`papers/mesorasi-micro20.pdf`, p. 11).
+  Line charts follow the same system: black and grays told apart by marker shape and dash style, the system in
+  blue. An *absent* measurement is marked by text alone
   (LazyDP's rotated "OOM" text, Fig. 13(a)); ours is "n/a" at the baseline of the empty slot, no
   placeholder bar *(SPLEX example)*.
 - **Value labels above the bars** [LazyDP Figs. 12, 13 label every bar; its densest chart, Fig. 10,

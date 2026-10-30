@@ -693,8 +693,15 @@ pages as much as possible."
 
 **Rule.** Everything that already exists is drawn in a luminance ramp (white through grays to black); the blue tint is reserved
 for what the system adds and for its single chart series; red only for small pinpointing marks; green for one small positive
-mark, never a fill; no hatches; square corners; four spines on every chart; canvas sizes frozen once set. A restyle touches no
-number and keeps every assert passing. Full rules: `02` §3.
+mark, never a fill; square corners; four spines on every chart; canvas sizes frozen once set. A comparison chart never gives
+each design its own hue: the rivals and baselines take black, white and grays, and only the system takes blue. When the ramp
+runs out (five bars per group, or two neighbouring grays too close to tell apart), separate the gray series with thin black
+hatch patterns, as Mesorasi Fig. 18 does, and leave the system's bar a plain tint. Without that need, no hatches. A restyle
+touches no number and keeps every assert passing. Full rules: `02` §3 F5.
+
+**Why.** The author (CoDe, 2026-10-30), on an end-to-end bar chart with five systems in gray, blue, yellow, green and red:
+"too childish with full of various colors"; the model is the paper's own breakdown figure (black, white, blue, gray, darker
+gray), with Mesorasi Fig. 18's patterns where the colours are not enough.
 
 ### G7. Numbers are traced, rounded once, and asserted
 
