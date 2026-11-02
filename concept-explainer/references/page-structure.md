@@ -157,6 +157,11 @@ is the most important part of "What you already know", and usually the longest.
   whether it fits).
 - **Its figure is a rung.** The figure is the figure of the block it builds on, plus one new thing.
   § Figures says how to draw it.
+- **Close a family with a comparison table.** When three or more blocks (or two blocks and the
+  mechanism) teach versions of the same thing — a history (`__syncthreads()` → `bar.arrive` →
+  `mbarrier`), or rival answers to one need (LP, ILP, a heuristic) — the reader has met each one
+  separately but has not seen them side by side. End that run of blocks with one table (§ The
+  comparison table).
 - **Foreshadow the main question once.** The block whose figure first shows the phenomenon the
   page is about ends with one `<p class="foreshadow">` sentence: what this picture already shows
   about the main question, as a hint, never the answer. The mechanism recalls it by name with
@@ -190,6 +195,49 @@ convention block it changes.
 
 Number the blocks only when the order is the real dependency order the reader should follow (it
 usually is, in a ladder).
+
+### The comparison table
+
+A family of mechanisms is easiest to remember as one table: what changed from each version to the
+next, and what stayed the same. The blocks teach each version with a picture; the table is the
+summary the reader keeps.
+
+- **When.** Three or more versions of the same thing appear on the page (a history, or rival
+  answers to one need). For two, the contrast figures usually suffice; add a table only if they
+  differ in more than three ways.
+- **Where.** Right after the last block of the family, before the term list (or right after the
+  mechanism step, if the last version is the mechanism itself). Introduce it with one sentence.
+- **Columns: the versions,** in the order the page taught them, named as the page names them.
+- **Rows: the dimensions,** one per question the blocks answered ("Does arriving wait?", "Who can
+  take part?", "What completes it?"). Use only dimensions the blocks showed; the table summarizes
+  and never introduces a fact.
+- **Cells: a few words each,** six or fewer. The cell where a version brings its new step is marked
+  `class="new"` (coral), so the reader sees what each step of the history added.
+- **What they share:** a last row `tr.same`, or one sentence under the table, saying what every
+  version has in common ("each counts arrivals toward a target and resets itself for the next
+  round"). The similarity is half the lesson: it is what the reader can carry to the next version.
+
+Markup:
+
+```html
+<figure class="compare-table" data-compares="c-sync c-split c-mbar" aria-labelledby="cmp-caption">
+  <div class="table-scroll"><table class="family">
+    <thead><tr><th></th><th>__syncthreads()</th><th>named barrier</th><th>mbarrier</th></tr></thead>
+    <tbody>
+      <tr><th>Does arriving wait?</th><td>yes, one step</td><td class="new">bar.arrive: no</td><td>never</td></tr>
+      ...
+      <tr class="same"><th>Same in all</th><td colspan="3">count arrivals, release waiters, reset</td></tr>
+    </tbody>
+  </table></div>
+  <figcaption id="cmp-caption">...</figcaption>
+</figure>
+```
+
+The table's class is `family`, not `compare`: `.compare` is the widget's before/after grid, and a
+table that takes it is laid out as a grid with its header out of line.
+
+`check_page.py` checks that `data-compares` names two or more real ids, that the header has one
+column per version, and that the table says what the versions share.
 
 ### The words this page uses
 
@@ -475,7 +523,7 @@ The page must still teach with scripts off:
 
 After the page is built, look at the route map alone: follow it from the top box to the answer.
 Does each box match its part, is each arrow a real "is needed for", and is the order the order the
-page teaches? Then review the page four ways. Each one alone must teach the same correct model:
+page teaches? If the page has a comparison table, check every cell against its block. Then review the page four ways. Each one alone must teach the same correct model:
 
 1. **Text only.** Read the prose and skip the figures and the widget. Is the mechanism complete?
    Start at the conclusion and walk down: does every reason name the blocks it follows from, and

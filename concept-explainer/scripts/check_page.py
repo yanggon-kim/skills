@@ -17,6 +17,8 @@ Reports three groups of findings:
   parts     - the conclusion's parts (data-part): facts in the ladder with a p.source line, an
               assumption in the problem, reasons in the mechanism whose data-from
               points at real ids, and every convention changed in "Try it" (data-changes)
+  compare   - comparison tables (figure.compare-table): data-compares names real ids, one column per
+              version, a tr.same row (or p.same) for what they share, td.new on each new step
   route     - the route map (advance organizer) under the answer: every part on the route has a
               one-line data-summary, leads to the answer, and the drawn map is up to date
               (scripts/route_map.py draws it)
@@ -146,7 +148,21 @@ def split_sentences(text):
     return [p.strip() for p in parts if len(p.strip()) > 1]
 
 
-def check_timeline(nc, add_outer, tag=""):
+def frame_background(frame):
+    """A frame's SVG with every keyed leaf removed and every keyed group reduced to its tag: what the
+    player never updates. The player clones frame 1 and then changes only keyed elements' own
+    attributes and text, so this must be identical in every frame."""
+    m = re.search(r"<svg\b.*?</svg>", frame, re.S)
+    s = m.group(0) if m else frame
+    s = re.sub(r"<title\b.*?</title>|<desc\b.*?</desc>", "", s, flags=re.S)
+    s = re.sub(r'\s(?:id|aria-labelledby)="[^"]*"', "", s)
+    s = re.sub(r'<(\w+)\b[^>]*\bdata-key="[^"]*"[^>]*/>', "", s)
+    s = re.sub(r'<(\w+)\b[^>]*\bdata-key="[^"]*"[^>]*>[^<]*</\1>', "", s)
+    s = re.sub(r'<(\w+)\b[^>]*\bdata-key="([^"]*)"[^>]*>', r"<\1 key=\2>", s)
+    return re.sub(r"\s+", " ", s)
+
+
+def check_timeline(nc, add_outer, tag="", wide=False):
     def add(level, group, msg):
         add_outer(level, group, tag + msg)
     frames = re.findall(r'<li[^>]*class="[^"]*\bframe\b[^"]*"[^>]*>(.*?)</li>', nc, re.S)
@@ -172,8 +188,9 @@ def check_timeline(nc, add_outer, tag=""):
         if vb:
             try:
                 w = float(vb.group(1).split()[2])
-                if w > 480:
-                    add("WARN", "timeline", f"frame {i} viewBox is {w:.0f} wide; keep <= 480 so labels stay readable in the storyboard")
+                limit = 760 if wide else 480
+                if w > limit:
+                    add("WARN", "timeline", f"frame {i} viewBox is {w:.0f} wide; keep <= {limit} so labels stay readable in the storyboard" + ("" if wide else " (or mark the figure .wide-frames: one frame per row)"))
             except (IndexError, ValueError):
                 pass
     if len(set(viewboxes)) > 1:
@@ -184,6 +201,14 @@ def check_timeline(nc, add_outer, tag=""):
             missing = sorted(allk - k)
             if missing:
                 add("ERROR", "timeline", f"frame {i} lacks data-key {', '.join(missing)}; keep every keyed element in every frame (use class=\"off\" to hide it)")
+    # what the player never updates must not change between frames
+    bgs = [frame_background(f) for f in frames if "<svg" in f]
+    changed = [i for i, b in enumerate(bgs[1:], 2) if b != bgs[0]]
+    if changed:
+        add("ERROR", "timeline", f"frame(s) {', '.join(map(str, changed[:6]))} differ from frame 1 outside keyed elements; "
+            "the player clones frame 1 and only updates keyed elements, so those changes never show. Key every element "
+            "that appears, moves or changes (one data-key per element, not only on its group), and hide future ones with "
+            "class=\"off\" instead of leaving them out")
     if keysets and not keysets[0]:
         add("WARN", "timeline", "no data-key elements; the player can only cross-cut, not animate")
     for need, what in (('class="stage"', "a .stage element"), ('data-act="play"', "a play button"),
@@ -385,6 +410,29 @@ def check_route(raw, add):
         add("WARN", "route", "the route map is stale (a summary or data-from changed); rerun scripts/route_map.py")
 
 
+def check_compare(nc, add):
+    """Comparison tables: references/page-structure.md § The comparison table."""
+    ids = set(re.findall(r'\bid="([^"]+)"', nc))
+    for m in re.finditer(r'(<figure\b[^>]*\bclass="[^"]*\bcompare-table\b[^"]*"[^>]*>)(.*?)</figure>', nc, re.S):
+        tag, body = m.group(1), m.group(2)
+        comp = re.search(r'\bdata-compares="([^"]*)"', tag)
+        names = comp.group(1).split() if comp else []
+        if len(names) < 2:
+            add("WARN", "compare", "a comparison table needs data-compares with the ids of the two or more versions it compares")
+        missing = [n for n in names if n not in ids]
+        if missing:
+            add("WARN", "compare", f"comparison table compares {', '.join(missing)}, which is not an id on the page")
+        head = re.search(r"<thead\b.*?</thead>", body, re.S)
+        if head and names:
+            cols = len(re.findall(r"<t[hd]\b", head.group(0))) - 1
+            if cols != len(names):
+                add("WARN", "compare", f"comparison table has {cols} version columns but data-compares names {len(names)}")
+        if not re.search(r'<(?:tr|p)\b[^>]*\bclass="[^"]*\bsame\b', body):
+            add("WARN", "compare", "the comparison table does not say what the versions share (a tr.same row, or a p.same sentence)")
+        if not re.search(r'<td\b[^>]*\bclass="[^"]*\bnew\b', body):
+            add("WARN", "compare", "no td.new: mark the cell where each version brings its new step")
+
+
 def check(path):
     raw = open(path, encoding="utf-8").read()
     findings = []
@@ -482,11 +530,13 @@ def check(path):
     check_ladder(nc, add)
     check_parts(nc, add)
     check_route(raw, add)
+    check_compare(nc, add)
     # timeline: a storyboard of frames that the template's script turns into a player
     starts = [m.start() for m in re.finditer(r'<figure[^>]*class="[^"]*\btimeline\b', nc)]
     for n_tl, a in enumerate(starts, 1):
         end = starts[n_tl] if n_tl < len(starts) else len(nc)
-        check_timeline(nc[a:end], add, f"timeline {n_tl}: " if len(starts) > 1 else "")
+        head = re.match(r'<figure[^>]*>', nc[a:end]).group(0)
+        check_timeline(nc[a:end], add, f"timeline {n_tl}: " if len(starts) > 1 else "", wide=bool(re.search(r'class="[^"]*\bwide-frames\b', head)))
     if starts and "Timeline player:" not in nc:
         add("ERROR", "timeline", "the template's timeline player script is missing")
     if starts and re.search(r"\bautoplay\b", nc):

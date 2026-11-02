@@ -188,7 +188,10 @@ question it answers in the reader's words, name the question's shape, and pick o
 (two at most) from the shape table; the part's kind suggests a first candidate. Write the plan as a
 small table for yourself: unit, part, question, shape, technique, why it fits, and how it sits on
 the base scene. If a row is hard to fill, the unit is unclear or holds two ideas; fix the
-unit first. Add one line for the foreshadow: the block whose figure first shows the main
+unit first. If three or more units teach versions of the same thing (a history such as
+`__syncthreads()` → `bar.arrive` → `mbarrier`, or rival answers to one need), plan a comparison
+table that closes that run: one column per version, one row per difference the units show, and a
+line on what they all share (`references/page-structure.md` § The comparison table). Add one line for the foreshadow: the block whose figure first shows the main
 question's phenomenon, the hint sentence, and the place in the mechanism that recalls it. The
 other defaults and skeleton parts need no choice.
 

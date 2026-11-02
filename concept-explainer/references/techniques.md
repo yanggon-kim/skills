@@ -43,6 +43,7 @@ contrast is the strongest general tool.
 | "Why does that happen?" | a cause that leads to an effect | cause chain |
 | "What is this even like?" | an abstract idea with nothing physical to draw, or a first contact with an unfamiliar field | analogy, only in "What you already know" and rarely (see its entry) |
 | "How big is it? Does it matter?" | a size, a cost, a growth rate | numbers and scale |
+| "How do these versions differ, and what do they share?" | three or more versions of the same thing: a history, or rival answers | the units themselves use contrast; the run of units closes with a comparison table (`references/page-structure.md` § The comparison table) |
 
 Contrast is the strongest candidate, not a rule. Use it whenever the unit's idea is a property
 that a reader can see change; skip it when another shape fits better (a pure procedure, a cause).

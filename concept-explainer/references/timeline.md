@@ -71,6 +71,14 @@ elements.
 - **Every frame has every keyed element.** An element that is not present at a step stays in the
   frame with `class="off"` (opacity 0). Never leave it out: the player matches elements by key and
   can only animate what exists in both frames.
+- **Watch out for time-cursor frames.** A natural way to generate frames is to draw the whole
+  process once and cut it at a moving "now": frame k shows only what happened before time t_k. Done
+  naively, this breaks both rules above — future bars are left out instead of hidden, and the keys
+  sit on whole rows while the bars inside them change — so the player clones frame 1 and never
+  shows anything new, while the storyboard (each frame drawn on its own) looks right. Generate
+  every bar, label and arrow in every frame, each with its own key; give the ones after "now" the
+  class `off`, and clip the one that "now" crosses by changing its `width`. `check_page.py` reports
+  an ERROR when frames differ outside keyed elements.
 - **What animates.** Between frames, the player moves these attributes smoothly: `x`, `y`, `width`,
   `height`, `cx`, `cy`, `r`, `rx`, `ry`, `x1`, `y1`, `x2`, `y2`, `opacity`, `stroke-width`, and a
   `transform` of the form `translate(a b)`. Class changes (color, `.off`) fade through the
@@ -84,6 +92,12 @@ elements.
   on a phone. Use a `viewBox` about 400 units wide (at most 480) and text at least 15 units high, so
   labels stay readable in the small view. Put fewer, larger labels in a frame rather than many
   small ones; the caption carries the detail. The player shows the same SVG larger.
+- **Wide frames, when a frame must hold many rows.** If each frame has to show many rows at once
+  (a time chart with five or six lanes and state readouts), shrinking it to 480 units makes the
+  labels unreadable. Then add the class `wide-frames` to the timeline figure: the storyboard shows
+  one frame per row at full width, the player drops its width cap, and the frame `viewBox` may be
+  up to about 720 units wide. Prefer the narrow frame whenever the content allows it; wide frames
+  make a long storyboard.
 - **Shared definitions go once, outside the frames.** Arrowheads and other `<defs>` would repeat
   their ids if every frame carried them. The template already defines `#arrow` and `#arrow-accent`
   in a hidden SVG at the top of the page; add any other shared definition there, or in a hidden SVG
@@ -168,11 +182,14 @@ about 150–250 words of captions on top of the usual 800–2,200 words of prose
 ## 7. Checks
 
 `check_page.py` verifies the mechanical part: at least two frames, a caption in each, the same
-`viewBox` and the same set of `data-key` values in every frame, the player controls, and no
-autoplay. Then check by eye:
+`viewBox` and the same set of `data-key` values in every frame, nothing changing between frames
+outside keyed elements (what the player can never show), the player controls, and no autoplay.
+Then check by eye:
 
 1. **Storyboard only.** Read the frames and captions top to bottom with the player ignored. Is the
    procedure complete?
 2. **Player only.** Play it through, step back and forth, drag the scrubber to the end and back. Does
-   anything jump, overlap or move the wrong way?
+   anything jump, overlap or move the wrong way? Press "next" a few times and compare the stage
+   with the matching storyboard frame: they must show the same picture. A storyboard that looks
+   right says nothing about the player, because each frame is drawn on its own.
 3. **Same story.** The prose, the captions and the frames name the same steps in the same order.
