@@ -345,8 +345,11 @@ function createDeck(opts = {}) {
   function figSlide(sectionTitle, o) {
     const sl = newSlide("CONTENT", sectionTitle, o.kind || "content", { appendix: o.appendix });
     sl.addText(o.title, { placeholder: "title" });
-    band(sl, o.body, o.see);
-    drawFig(sl, o.fig, AREA, { id: o.id, center: true, middle: true });
+    // no bullets: the figure also takes the band's height (the slide is all picture)
+    const tall = !(o.body && o.body.length);
+    if (!tall) band(sl, o.body, o.see);
+    else sl.addShape(pres.shapes.RECTANGLE, { x: RULE.x, y: r2(RULE.y - 0.02), w: RULE.w, h: 0.05, fill: { color: "FFFFFF" }, line: { type: "none" }, objectName: "band-rule-cover" });
+    drawFig(sl, o.fig, tall ? { ...AREA, h: r2(BAND.y + BAND.h - AREA.y) } : AREA, { id: o.id, center: true, middle: true });
     notes(sl, o.notes, o.caption);
     return sl;
   }

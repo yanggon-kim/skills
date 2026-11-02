@@ -80,8 +80,10 @@ outline's names the parts and leads into the summary).
 <section class="slide" data-kind="divider" data-part="Background"><details class="notes" open>…</details></section>
 ```
 
-**Summary** — a content slide (any area form; a figure with its headline numbers beside it works well)
-in part `Summary`, right after the outline, titled `Summary: <core message>`. The title must stay one
+**Summary** — a content slide in part `Summary`, right after the outline, titled `Summary: <core message>`.
+Draw the talk's big picture as one logic chain (background → problem → "so we need …" → the question it
+raises → the answer's parts in plain words); headline numbers only when the message is a number. With
+`bullets=()` the figure takes the area and the band (8.5 × 4.4 in: draw it near 676 × 350 units). The title must stay one
 20 pt line: shorten the message and say the full sentence in the notes. `d.summary(message, …)` writes it.
 ```html
 <section class="slide" data-kind="content" data-part="Summary">
@@ -102,7 +104,9 @@ in part `Summary`, right after the outline, titled `Summary: <core message>`. Th
 </section>
 ```
 `data-see` points to an appendix slide; `data-role` is `method` or `result` (the lint checks that
-results have a methodology slide before them).
+results have a methodology slide before them). `data-introduces` / `data-uses` (concepts joined by `|`)
+are the concept ledger: the lint stops when a slide uses a concept no earlier slide introduced.
+A figure slide with an empty band (no `li`) is an all-picture slide: the figure takes the band's height too.
 
 **Story** — a storyboard: one deck slide per frame (references/animations.md).
 ```html
@@ -120,8 +124,10 @@ results have a methodology slide before them).
 A `.notes` block directly in the section (outside the frames) is an overview; it is prepended to the
 first frame's notes.
 
-**Closing** — title (usually "Questions"), a one-sentence recap, the citation, up to three questions that
-open the discussion.
+**Closing** — the default is **"Questions and Summary" with the Summary's figure again**
+(`d.closing(title=…, figure=…, bullets=(), notes=…)`): it is drawn on the content layout and still counts as
+the one closing slide. The older text form, on the Thank-You layout, takes a title, a one-sentence recap,
+the citation and up to three questions; use questions only when the user asks for them.
 ```html
 <section class="slide" data-kind="closing" data-part="Discussion">
   <div class="canvas"><h2>Questions</h2><p class="recap">…</p><p class="citation">…</p>
@@ -225,10 +231,12 @@ d.outline(notes="")                           # Summary highlighted: also the Su
 d.summary(message, **content_kwargs)          # right after the outline; title "Summary: <message>"
 d.divider(part_id, notes="")                  # every later part (a "Summary" divider is dropped)
 d.content(title, part=None, figure=None | table=Table(...) | stats=[(metric, label, hot)] | cards=[(head, text)],
-          bullets=(), notes="", source="", see=None, role=None, whitespace=None)   # figure + stats = figure-stats
+          bullets=(), notes="", source="", see=None, role=None, whitespace=None,
+          introduces=(), uses=())   # figure + stats = figure-stats; no bullets on a figure: area + band (8.5 x 4.4 in)
 d.story(title, frames=[Frame(step, svg, caption, notes)], part=None, notes="", source="", see=None, role=None,
-        whitespace=None)       # whitespace: the reason a figure keeps proportions that leave half its area empty
-d.closing(title="Questions", recap="", citation="", questions=(), notes="")
+        whitespace=None, introduces=(), uses=())   # whitespace: why a figure leaves half its area empty
+d.closing(title="Questions and Summary", figure=svg(...), bullets=(), notes="", source="")   # figure form
+d.closing(title="Questions", recap="", citation="", questions=(), notes="")                   # text form
 d.appendix(aid, title, frames=None, **content_or_story_kwargs)
 Table(head, rows, colw=None, font=13, ours=(), dense=False, bold_first=True)
 d.write(path)        # warns about a missing outline / divider / summary / closing; appendix slides go last
@@ -245,7 +253,8 @@ or with a slide after a later part's slide; a slide without notes; provenance wo
 `Adapted from`, `schematic`, …); an appendix slide before the closing slide or a main slide after it; a
 `data-see` to a missing appendix id; a figure outside the vocabulary (without `--png-fallback`); storyboard
 frames with different numbers of unkeyed elements; a table below 12 pt; no title or no closing slide; a
-figure filling < 50 % of its area (with the proportions to redraw at) unless the slide has `data-whitespace`.
+figure filling < 50 % of its area (with the proportions to redraw at) unless the slide has `data-whitespace`;
+a concept in `data-uses` that no earlier (or the same) slide lists in `data-introduces`.
 WARN: a title over one 20 pt line; a band over 4 lines or with more than 3 bullets; a step caption over
 10 lines or a step title over 2; a loose viewBox (with the tight one to use); a figure filling < 75 % of
 its area; labels that scale below 12 pt; a table taller than the area, or one that fills < 75 % of it

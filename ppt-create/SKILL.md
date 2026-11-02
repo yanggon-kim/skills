@@ -42,14 +42,23 @@ package check; plain `soffice`).
 1. **Read the source** in full (paper, notes, data). List the claims you will make and where each comes
    from (section, figure, table, page). Numbers are quoted, never invented; your own inferences are kept
    apart (rule 10).
-2. **Plan the talk** as parts (sections of the outline), then slides. **Part 1 is always "Summary"**:
-   one slide right after the outline, titled "Summary: <core message of the talk>", with the talk's key
-   picture or numbers (rule 2). For a talk about a paper, the part after Summary is **Background: the
+2. **Plan the talk** as parts (sections of the outline), then slides, **as a chain of questions** (rule 14):
+   write, for every slide, the question it answers and the earlier slide that raised it; a slide that
+   answers no open question is cut or moved to the appendix. **Part 1 is always "Summary"**:
+   one slide right after the outline, titled "Summary: <core message of the talk>", showing the talk's
+   **big picture as one logic chain**: the background the problem needs, the problem, "so we need …",
+   the question that raises, and the answer's parts in plain words (rule 2). Headline numbers go there
+   only when the message is a number; otherwise they wait for the results. For a talk about a paper, the part after Summary is **Background: the
    paper's own background section, in the paper's order**; extra basics the user asks for go in an
    optional **Preliminary Note** part between them (rule 12). Each slide states **one core
    message**, and its title *is* that message in a few words ("The cache halves median latency only
    above 64 users", not "Results"). Decide for every slide what the audience must see (the figure or table) and what it
    must hear (the notes). Push every detail that is not needed to follow the argument to the appendix.
+   In a paper talk, the **Motivation** part shows that the problem is real (one slide), then states the
+   goal, lists the problems in its way and gives a short, high-level preview of the design that answers
+   each, so the Design part reads as the details of a promise already made.
+   **Keep a concept ledger** (rule 15): for every slide, the concepts its figure first shows and the ones it
+   relies on (`introduces=`, `uses=`); a concept used before any slide shows it on screen needs a slide first.
 3. **Write the prototype** with `scripts/proto.py` (Python API, recommended: its SVG helpers keep figures
    inside the vocabulary) or by hand from `assets/prototype-template.html`. The format, every slide kind and
    the figure vocabulary are in **references/html-prototype.md** — read it before writing.
@@ -64,9 +73,11 @@ package check; plain `soffice`).
    d.summary("the talk's core message", figure=svg(...), bullets=[...], notes=...)  # -> "Summary: ..."
    d.divider("Preliminary", notes=...); d.content("...", part="Preliminary", ..., source="the primer's own source")
    d.divider("Background", notes=...)
-   d.content("One-line message", part="Background", figure=svg("0 0 600 260", ...), bullets=[...], notes=..., source=...)
+   d.content("One-line message", part="Background", figure=svg("0 0 600 260", ...), bullets=[...], notes=..., source=...,
+             introduces=["program graph"], uses=["pass"])          # the concept ledger (rule 15)
    d.story("One-line message", part="Background", frames=[Frame("step", svg(...), "caption", "script"), ...])
-   d.closing(...); d.appendix("A1", "Full table", table=Table(...), bullets=[...], notes=...)
+   d.closing(title="Questions and Summary", figure=summary_svg, notes=...)   # or recap=/questions= (Thank-You layout)
+   d.appendix("A1", "Full table", table=Table(...), bullets=[...], notes=...)
    d.write("talk.html")
    ```
 4. **Lint it**: `$PY $SK/scripts/html_to_spec.py talk.html --check`. Fix every ERROR; read every WARN
@@ -100,8 +111,17 @@ $PY $SK/scripts/audit_skeleton.py talk.pptx talk-audit.md --source "..."  # star
    it met a case it does not handle (the build prints it as "unresolved"): redraw that spot.
 3. **Look at every rendered slide** (contact sheets of 4–6 slides are quick). Check what QA cannot: labels
    that collide after being raised to 12 pt, a moved label that now reads as another curve's, arrows over
-   text, white space a figure leaves, a highlight on the wrong element. LibreOffice shows Morph as a fade;
-   that is expected.
+   text, white space a figure leaves, a highlight on the wrong element, an element drawn on top of another
+   (a chip that wrapped onto a box). LibreOffice shows Morph as a fade; that is expected.
+   Then **read the deck as a newcomer** (rules 14–16) — QA passing says nothing about these:
+   - **The chain:** does each slide answer a question the one before raised? Is the goal and the problem
+     on screen before the design, and the reason for each design part, not only what it is?
+   - **Concepts:** is every term and picture this slide relies on shown on an earlier slide's screen (not
+     only in the notes)?
+   - **Arrows and labels:** for every arrow, what exactly does it land on, and is that what its label talks
+     about? Would a student recognise every label, or is it the paper's internal name?
+   - **Layout:** does position say the relationship (source left, derived right; containment for
+     hierarchy; near and far measured from one reference)? Does any element only repeat another slide?
 4. **Tighten and fact-check** (rule 11, references/audit.md): every slide and its notes against the
    source, item by item, in the audit file; fix every error in the prototype and rebuild.
 5. Report: the .pptx path, slide count, QA result, the crossings fixed, the renders, the audit counts, and
@@ -125,15 +145,18 @@ Each rule exists because a reviewer of an earlier deck asked for it; the reason 
    lists every part with Summary highlighted, "Next: part 1 of N"), so the deck never shows two outline
    slides in a row; the later dividers read "part k of N". One or two **methodology / setup** slides come
    before any results (how numbers were produced decides whether they can be trusted); mark them
-   `data-role="method"` and results `data-role="result"`. The closing slide recaps in one sentence and
-   opens the discussion. The translator adds a missing outline or divider, with a warning; a missing summary slide stops it.
+   `data-role="method"` and results `data-role="result"`. The closing slide, **"Questions and Summary"**,
+   repeats the Summary's big picture (`d.closing(figure=…)`) so the room leaves with the chain in view;
+   discussion questions go there only when the user asks for them, never invented filler. The translator adds a missing outline or divider, with a warning; a missing summary slide stops it.
 3. **Figure or table first.** On a normal slide the figure, table, numbers or cards fill the content area
    (8.5 × 3.2 in) — a table grows its type and rows to fill it, a figure is drawn in the area's
    proportions; the audience looks at the picture while the speaker talks. **Two or three supporting
    bullets** sit in one fixed band at the bottom (16 pt, at most 4 lines), identical in position on every
    slide, so the eye always knows where the words are. Everything else is said, not shown: **the full
    explanation goes in the speaker notes, written as a script** (what to say, in order, referring to what
-   is on screen: "the gold box", "the blue curve"), typically 100–250 words per slide.
+   is on screen: "the gold box", "the blue curve"), typically 100–250 words per slide. An **all-picture
+   slide** (the big-picture Summary, its closing repeat) may drop the bullets: the figure then takes the
+   band's height too (8.5 × 4.4 in) and the band's hairline is hidden.
 4. **Appendix for detail.** Main slides carry only the simple, clean facts needed for the argument.
    Detailed facts (full tables, extra numbers, derivations, per-case breakdowns, ablations) go on appendix
    slides **after the closing slide**, behind an "Appendix" index slide. A main slide points to its
@@ -195,6 +218,30 @@ Each rule exists because a reviewer of an earlier deck asked for it; the reason 
     hard to read from the back of a room, and QA used to find crossings only after the build, when each
     one cost a hand re-draw; and a fix made by hand-editing the .pptx is lost at the next build and invisible
     to QA, so the fix belongs in the build. QA's `lines` check stays as the final guard.
+14. **The storyline is a chain of questions, problem first.** Context and "why" come before specifics. The
+    Summary shows the whole chain (background → problem → "so we need …" → "how does it …?" → the answer's
+    parts, named in plain words), Motivation states the goal, the problems and a one-line preview of the
+    design for each, and the Design part then fills in each promise in that order. Every design part says
+    which problem it answers and why it is needed ("why must similar programs get close vectors? because
+    the agent is a smooth function of them"), not only what it computes. Why: a reviewer could not find the
+    problem in a deck built section by section from the paper, and asked three times for the reason behind a
+    part that the slides only described.
+15. **A concept is on screen before a slide relies on it.** The speaker notes do not count: the audience
+    sees only the slides. Keep the ledger (`introduces=` / `uses=` on `d.content` and `d.story`); the lint
+    stops on a concept used before any slide introduced it, and the fix is a slide (or a figure on an earlier
+    slide) that shows it, placed where the paper's own order allows (a paper background idea goes in
+    Background). Why: a deck drew programs as graphs on its edit-distance slide before any slide had shown
+    that a program can be a graph; the one sentence that said so was in the notes.
+16. **A figure's layout is its concept map.** Position encodes the relationship, so the picture argues even
+    before it is explained: the source on the left and what is derived from it on the right (code → data
+    flow above, control flow below); hierarchy as containment (a dashed block box holding its
+    instructions), not lines to circles; "near versus far" from one reference (P, a close Q, a far R), not
+    two clusters; every arrow lands on exactly the element its label talks about. Labels use the audience's
+    words: code fragments, "32 numbers", "a probability per pass"; the paper's internal names (Ter: Br,
+    Sel: Phi) shrink to small tags or go to the notes. Cut an element that only repeats another slide (hurdle
+    badges already shown elsewhere), and keep the simpler example the audience already understood over a
+    more precise but harder one: fill a gap with its own slide, not with more detail on this one. Why: every
+    one of these passed QA and was found by a reviewer reading the slides as a student would.
 
 ## When QA or the render shows a problem
 
@@ -218,6 +265,12 @@ Each rule exists because a reviewer of an earlier deck asked for it; the reason 
 | Preliminary Note misplaced (lint ERROR, QA structure) | `d.preliminary()` puts it at part 2; keep its slides together between Summary and Background; its tag is drawn automatically |
 | Preliminary slide cites the paper (lint WARN) | name the primer's own source, or move the slide (a paper figure, a paper claim) to Background |
 | title-slide list (lint ERROR, QA structure) | delete the points from the title slide; they belong on the summary slide, and the script that walked them goes to its notes |
+| concept used before shown (lint ERROR with the ledger; review) | add a slide that shows it before its first use (in the paper's order), or move the slide that uses it; declare `introduces=` there |
+| an arrow lands on the wrong element (review) | redraw so the arrow, or a bracket over the group it means, ends on exactly what its label names |
+| layout contradicts the relationship (review) | source left, derived right; containment for hierarchy; one reference point for near / far |
+| labels are the paper's jargon (review) | label with what the audience knows (the code it came from, a plain name); keep the jargon as a small tag or in the notes |
+| summary is a list of parts or numbers (review) | redraw as the chain background → problem → need → question → parts; no stats column unless the message is a number |
+| a part shows "what" but not "why" (review) | add the reason as a picture: what goes wrong without this part, seen from the part that consumes its output |
 
 ## Files
 

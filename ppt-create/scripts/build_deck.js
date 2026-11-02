@@ -91,7 +91,9 @@ for (const s of spec.slides) {
       d.storySlides(S, { story: { frames: s.frames }, id: s.id, title: titleOf(s), notes: s.notes, caption: s.source || "", appendix: !!s.appendix });
       break;
     case "closing":
-      d.closingSlide(S, { ...s, recap: s.recap ? d.nb(s.recap) : "" });
+      if (s.area && s.area.type === "figure") // closing drawn as a figure slide; still the deck's one closing slide
+        d.figSlide(S, { title: s.title, body: s.bullets || [], notes: s.notes, caption: s.source || "", fig: s.area.fig, id: s.area.id, kind: "closing" });
+      else d.closingSlide(S, { ...s, recap: s.recap ? d.nb(s.recap) : "" });
       break;
     default:
       throw new Error(`unknown slide kind ${s.kind}`);

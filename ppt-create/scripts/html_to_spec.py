@@ -367,6 +367,7 @@ def parse(path, png=False, work="."):
 
     slides, n_fig = [], 0
     xitems = []  # figures for the crossing report: {where, frames, box}
+    shown = {}  # concept ledger (rule 15): concept -> the slide that first showed it on screen
     for sec in sections:
         kind = sec.get("data-kind")
         if kind == "appendix-index" and sec.has_attr("data-auto"):
@@ -376,6 +377,14 @@ def parse(path, png=False, work="."):
         canvas = sec.select_one(".canvas")
         where = f"[{len(slides) + 1}] {kind} {clean(canvas.find(['h1', 'h2'])) if canvas else ''}"[:80]
         rec = {"kind": kind, "part": part, "appendix": aid, "notes": notes_of(sec), "src_id": sec.get("id")}
+        ledger = lambda k: [c.strip().lower() for c in (sec.get(k) or "").split("|") if c.strip()]
+        intro_here = ledger("data-introduces")
+        for c_ in ledger("data-uses"):
+            if c_ not in shown and c_ not in intro_here:
+                lint.err(where, f"uses the concept {c_!r} before any slide shows it: add a slide (or a figure on an earlier "
+                                "slide) that shows it and declare introduces= there; the speaker notes do not count")
+        for c_ in intro_here:
+            shown.setdefault(c_, len(slides) + 1)
         src_text = clean(sec.select_one(".source"))
         if pre_id and part == pre_id:
             rec["preliminary"] = True
@@ -402,6 +411,19 @@ def parse(path, png=False, work="."):
         elif kind == "closing":
             rec.update(title=clean(canvas.find("h2")) or "Questions", recap=clean(canvas.select_one(".recap")),
                        citation=clean(canvas.select_one(".citation")), questions=[clean(li) for li in canvas.select(".questions > li")])
+            cfig = canvas.select_one(".area figure")
+            if cfig is not None:  # a closing slide drawn as a figure slide (e.g. the Summary picture again)
+                n_fig += 1
+                fid = sec.get("id") or f"fig{n_fig}"
+                box = (AREA_W, AREA_H) if canvas.select(".band > li") else (AREA_W, FAREA_H)  # no bullets: area + band
+                fig = figure_record(svgtext(cfig), where, lint, area=box, png=png, work=work)
+                if fig:
+                    fig["bb"] = fig.get("bb") or bounds([fig])
+                    if fig["shapes"]:
+                        check_fig(fig, fig["bb"], where, lint, box, sec.get("data-whitespace"))
+                        xitems.append({"where": where, "frames": [fig], "box": list(box)})
+                rec.update(area={"type": "figure", "id": fid, "fig": fig, "items": []},
+                           bullets=[clean(li) for li in canvas.select(".band > li")], source=src_text)
         elif kind == "content":
             area = canvas.select_one(".area")
             rec.update(title=clean(canvas.find("h2")), bullets=[clean(li) for li in canvas.select(".band > li")],
@@ -412,7 +434,7 @@ def parse(path, png=False, work="."):
             if fig_el is not None:
                 n_fig += 1
                 fid = sec.get("id") or f"fig{n_fig}"
-                box = (6.0, AREA_H) if stats else (AREA_W, AREA_H)
+                box = (6.0, AREA_H) if stats else (AREA_W, AREA_H) if rec["bullets"] else (AREA_W, FAREA_H)  # no bullets: area + band
                 fig = figure_record(svgtext(fig_el), where, lint, area=box, png=png, work=work)
                 if fig:
                     fig["bb"] = fig.get("bb") or bounds([fig])

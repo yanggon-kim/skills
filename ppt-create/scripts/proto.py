@@ -126,9 +126,15 @@ class Frame:
         self.step, self.svg, self.caption, self.notes = step, svgtext, caption, notes
 
 
-def _attrs(see, role, whitespace):
+def _attrs(see, role, whitespace, introduces=(), uses=()):
+    """introduces / uses: the concept ledger (rule 15). A slide lists the concepts its figure first shows on screen
+    (introduces) and the ones it relies on (uses); the lint stops on a concept used before any slide introduced it."""
+    def _ledger(name, items):
+        items = [items] if isinstance(items, str) else list(items or ())
+        return f' data-{name}="{E_("|".join(i.strip() for i in items if i.strip()))}"' if items else ""
     return ((f' data-see="{E_(see)}"' if see else "") + (f' data-role="{E_(role)}"' if role else "")
-            + (f' data-whitespace="{E_(whitespace)}"' if whitespace else ""))
+            + (f' data-whitespace="{E_(whitespace)}"' if whitespace else "")
+            + _ledger("introduces", introduces) + _ledger("uses", uses))
 
 
 class Table:
@@ -249,27 +255,38 @@ class Deck:
         return f'<div class="area">{inner}</div>'
 
     def content(self, title, part=None, figure=None, table=None, stats=None, cards=None, bullets=(), notes="",
-                source="", see=None, role=None, whitespace=None):
+                source="", see=None, role=None, whitespace=None, introduces=(), uses=()):
         """A figure-first slide: the area holds a figure, a table, headline numbers, cards, or a figure with
         up to four numbers beside it; 2-3 bullets go in the band. role: 'method' or 'result' (lint hints).
         whitespace: a reason, when a figure must keep proportions that leave over half its area empty (the
-        lint then warns instead of stopping)."""
-        attrs = _attrs(see, role, whitespace)
+        lint then warns instead of stopping). bullets=() on a figure slide: the figure also takes the band's height
+        (8.5 x 4.4 in), for an all-picture slide such as a big-picture summary. introduces / uses: the concept
+        ledger (rule 15)."""
+        attrs = _attrs(see, role, whitespace, introduces, uses)
         body = (f'<div class="canvas"><h2>{E_(title)}</h2>{self._area(figure, table, stats, cards)}{_bullets(bullets)}</div>'
                 + _notes(notes) + _source(source))
         self._add("content", part, body, attrs)
 
-    def story(self, title, frames, part=None, notes="", source="", see=None, role=None, whitespace=None):
+    def story(self, title, frames, part=None, notes="", source="", see=None, role=None, whitespace=None,
+              introduces=(), uses=()):
         """A storyboard: one deck slide per frame, joined by Morph. notes: an optional overview (goes before the
-        first frame's script). whitespace: as for content()."""
-        attrs = _attrs(see, role, whitespace)
+        first frame's script). whitespace, introduces, uses: as for content()."""
+        attrs = _attrs(see, role, whitespace, introduces, uses)
         lis = "".join(f'<li class="frame" data-step="{E_(f.step)}">{f.svg}<p class="frame-caption">{E_(f.caption)}</p>'
                       f'{_notes(f.notes, open_=False, summary="notes")}</li>' for f in frames)
         body = (f'<div class="canvas"><h2>{E_(title)}</h2><div class="farea"></div><div class="stepcol"></div></div>'
                 f'<ol class="storyboard">{lis}</ol>' + _notes(notes, summary="Overview (added to frame 1's notes)") + _source(source))
         self._add("story", part, body, attrs)
 
-    def closing(self, title="Questions", recap="", citation="", questions=(), notes="", part=None):
+    def closing(self, title="Questions", recap="", citation="", questions=(), notes="", part=None, figure=None, bullets=(), source=""):
+        """The closing slide. With figure=, it is drawn like a figure slide (title, figure, 2-3 bullets) on the
+        content layout instead of the Thank-You layout, e.g. to repeat the Summary picture; it still counts as
+        the deck's one closing slide. recap and questions are then not drawn."""
+        if figure:
+            body = (f'<div class="canvas"><h2>{E_(title)}</h2>{self._area(figure)}{_bullets(bullets)}</div>'
+                    + _notes(notes) + _source(source))
+            self._add("closing", part or (self.parts[-1][0] if self.parts else None), body)
+            return
         qs = "".join(f"<li>{E_(q)}</li>" for q in questions)
         body = (f'<div class="canvas"><h2>{E_(title)}</h2>' + (f'<p class="recap">{E_(recap)}</p>' if recap else "")
                 + (f'<p class="citation">{E_(citation)}</p>' if citation else "") + (f'<ol class="questions">{qs}</ol>' if qs else "")

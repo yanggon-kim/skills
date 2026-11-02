@@ -96,9 +96,16 @@ without the 12 pt raise and would move them differently from the deck.
 | title | the template's Title Opener: logo (its picture placeholder, top left); title + subtitle between the brand rules at y 2.00 and 3.30 (placeholder 0.70, 2.07, 8.50 × 1.21; 36 / 16 pt); byline (0.70, 3.45, 8.50 × 0.85) 12 pt across the rules' width; presenter y 4.90, date y 5.10 (the layout's slots) | | | | nothing else: no point list or numbered badges (the key points live on the Summary slide; lint ERROR, QA structure) |
 | outline / divider | title (0.70, 2.05, 2.85 × 0.61) 36 pt; rule and kicker in that 2.85 in column; parts listed from x 3.80, rows 0.87 in (six or more parts: 4.35 in / n; up to six keep 19.5 / 13.5 pt); dot and highlight card centred on the row text; kicker "Next: part k of N" (the outline: part 1, Summary, highlighted) | | | | the template's Section Divider, with a title placeholder instead of its fixed text |
 | closing | title on the brand rule; recap (0.70, 2.85, 4.9 × 1.45) 16 pt; citation y 4.40 12 pt; questions from x 5.85 | | | | the template's Thank You layout, with a title placeholder |
+| all-picture slide | 0.70 | 0.80 | 8.50 | 4.40 | a figure slide with no bullets, and a closing slide drawn with `figure=` (content layout): area + band, hairline covered |
 
 The numbers live in `deck_lib.js` (constants and `GEOM`) and reach `transplant.py` and `deck_qa.py`
 through the sidecar; change them there only, and re-run QA, which checks every layout against them.
+
+**All-picture slides.** A content slide with a figure and no bullets (the big-picture Summary, a closing
+slide drawn with `figure=`) draws the figure in the area plus the band: x 0.70, y 0.80, 8.50 × 4.40 in (to y 5.20). The
+layout's band hairline (y 4.07) is covered by a white bar under the figure. A closing slide with a figure is
+built on the content layout (`figSlide` with kind `closing`), so QA's structure check still finds one
+closing slide.
 
 ## Type floors and sizes
 
