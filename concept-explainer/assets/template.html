@@ -176,6 +176,28 @@ html.js .nojs-only { display: none; }
 .route .f-route-answer { fill: var(--accent); fill-opacity: 0.16; }
 .route a:hover rect, .route a:focus rect { stroke-width: 2.5; }
 .route .diagram-scroll svg { min-width: 0; max-width: 32rem; margin-inline: auto; }
+/* Route rail: on wide screens the route map's parts stay in the left margin as a subway line, and
+   the part being read lights up. Built by the "Route rail" script from data-summary; no slot. */
+.rail { display: none; }
+@media (min-width: 88rem) {
+  .js .rail {
+    display: block; position: fixed; z-index: 5; top: 5rem; width: 14rem;
+    left: max(1rem, env(safe-area-inset-left, 0px), calc(50vw - 27rem - 16rem));
+    max-height: calc(100vh - 7rem); overflow-y: auto; font-size: var(--step--1);
+  }
+}
+.rail-title { margin: 0 0 0.6rem; font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
+.rail ol { list-style: none; margin: 0; padding: 0; position: relative; }
+.rail ol::before { content: ""; position: absolute; left: 0.3rem; top: 0.6rem; bottom: 0.6rem; border-left: 1.5px solid var(--idle); }
+.rail .rail-band { position: relative; margin: 0.8rem 0 0.25rem; padding-left: 1.4rem; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--pencil); }
+.rail .rail-band:first-child { margin-top: 0; }
+.rail a { display: grid; grid-template-columns: 0.75rem 1fr; gap: 0.65rem; align-items: start; padding: 0.2rem 0; line-height: 1.35; color: var(--ink-soft); text-decoration: none; }
+.rail a:hover { color: var(--ink); }
+.rail-dot { position: relative; z-index: 1; width: 0.62rem; height: 0.62rem; margin-top: 0.32em; border-radius: 50%; border: 1.5px solid var(--pencil); background: var(--paper); }
+.rail a.is-read .rail-dot { background: var(--ink-soft); border-color: var(--ink-soft); }
+.rail a[aria-current] { color: var(--ink); font-weight: 600; }
+.rail a[aria-current] .rail-dot { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 3px var(--paper), 0 0 0 4.5px var(--accent); }
+[data-summary][id], section[id] { scroll-margin-top: 1.5rem; }
 .concept .source { font-family: var(--font-mono); font-size: var(--step--1); color: var(--ink-soft); }
 .foreshadow { border-left: 3px solid var(--mustard); padding-left: 0.75rem; }
 .foreshadow::before { content: "Preview"; display: block; font-family: var(--font-mono); font-size: var(--step--1); letter-spacing: 0.08em; text-transform: uppercase; color: var(--mustard); }
@@ -673,6 +695,83 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
     setPlaying(false);
     show(0, false);
   });
+})();
+</script>
+
+<script>
+/* Route rail: keep it unchanged. On wide screens it lists the route map's parts (every element with
+   an id and a data-summary, except the answer) under their section headings, plus one line for
+   each section without parts, as a subway line in the left margin. While the reader scrolls, the
+   part being read lights up and the parts above it are marked as read. It needs no slot: it
+   reads the page. Without JavaScript, or on a narrow screen, nothing changes. */
+(function () {
+  var main = document.querySelector("main") || document.body;
+  var ko = /^ko/.test(main.getAttribute("lang") || document.documentElement.lang || "");
+  var items = [], list = document.createElement("ol");
+  function add(el, text, isBand) {
+    var li = document.createElement("li");
+    if (isBand) {
+      li.className = "rail-band";
+      li.textContent = text;
+    } else {
+      var a = document.createElement("a"), dot = document.createElement("span"), t = document.createElement("span");
+      a.href = "#" + el.id;
+      dot.className = "rail-dot";
+      t.textContent = text;
+      a.appendChild(dot);
+      a.appendChild(t);
+      li.appendChild(a);
+      items.push({ el: el, a: a });
+    }
+    list.appendChild(li);
+  }
+  ["familiar", "problem", "mechanism", "try", "recap", "deeper"].forEach(function (id) {
+    var sec = document.getElementById(id);
+    if (!sec) return;
+    var h = sec.querySelector("h2"), name = h ? h.textContent.trim() : id;
+    var parts = Array.prototype.filter.call(sec.querySelectorAll("[data-summary][id]"), function (el) {
+      return !/\bconclusion\b/.test(el.getAttribute("data-part") || "");
+    });
+    if (parts.length) {
+      add(null, name, true);
+      parts.forEach(function (el) { add(el, el.getAttribute("data-summary"), false); });
+    } else {
+      add(sec, name, false);
+    }
+  });
+  if (items.length < 3) return;
+  var nav = document.createElement("nav"), title = document.createElement("p");
+  nav.className = "rail";
+  nav.setAttribute("aria-label", ko ? "읽는 위치" : "Where you are");
+  title.className = "rail-title";
+  title.textContent = ko ? "이해 경로" : "The route";
+  nav.appendChild(title);
+  nav.appendChild(list);
+  main.insertBefore(nav, main.firstChild);
+  var pending = false, current = -2;
+  function update() {
+    pending = false;
+    var line = window.innerHeight * 0.35, cur = -1;
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].el.getBoundingClientRect().top < line) cur = i;
+    }
+    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) cur = items.length - 1;
+    if (cur === current) return;
+    current = cur;
+    items.forEach(function (it, i) {
+      it.a.classList.toggle("is-read", i < cur);
+      if (i === cur) it.a.setAttribute("aria-current", "location");
+      else it.a.removeAttribute("aria-current");
+    });
+    if (cur >= 0) {
+      var a = items[cur].a, top = a.offsetTop, h = a.offsetHeight;
+      if (top < nav.scrollTop || top + h > nav.scrollTop + nav.clientHeight) nav.scrollTop = top - nav.clientHeight / 2;
+    }
+  }
+  function ask() { if (!pending) { pending = true; window.requestAnimationFrame(update); } }
+  window.addEventListener("scroll", ask, { passive: true });
+  window.addEventListener("resize", ask);
+  update();
 })();
 </script>
 
