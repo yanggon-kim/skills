@@ -329,11 +329,19 @@ def render(html):
             kind = W[k]
         cls = {"element": "f-paper s-pencil", "fact": "f-sheet s-ink", "assumption": "f-paper s-ink dashed",
                "reason": "f-sheet s-accent", "conclusion": "f-route-answer s-accent"}[k]
+        # the kind line is monospaced (about 0.6 em); shorten it when the box is narrow
+        choice = W["convention"] if n["conv"] else ""
+        room = g["w"] - 2 * PAD
+        mono = lambda txt: len(txt) * 14 * 0.6
+        if mono(kind + (" · " + choice if choice else "")) > room and n["band"] == "familiar":
+            kind = f"{block_no[n['id']]} · {W[k]}"
+        if choice and mono(kind + " · " + choice) > room:
+            choice = W["convention"].split()[-1]
         t = [f'<a href="#{escape(n["id"])}" data-key="route-{escape(n["id"])}">',
              f'<rect x="{g["x"]:.1f}" y="{g["y"]:.1f}" width="{g["w"]:.1f}" height="{g["h"]:.1f}" rx="3" class="{cls}" stroke-width="{2 if k in ("reason", "conclusion") else 1.2}"></rect>',
              f'<text x="{g["x"] + PAD:.1f}" y="{g["y"] + 15:.1f}" class="t-kind">{escape(kind)}']
-        if n["conv"]:
-            t.append(f'<tspan class="t-choice"> · {escape(W["convention"])}</tspan>')
+        if choice:
+            t.append(f'<tspan class="t-choice"> · {escape(choice)}</tspan>')
         t.append("</text>")
         for j, line in enumerate(g["lines"]):
             t.append(f'<text x="{g["x"] + PAD:.1f}" y="{g["y"] + KIND_H + 14 + j * LINE:.1f}" class="t-node">{escape(line)}</text>')
