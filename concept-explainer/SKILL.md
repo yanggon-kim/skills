@@ -1,6 +1,6 @@
 ---
 name: concept-explainer
-description: Explains any concept, mechanism, algorithm or idea as one self-contained HTML learning page — plain-voice prose, a ladder of figures that starts from the simplest background picture and adds one thing per rung until it shows the mechanism, explanation techniques picked per idea from a toolkit (contrasting cases, sweeps, extreme cases, cause chains, analogies), and one interaction where the reader predicts and then checks. When the concept is a process that changes over time, the page shows it as a timeline — a storyboard of frames on one fixed layout, plus an animated player built from them. The page ends with the expert's version of the reader's question — what a professional would ask next, the primary sources, methods and tools they would use, and an outside check — rewritten as a prompt to paste. Saved locally and published as a private claude.ai artifact. Use it whenever the user wants to understand something rather than get a fact — "explain X", "how does X work", "teach me X", "walk me through X step by step", "I don't get X", "X가 뭔지 설명해줘" — in any field (computer architecture, math, statistics, ML, systems, git, physics), even when they never ask for a page or HTML. Not for one-line lookups, debugging a specific bug, line-by-line walkthroughs of the user's code, slide decks, or documents others will edit.
+description: Explains any concept, mechanism, algorithm or idea as one self-contained HTML learning page — plain-voice prose, a ladder of figures that starts from the simplest background picture and adds one thing per rung until it shows the mechanism, explanation techniques picked per idea from a toolkit (contrasting cases, sweeps, extreme cases, cause chains), and one interaction where the reader predicts and then checks. When the concept is a process that changes over time, the page shows it as a timeline — a storyboard of frames on one fixed layout, plus an animated player built from them. The page ends with the expert's version of the reader's question — what a professional would ask next, the primary sources, methods and tools they would use, and an outside check — rewritten as a prompt to paste. Saved locally and published as a private claude.ai artifact. Use it whenever the user wants to understand something rather than get a fact — "explain X", "how does X work", "teach me X", "walk me through X step by step", "I don't get X", "X가 뭔지 설명해줘" — in any field (computer architecture, math, statistics, ML, systems, git, physics), even when they never ask for a page or HTML. Not for one-line lookups, debugging a specific bug, line-by-line walkthroughs of the user's code, slide decks, or documents others will edit.
 ---
 
 # Concept explainer
@@ -33,9 +33,8 @@ fits it, chosen from a toolkit in `references/techniques.md`. The toolkit has th
   ("This picture already shows the heart of Q6: with the same depth, the way you choose cuts
   changes the number of LUTs.")
 - **Chosen per unit, by the shape of the question it answers:** contrast, sweep, extreme cases,
-  sequence, cause chain, analogy, numbers and scale. "What is it?" points to contrasting cases;
-  "why?" to a cause chain; "what happens step by step?" to a sequence; an abstract idea with
-  nothing to draw, to an analogy.
+  sequence, cause chain, numbers and scale. "What is it?" points to contrasting cases; "why?" to
+  a cause chain; "what happens step by step?" to a sequence. The page uses no analogies.
 
 **Contrast is the strongest candidate**: two to four cases side by side on the same scene, one thing
 changed and the rest fixed, each labelled with its result (a cut with 2, 3 and 4 inputs, where 4
@@ -44,8 +43,7 @@ a candidate, not a rule: a procedure is clearer as a sequence and a "why" as a c
 
 Two rules keep the mix calm. One chosen technique per unit (two at most), changed only when the
 question's shape changes, never for variety. And every technique is drawn on the base scene, so the
-ladder never breaks; an analogy stands beside the base scene, never instead of it, and says where
-it breaks.
+ladder never breaks.
 
 When the concept changes over time — a procedure, a process, an algorithm's steps — the mechanism's
 figure becomes a **timeline**: a **storyboard** (every step as a frame on the same fixed layout, side by
@@ -265,7 +263,7 @@ Then review the page four ways. Each one alone must teach the same correct menta
    rung; fix it. For each unit, name the question's shape and the technique you chose; check that
    the technique fits the shape and sits on the base scene. Where the figure shows cases, name in
    one word what varies between them; if two things vary, or nothing does, fix the figure. Where it
-   uses an analogy, check that the page says where the analogy breaks. Check that the foreshadow
+   Check that the foreshadow
    points at something visible in its figure, stops before the answer, and is recalled.
 3. **Interaction only** — use the widget at its minimum, typical and maximum values; press reset
    twice.
