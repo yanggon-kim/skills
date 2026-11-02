@@ -26,8 +26,12 @@ fits it, chosen from a toolkit in `references/techniques.md`. The toolkit has th
 
 - **Defaults, in every unit:** a picture, a concrete example, the ladder, and show before you name.
   They are the user's preferred way to learn and never change.
-- **The page skeleton, in fixed places:** anchor in the familiar, problem first, predict first,
-  manipulate one input, a transfer question, a misconception.
+- **The page skeleton, in fixed places:** anchor in the familiar, foreshadow, problem first,
+  predict first, manipulate one input, a transfer question, a misconception. The foreshadow is one
+  sentence at the end of the ladder block whose figure first shows the main question's phenomenon:
+  a hint of what the mechanism will explain, never the answer, recalled by name in the mechanism.
+  ("This picture already shows the heart of Q6: with the same depth, the way you choose cuts
+  changes the number of LUTs.")
 - **Chosen per unit, by the shape of the question it answers:** contrast, sweep, extreme cases,
   sequence, cause chain, analogy, numbers and scale. "What is it?" points to contrasting cases;
   "why?" to a cause chain; "what happens step by step?" to a sequence; an abstract idea with
@@ -124,7 +128,9 @@ mechanism step and the widget. For each one, write the question it answers in th
 name the question's shape, and pick one Tier 3 technique (two at most) from the shape table. Write
 the plan as a small table for yourself: unit, question, shape, technique, why it fits, and how it
 sits on the base scene. If a row is hard to fill, the unit is unclear or holds two ideas; fix the
-unit first. The defaults and the page skeleton need no choice.
+unit first. Add one line for the foreshadow: the block whose figure first shows the main
+question's phenomenon, the hint sentence, and the place in the mechanism that recalls it. The
+other defaults and skeleton parts need no choice.
 
 ### 4. Write the prose
 
@@ -259,7 +265,8 @@ Then review the page four ways. Each one alone must teach the same correct menta
    rung; fix it. For each unit, name the question's shape and the technique you chose; check that
    the technique fits the shape and sits on the base scene. Where the figure shows cases, name in
    one word what varies between them; if two things vary, or nothing does, fix the figure. Where it
-   uses an analogy, check that the page says where the analogy breaks.
+   uses an analogy, check that the page says where the analogy breaks. Check that the foreshadow
+   points at something visible in its figure, stops before the answer, and is recalled.
 3. **Interaction only** — use the widget at its minimum, typical and maximum values; press reset
    twice.
 4. **Without JavaScript** — the predictions still have answers and the comparison still shows.

@@ -13,6 +13,7 @@ Reports three groups of findings:
   technique - each ladder block names its chosen technique (data-technique) and its markup matches:
               contrast/sweep/extremes need 2+ g.case panels, analogy a p.breaks sentence,
               cause-chain arrows, sequence a timeline
+  foreshadow- one or two p.foreshadow hints in the ladder, each recalled later by data-recalls
   voice     - sentence length, passive-voice suspects, filler and hype words
               (Korean is counted in space-separated eojeol, with a lower long-sentence limit)
 
@@ -254,6 +255,19 @@ def check_ladder(nc, add):
             elif b["keys"] and parent["keys"] and not (b["keys"] & parent["keys"]):
                 add("WARN", "ladder", f"block {name} shares no data-key with {b['on']}; its figure should be that figure plus one new thing")
         seen[b["id"]] = b
+    # the foreshadow: one or two hints in the ladder, each recalled after "What you already know"
+    shadows = [b for b in blocks if re.search(r'<p\b[^>]*\bclass="(?:[^"]*\s)?foreshadow(?:\s[^"]*)?"', b["span"])]
+    loose = len(re.findall(r'class="(?:[^"]*\s)?foreshadow(?:\s[^"]*)?"', body)) - len(shadows)
+    if not shadows:
+        add("WARN", "foreshadow", "no p.foreshadow in the ladder; end the block that first shows the main question's phenomenon with a one-sentence hint")
+    if len(shadows) > 2:
+        add("WARN", "foreshadow", f"{len(shadows)} foreshadows; keep one, two at most")
+    if loose > 0:
+        add("WARN", "foreshadow", "a p.foreshadow sits outside a .concept block; put it at the end of the block whose figure shows the phenomenon")
+    later = nc[fam[1]:]
+    for b in shadows:
+        if not re.search(r'\bdata-recalls="' + re.escape(b["id"]) + r'"', later):
+            add("WARN", "foreshadow", f"the foreshadow in {b['id']} is never recalled; add data-recalls=\"{b['id']}\" where the mechanism explains it")
     mech = section_span(nc, "mechanism")
     ladder_keys = set().union(*(b["keys"] for b in blocks))
     if mech and ladder_keys:

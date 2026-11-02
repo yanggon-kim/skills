@@ -21,7 +21,7 @@ according to the shape of the question each unit answers.
 | tier | techniques | when |
 |---|---|---|
 | **1. Defaults** | picture, concrete example, ladder, show then name | in every unit, always. They are the house method: the reader's favourite way to learn. |
-| **2. Page skeleton** | anchor in the familiar, problem first, predict first, manipulate one input, transfer question, confront a misconception | each in its fixed place on the page (`references/page-structure.md` § Section order). Not chosen; the structure provides them. |
+| **2. Page skeleton** | anchor in the familiar, foreshadow, problem first, predict first, manipulate one input, transfer question, confront a misconception | each in its fixed place on the page (`references/page-structure.md` § Section order). Not chosen; the structure provides them. |
 | **3. Chosen per unit** | contrast, sweep, extreme cases, sequence, cause chain, analogy, numbers and scale | one per unit (two at most), picked by the shape of the question the unit answers. |
 
 A **unit** is one ladder block, the problem section, one mechanism step, or the widget.
@@ -74,7 +74,9 @@ starts a new drawing, and the reader loses the base scene.
 
 ## 4. The technique plan
 
-Before drawing, write one line per unit, for yourself:
+Before drawing, write one line per unit, for yourself. Then add one line for the foreshadow: which
+block first shows the main question's phenomenon, the sentence, and where the mechanism recalls it.
+
 
 | unit | question in the reader's words | shape | technique | why it fits | how it sits on the base scene |
 |---|---|---|---|---|---|
@@ -100,11 +102,41 @@ These are described in full in `references/page-structure.md`. In short:
 | technique | place | what it does for the reader |
 |---|---|---|
 | anchor in the familiar | "What you already know", first paragraph | connects the new idea to something the reader has done |
+| foreshadow | the end of the ladder block whose figure first shows the main question's phenomenon; recalled in the mechanism | plants the main question early, on a picture the reader has just understood, so the mechanism lands on prepared ground |
 | problem first | "The problem" | makes the reader feel the cost before the mechanism removes it |
 | predict first | `<details class="predict">` before the widget or timeline | commits the reader to a guess, so the answer sticks or corrects |
 | manipulate one input | "Try it" widget | lets the reader test the model on cases the page did not show |
 | transfer question | `<details>` after the widget | checks that the model works on a new case |
 | confront a misconception | "A common misconception" | names the wrong belief, why it is tempting, and what is true |
+
+### Foreshadow
+
+The skeleton technique that needs the most care, so it gets a full entry.
+
+- **What it does.** While the ladder teaches a background concept, one sentence points at what the
+  same picture already shows about the page's main question, and stops there. The reader meets
+  the main tension on ground they have just understood; when the mechanism arrives, they
+  recognise it ("that is the difference from block 5"). Educational research calls this an advance
+  organiser: it prepares a place for the new idea before the idea comes.
+- **Where.** At the end of the ladder block whose figure **first** shows the phenomenon the main
+  question is about. Usually that is a contrast block, because the difference between its cases is
+  the phenomenon.
+- **A hint, never the answer.** Name the phenomenon or the tension that is visible in the figure,
+  not its cause or its fix. Q6: "This picture already shows the heart of Q6: with the same depth,
+  the way you choose cuts changes the number of LUTs" is a phenomenon; "choose a higher cut where a
+  node has slack" is the answer and stays in the mechanism.
+- **Grounded in the figure.** The sentence points at something the reader can see in that block's
+  figure (the two LUT counts under the two panels). A preview of something not on the page is a
+  promise the reader cannot check.
+- **Once or twice per page.** More than that and every block sounds like a trailer; the effect
+  fades.
+- **Always recalled.** The mechanism section calls it back by name and links to the block ("This is
+  the difference you saw in block 5"), with `data-recalls` on that element. A foreshadow that is
+  never recalled leaves a loose end.
+- **Example.** ILP page, block 4 (the whole-number rule): "The LP corner (3.5, 1.5) is not a dot.
+  Is the best dot next to it?" Recalled in the problem section, where rounding fails. FlowMap page,
+  block 2 (height and label): "The same y gets a different depth from each cut. What happens if
+  every node takes its shallowest cut?" Recalled in the mechanism's first step.
 
 ## 7. Tier 3 — chosen per unit (full entries)
 
@@ -223,6 +255,11 @@ Each ladder block, and each mechanism figure that uses a Tier 3 technique, names
 <div class="concept" id="c-ceiling" data-builds-on="c-whole" data-technique="analogy"> ... </div>
 <figure class="sheet wide" data-builds-on="c-whole" data-technique="contrast"> ... </figure>
 ```
+
+A foreshadow is `<p class="foreshadow">` inside its ladder block; the element in the mechanism (or
+the problem) that recalls it carries `data-recalls="<block id>"` and links to the block. The checker
+warns when the ladder has no foreshadow, when it has more than two, and when a foreshadow's block
+is never recalled.
 
 Allowed values: `contrast`, `sweep`, `extremes`, `sequence`, `cause-chain`, `analogy`, `scale`.
 Two values are separated by a space. `scripts/check_page.py` warns when a ladder block has no

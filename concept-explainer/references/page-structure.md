@@ -23,7 +23,7 @@ lesson.
 | 0 | **Title + one-sentence answer** | The title names the concept. Under it: the reader's question as an `h1`-adjacent line, then a one-sentence answer that states the central idea. A skimmer gets the idea here in under 20 seconds. | 1 question, 1–2 sentences |
 | 1 | **What you already know** | Three parts. (a) The plain background: anchor in something familiar, in prose only. (b) The concept ladder: one block per core concept the mechanism uses, in dependency order, each with a short explanation, one easy figure and one concrete example; each block builds on an earlier one, and its figure is that block's figure plus one new thing. (c) The words this page uses: a definition list (`dl.terms`), one plain line each, as a summary to glance back at. | 2–4 sentences + 2–8 blocks + 4–10 terms |
 | 2 | **The problem** | What goes wrong, or what is hard, without the mechanism. Make the reader feel the cost with a concrete case and, if possible, a number. Show it on a ladder figure when you can. | 1 short paragraph (+ figure) |
-| 3 | **The mechanism** | How it works, step by step, with as many figures as the steps need. Each figure climbs from the top rung of the concept ladder and adds one thing. Show each step working before you name it. | 2–6 short paragraphs + figures |
+| 3 | **The mechanism** | How it works, step by step, with as many figures as the steps need. Each figure climbs from the top rung of the concept ladder and adds one thing. It recalls the ladder's foreshadow where the hinted phenomenon is explained. Show each step working before you name it. | 2–6 short paragraphs + figures |
 | 4 | **Try it** | The interaction: predict, act, compare, explain. Its picture uses the same base scene. | widget + 2–3 sentences |
 | 5 | **The result** | What the mechanism buys, and what it costs. Every mechanism has a trade-off; name it. | 1 paragraph |
 | 6 | **A common misconception** | One wrong belief people hold, why it is tempting, and what is true instead. | 3–5 sentences |
@@ -59,6 +59,10 @@ is the most important part of "What you already know", and usually the longest.
   whether it fits).
 - **Its figure is a rung.** The figure is the figure of the block it builds on, plus one new thing.
   § Figures says how to draw it.
+- **Foreshadow the main question once.** The block whose figure first shows the phenomenon the
+  page is about ends with one `<p class="foreshadow">` sentence: what this picture already shows
+  about the main question, as a hint, never the answer. The mechanism recalls it by name with
+  `data-recalls`. One per page, two at most (`references/techniques.md` § Foreshadow).
 
 Markup (the template has it):
 
@@ -67,7 +71,10 @@ Markup (the template has it):
   <h3>4. Cut: the list of inputs a LUT takes</h3>
   <p>...</p>
   <figure class="sheet">...one SVG drawn on the base scene...</figure>
+  <p class="foreshadow">This picture already shows the heart of Q6: with the same depth, ...</p>
 </div>
+...
+<p data-recalls="c-cut">This is the difference you saw in <a href="#c-cut">block 4</a>: ...</p>
 ```
 
 Number the blocks only when the order is the real dependency order the reader should follow (it
@@ -363,7 +370,8 @@ After the page is built, review it four ways. Each one alone must teach the same
    the widget. Does it read as one picture growing, one thing per rung? Does any figure start over
    with a new layout, rename an element, or add two ideas at once? For each unit, does the chosen
    technique fit the question's shape? Where a figure shows cases, can you name in one word what
-   varies between them, and does a failing case show the boundary?
+   varies between them, and does a failing case show the boundary? Does the foreshadow point at
+   something visible in its figure, stop before the answer, and get recalled?
 3. **Interaction only.** Use the widget at minimum, typical and maximum values, then reset twice.
    Does each state's explanation match the prose?
 4. **Without JavaScript.** Do the predictions have answers? Is the comparison visible?

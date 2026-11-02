@@ -167,7 +167,10 @@ html.js .nojs-only { display: none; }
 .concept + .concept { border-top: 1px dashed var(--idle); padding-top: 1.5rem; }
 .concept .builds-on { color: var(--ink-soft); }
 .concept .builds-on::before { content: "↳ "; color: var(--accent); }
-.concept .breaks { font-size: var(--step--1); color: var(--ink-soft); border-left: 3px solid var(--mustard); padding-left: 0.75rem; }
+.concept .breaks { font-size: var(--step--1); color: var(--ink-soft); border-left: 3px dashed var(--pencil); padding-left: 0.75rem; }
+.foreshadow { border-left: 3px solid var(--mustard); padding-left: 0.75rem; }
+.foreshadow::before { content: "Preview"; display: block; font-family: var(--font-mono); font-size: var(--step--1); letter-spacing: 0.08em; text-transform: uppercase; color: var(--mustard); }
+:lang(ko) .foreshadow::before { content: "미리 보기"; }
 .misconception { display: grid; gap: 0.6rem; }
 .misconception .wrong { text-decoration: line-through; text-decoration-color: var(--accent); text-decoration-thickness: 2px; color: var(--ink-soft); }
 .terms { display: grid; grid-template-columns: minmax(7rem, max-content) 1fr; gap: 0.6rem 1.25rem; }
@@ -312,6 +315,12 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
         </div>
         <figcaption id="c2-caption">{{What is new (in coral) compared with block 1; what varies between the cases and what stays fixed; what each arrow means.}}</figcaption>
       </figure>
+      <!-- SLOT NOTE: the foreshadow. Put it in the ONE block (two at most per page) whose figure first
+           shows the phenomenon the page's main question is about. One sentence: what this picture
+           already shows about the main question, pointing at something visible in the figure. A
+           hint, never the answer. The mechanism recalls it with data-recalls. Delete it from blocks
+           that do not first show the phenomenon. -->
+      <p class="foreshadow">{{This picture already shows the heart of the main question: ... (the phenomenon, not its cause)}}</p>
     </div>
 
     <p class="label">{{"Words this page uses" in the page language}}</p>
@@ -361,6 +370,7 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
       <figcaption id="m1-caption">{{What the figure shows; what is new (in coral); what each arrow style means; what it simplifies, in one sentence.}}</figcaption>
     </figure>
 
+    <p data-recalls="c-{{second-concept}}">{{Recall the foreshadow where the mechanism explains it: "This is the difference you saw in block 2: ...", with a link to the block.}}</p>
     <p>{{Step 2 and the name for it, with its own figure if it adds a new thing. Then step 3 if needed.}}</p>
     <!-- SLOT NOTE: if the concept changes over time (a procedure, a process, an algorithm's steps),
          the mechanism's figures become a timeline drawn on the same base scene: a storyboard of
