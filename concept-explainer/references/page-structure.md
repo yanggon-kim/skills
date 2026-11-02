@@ -1,8 +1,8 @@
 # Page structure, figures and interaction
 
 ## Contents
-1. Section order (with the concept ladder, the words this page uses, and the expert's version of
-   your question)
+1. Section order (with the parts, the concept ladder, the words this page uses, and the expert's
+   version of your question)
 2. Figures: the ladder
 3. Interaction
 4. The four-way review
@@ -22,9 +22,9 @@ lesson.
 |---|---|---|---|
 | 0 | **Title + one-sentence answer** | The title names the concept. Under it: the reader's question as an `h1`-adjacent line, then a one-sentence answer that states the central idea. A skimmer gets the idea here in under 20 seconds. | 1 question, 1–2 sentences |
 | 1 | **What you already know** | Three parts. (a) The plain background: anchor in something familiar, in prose only. (b) The concept ladder: one block per core concept the mechanism uses, in dependency order, each with a short explanation, one easy figure and one concrete example; each block builds on an earlier one, and its figure is that block's figure plus one new thing. (c) The words this page uses: a definition list (`dl.terms`), one plain line each, as a summary to glance back at. | 2–4 sentences + 2–8 blocks + 4–10 terms |
-| 2 | **The problem** | What goes wrong, or what is hard, without the mechanism. Make the reader feel the cost with a concrete case and, if possible, a number. Show it on a ladder figure when you can. | 1 short paragraph (+ figure) |
-| 3 | **The mechanism** | How it works, step by step, with as many figures as the steps need. Each figure climbs from the top rung of the concept ladder and adds one thing. It recalls the ladder's foreshadow where the hinted phenomenon is explained. Show each step working before you name it. | 2–6 short paragraphs + figures |
-| 4 | **Try it** | The interaction: predict, act, compare, explain. Its picture uses the same base scene. | widget + 2–3 sentences |
+| 2 | **The problem** | What goes wrong, or what is hard, without the mechanism. Make the reader feel the cost with a concrete case and, if possible, a number. The assumption fails here, on the base scene. Show it on a ladder figure when you can. | 1 short paragraph (+ figure) |
+| 3 | **The mechanism** | How it works, step by step, with as many figures as the steps need. Each step is a reason and names the blocks it follows from. Each figure climbs from the top rung of the concept ladder and adds one thing. It recalls the ladder's foreshadow where the hinted phenomenon is explained. Show each step working before you name it. | 2–6 short paragraphs + figures |
+| 4 | **Try it** | The interaction: predict, act, compare, explain. Its picture uses the same base scene. Where the parts include a convention, the widget or the transfer question changes it and the reader rebuilds the result. | widget + 2–3 sentences |
 | 5 | **The result** | What the mechanism buys, and what it costs. Every mechanism has a trade-off; name it. | 1 paragraph |
 | 6 | **A common misconception** | One wrong belief people hold, why it is tempting, and what is true instead. | 3–5 sentences |
 | 7 | **Recap** | Three to five lines, one idea each, in the order the page taught them. | 3–5 bullets |
@@ -34,13 +34,54 @@ There is no "assumptions and limits" box. State each simplification in one plain
 the reader meets it: in the paragraph, the figure caption or the widget note that relies on it
 ("This page counts every gate as one unit of delay; real gates differ.").
 
+### The parts: what the ladder is made of
+
+The ladder climbs from small parts to the conclusion. Find the parts before you plan blocks
+(`SKILL.md` step 2), two ways, and merge them into one list:
+
+- **Take the conclusion apart from first principles.** Ask "why is this true?" of the conclusion
+  and of every answer, until you reach facts the reader can check. This finds the parts that carry
+  the argument.
+- **Peel the mechanism's figure.** Remove one thing at a time down to the simplest picture (§ Plan
+  it backwards). This finds the parts the reader needs before they can even read the argument: the
+  objects, the picture, the terms. First principles alone would skip them.
+
+Each part is one of five kinds:
+
+| kind | what it is | ILP example | where it goes | first technique to try |
+|---|---|---|---|---|
+| **element** | an object, picture or term the reader needs in order to read a fact or a reason | the grid of plans; the area line | a ladder block (plain ones stay in prose) | picture, show then name; contrast when it has a boundary |
+| **fact** | true and checkable without trusting the page: a law, a definition, a line of the code, a published or measured number | "x and y must be whole numbers" (the problem says so) | a ladder block, often with its element; one `p.source` line says how to check it | contrast or extreme cases that show the fact holding |
+| **reason** | a step that follows from earlier parts | "the LP score is a ceiling for every whole plan" | the mechanism; it names the parts it follows from | cause chain |
+| **assumption** | what the reader, or the field by habit, takes for granted and the conclusion overturns | "round the LP answer and you have the best whole plan" | the problem (it fails there) and the misconception | problem first; contrast (believed vs. real) |
+| **convention** | a fact people chose and could choose otherwise; mark it as a convention where the page states it | "one memory port" in a loop page; "a 0.5 rounding threshold" | the ladder states it; "Try it" or the transfer question changes it | manipulate one input |
+
+Rules for the parts:
+
+- **Stop at facts the reader can check.** "Experts say so" is not a fact; keep asking why. But not
+  everything reaches physics: a definition or a convention is a fine place to stop, as long as the
+  page says which it is. Do not force a derivation onto an idea that is a choice.
+- **Three to six facts per conclusion.** More means the scope is too wide or the facts are too
+  small; merge or cut. An element and the fact about it may share one block, so the parts list does
+  not have to make the page longer. The word budget stays the same.
+- **Every reason names its parts.** In its text ("Blocks 2 and 3 give ...") and in its markup
+  (`data-from`). A mechanism step that rests on a fact the ladder never showed is a hole; add the
+  fact to the ladder or cut the step.
+- **The assumption fails on the page.** The problem section shows it failing on a concrete case on
+  the base scene, before the mechanism explains why.
+- **A convention is a lever.** Where the parts hold a convention, the reader changes it in "Try it"
+  or in the transfer question and sees the result rebuilt from the same facts. This is the step
+  where the reader goes past the page: from "why it is so" to "what would change it".
+- **The parts list is for you.** The page does not print it. The reader sees blocks, steps and a
+  widget; the kinds show only through the `p.source` lines and the "follows from" phrases.
+
 ### The concept ladder
 
 The ladder is where the page teaches what the reader is missing before the mechanism needs it. It
 is the most important part of "What you already know", and usually the longest.
 
-- **Which concepts get a block.** Every concept that the mechanism's explanation relies on and that
-  a smart non-expert does not already have. A concept the reader surely has (an AND gate, a list)
+- **Which concepts get a block.** Every element and fact from the parts list that the mechanism's
+  reasons rely on and that a smart non-expert does not already have. A concept the reader surely has (an AND gate, a list)
   stays in the plain background as a sentence. The concept's own name usually gets the last block
   ("FlowMap in plain words") or none, if the mechanism section introduces it.
 - **Dependency order.** A block uses only concepts from the background or from earlier blocks. Write
@@ -50,7 +91,12 @@ is the most important part of "What you already know", and usually the longest.
   network ...") and in its markup (`data-builds-on`). It is usually the block just before it, but
   it can be any earlier one.
 - **One block = one idea.** A heading that names the concept, two to five short paragraphs, one
-  figure, and a concrete example worked on that figure.
+  figure, and a concrete example worked on that figure. The idea is one element, one fact, or an
+  element together with the fact about it.
+- **A fact shows its ground.** A block that states a fact ends with one `<p class="source">` line:
+  where the fact comes from or how the reader can check it ("Check: count the loads in the loop
+  body." "Source: Lecture 3, slide 12."). Mark a fact that is a convention as one in the same line
+  ("A convention: HLS gives an array one port unless you partition it.").
 - **One chosen technique per block.** Pick it from `references/techniques.md` by the shape of the
   question the block answers, and name it in `data-technique`. Contrasting cases (§ Figures, Show
   each idea in contrasting cases) are the strongest candidate and fit most "what is it?" blocks; a
@@ -68,15 +114,24 @@ is the most important part of "What you already know", and usually the longest.
 Markup (the template has it):
 
 ```html
-<div class="concept" id="c-cut" data-builds-on="c-network" data-technique="contrast">
+<div class="concept" id="c-cut" data-builds-on="c-network" data-technique="contrast" data-part="element fact">
   <h3>4. Cut: the list of inputs a LUT takes</h3>
   <p>...</p>
   <figure class="sheet">...one SVG drawn on the base scene...</figure>
+  <p class="source">Check: a 3-input LUT has 2^3 = 8 table rows; count the inputs of each cut.</p>
   <p class="foreshadow">This picture already shows the heart of Q6: with the same depth, ...</p>
 </div>
 ...
+<p data-part="assumption">The usual guess: ...</p>                      <!-- in #problem -->
+<p data-part="reason" data-from="c-cut c-depth">Blocks 4 and 5 give ...</p>  <!-- in #mechanism -->
 <p data-recalls="c-cut">This is the difference you saw in <a href="#c-cut">block 4</a>: ...</p>
+<details class="transfer" data-changes="c-port">...</details>          <!-- in #try -->
 ```
+
+`data-part` takes one or two of `element`, `fact`, `reason`, `assumption`, `convention`. A block
+that states a convention carries both `fact convention`. `data-from` lists the ids of the blocks or
+reasons a reason follows from. `data-changes` on the widget or a transfer question names the
+convention block it changes.
 
 Number the blocks only when the order is the real dependency order the reader should follow (it
 usually is, in a ladder).
@@ -366,7 +421,9 @@ The page must still teach with scripts off:
 After the page is built, review it four ways. Each one alone must teach the same correct model:
 
 1. **Text only.** Read the prose and skip the figures and the widget. Is the mechanism complete?
-   Does every analogy say where it breaks?
+   Start at the conclusion and walk down: does every reason name the blocks it follows from, and
+   does every chain end at a fact the page showed, with a way to check it? Does the problem show
+   the assumption failing? Does every analogy say where it breaks?
 2. **Figures only, in order.** Flip through every figure and caption from the first ladder block to
    the widget. Does it read as one picture growing, one thing per rung? Does any figure start over
    with a new layout, rename an element, or add two ideas at once? For each unit, does the chosen

@@ -14,6 +14,9 @@ Reports three groups of findings:
               contrast/sweep/extremes need 2+ g.case panels, analogy a p.breaks sentence (and
               only one, in "What you already know"), cause-chain arrows, sequence a timeline
   foreshadow- one or two p.foreshadow hints in the ladder, each recalled later by data-recalls
+  parts     - the conclusion's parts (data-part): facts in the ladder with a p.source line, an
+              assumption in the problem or misconception, reasons in the mechanism whose data-from
+              points at real ids, and every convention changed in "Try it" (data-changes)
   voice     - sentence length, passive-voice suspects, filler and hype words
               (Korean is counted in space-separated eojeol, with a lower long-sentence limit)
 
@@ -34,6 +37,7 @@ ALLOWED_SCRIPT_HOSTS = (
     "https://code.jquery.com/",
 )
 ALLOWED_STYLE_HOSTS = ("https://fonts.googleapis.com/",)
+PARTS = {"element", "fact", "reason", "assumption", "convention"}
 TECHNIQUES = {"contrast", "sweep", "extremes", "sequence", "cause-chain", "analogy", "scale"}
 EXPECTED_SECTIONS = ["familiar", "problem", "mechanism", "try", "result", "misconception", "recap", "deeper"]
 PROSE_TAGS = {"p", "li", "dd", "dt", "summary", "figcaption", "h1", "h2", "h3", "blockquote"}
@@ -290,6 +294,75 @@ def check_ladder(nc, add):
                 add("WARN", "ladder", f"a mechanism figure builds on {on!r}, which is not a concept block")
 
 
+def check_parts(nc, add):
+    """The conclusion's parts: references/page-structure.md § The parts."""
+    tags = list(re.finditer(r'<[a-z][a-z0-9]*\b[^>]*\bdata-part="([^"]*)"[^>]*>', nc))
+    if not tags:
+        add("WARN", "parts", "no data-part anywhere; take the conclusion apart (SKILL.md step 2) and mark each unit's part")
+        return
+    ids = set(re.findall(r'\bid="([^"]+)"', nc))
+    spans = {k: section_span(nc, k) for k in ("familiar", "problem", "mechanism", "try", "misconception")}
+
+    def where(pos):
+        for k, sp in spans.items():
+            if sp and sp[0] <= pos < sp[1]:
+                return k
+        return None
+
+    fam = spans["familiar"]
+    facts = conventions = 0
+    has_assumption = has_reason = False
+    for m in tags:
+        kinds = m.group(1).split()
+        bad = [k for k in kinds if k not in PARTS]
+        tid = re.search(r'\bid="([^"]+)"', m.group(0))
+        name = tid.group(1) if tid else m.group(0)[:50]
+        if bad:
+            add("WARN", "parts", f"{name}: unknown part {', '.join(bad)}; use {', '.join(sorted(PARTS))}")
+        if len(kinds) > 2:
+            add("WARN", "parts", f"{name}: {len(kinds)} parts; one unit carries one part, two at most (an element with its fact)")
+        sec = where(m.start())
+        if "fact" in kinds:
+            facts += 1
+            if sec == "familiar" and 'class="concept' in m.group(0):
+                # the block's span runs to the next concept block or the end of the section
+                nxt = re.search(r'<div\b[^>]*\bclass="(?:[^"]*\s)?concept(?:\s[^"]*)?"', nc[m.end():fam[1]])
+                span = nc[m.end():m.end() + nxt.start()] if nxt else nc[m.end():fam[1]]
+                if not re.search(r'<p\b[^>]*\bclass="(?:[^"]*\s)?source(?:\s[^"]*)?"', span):
+                    add("WARN", "parts", f"fact block {name} has no p.source line saying where the fact comes from or how to check it")
+        if "convention" in kinds:
+            conventions += 1
+            if tid and not re.search(r'\bdata-changes="[^"]*\b' + re.escape(tid.group(1)) + r'\b', nc):
+                add("WARN", "parts", f"convention {name} is never changed; let the widget or a transfer question change it (data-changes=\"{tid.group(1)}\")")
+        if "assumption" in kinds:
+            has_assumption = True
+            if sec not in ("problem", "misconception"):
+                add("WARN", "parts", f"the assumption {name} sits outside the problem and the misconception; show it failing in the problem")
+        if "reason" in kinds:
+            has_reason = True
+            frm = re.search(r'\bdata-from="([^"]*)"', m.group(0))
+            if not frm or not frm.group(1).split():
+                add("WARN", "parts", f"reason {name} does not say what it follows from (data-from)")
+            else:
+                missing = [f for f in frm.group(1).split() if f not in ids]
+                if missing:
+                    add("WARN", "parts", f"reason {name} follows from {', '.join(missing)}, which is not an id on the page")
+            if sec != "mechanism":
+                add("WARN", "parts", f"reason {name} sits outside the mechanism")
+    if facts == 0:
+        add("WARN", "parts", "no fact part; the ladder should show the checkable facts the conclusion rests on")
+    elif facts > 6:
+        add("WARN", "parts", f"{facts} fact parts; three to six carry one conclusion, so merge or cut")
+    if not has_assumption:
+        add("WARN", "parts", "no assumption part; name what the reader takes for granted and show it failing in the problem")
+    if not has_reason:
+        add("WARN", "parts", "no reason part in the mechanism; each step should say which blocks it follows from")
+    for c in re.findall(r'\bdata-changes="([^"]*)"', nc):
+        for cid in c.split():
+            if cid not in ids:
+                add("WARN", "parts", f"data-changes names {cid!r}, which is not an id on the page")
+
+
 def check(path):
     raw = open(path, encoding="utf-8").read()
     findings = []
@@ -385,6 +458,7 @@ def check(path):
         if not any(fam.start() < t < end for t in terms_at):
             add("WARN", "structure", 'dl.terms is not inside the "What you already know" section')
     check_ladder(nc, add)
+    check_parts(nc, add)
     # timeline: a storyboard of frames that the template's script turns into a player
     starts = [m.start() for m in re.finditer(r'<figure[^>]*class="[^"]*\btimeline\b', nc)]
     for n_tl, a in enumerate(starts, 1):

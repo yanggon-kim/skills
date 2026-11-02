@@ -47,6 +47,17 @@ contrast is the strongest general tool.
 Contrast is the strongest candidate, not a rule. Use it whenever the unit's idea is a property
 that a reader can see change; skip it when another shape fits better (a pure procedure, a cause).
 
+The unit's **part** (`references/page-structure.md` § The parts) is a second hint. The question's
+shape decides; the part suggests where to look first:
+
+| part | usual question | first candidates |
+|---|---|---|
+| element | "What is it?" | contrast (example / non-example), or the plain picture alone |
+| fact | "Is that really so? When does it hold?" | contrast or extreme cases that show the fact holding, and failing where it stops |
+| reason | "Why does that follow?" | cause chain, whose links point at the blocks it follows from |
+| assumption | "Isn't it obvious that ...?" | contrast: what the reader expects beside what really happens |
+| convention | "What if we chose differently?" | sweep or before / after in the widget or the transfer question |
+
 ## 3. How to combine: rules that keep the page calm
 
 A toolkit invites two failures. These rules prevent them.
@@ -78,12 +89,12 @@ Before drawing, write one line per unit, for yourself. Then add one line for the
 block first shows the main question's phenomenon, the sentence, and where the mechanism recalls it.
 
 
-| unit | question in the reader's words | shape | technique | why it fits | how it sits on the base scene |
-|---|---|---|---|---|---|
-| c-area | "What does the area limit allow?" | boundary | contrast: example / non-example | the line is the boundary; one plan outside shows it | three plans on the grid, same line |
-| c-ceiling | "What is this ceiling?" | abstract | analogy | nothing physical to point at yet | room-and-ceiling picture beside the grid, parts matched |
-| c-corner | "Why is the best point a corner?" | why | cause chain | the answer is a chain of three facts | the score line on the grid, three arrows |
-| widget | "When does rounding work?" | depends on input | sweep + extreme cases | budget is a real input; the small budgets show LP = ILP | the grid with the budget line moving |
+| unit | part | question in the reader's words | shape | technique | why it fits | how it sits on the base scene |
+|---|---|---|---|---|---|---|
+| c-area | element + fact | "What does the area limit allow?" | boundary | contrast: example / non-example | the line is the boundary; one plan outside shows it | three plans on the grid, same line |
+| c-ceiling | element | "What is this ceiling?" | abstract | analogy | nothing physical to point at yet | room-and-ceiling picture beside the grid, parts matched |
+| m-corner | reason (from c-area, c-score) | "Why is the best point a corner?" | why | cause chain | the answer is a chain of three facts | the score line on the grid, three arrows |
+| widget | convention (the budget) | "When does rounding work?" | depends on input | sweep + extreme cases | budget is a real input; the small budgets show LP = ILP | the grid with the budget line moving |
 
 If a cell is hard to fill, the unit is not ready: usually its question is unclear, or it holds two
 ideas and should be two units.
@@ -261,6 +272,11 @@ Each ladder block, and each mechanism figure that uses a Tier 3 technique, names
 <div class="concept" id="c-ceiling" data-builds-on="c-whole" data-technique="analogy"> ... </div>
 <figure class="sheet wide" data-builds-on="c-whole" data-technique="contrast"> ... </figure>
 ```
+
+Each unit also names its part with `data-part` (`element`, `fact`, `reason`, `assumption`,
+`convention`; one or two), a reason lists what it follows from in `data-from`, and the widget or
+transfer question that changes a convention names it in `data-changes`. The rules and checks are in
+`references/page-structure.md` § The parts.
 
 A foreshadow is `<p class="foreshadow">` inside its ladder block; the element in the mechanism (or
 the problem) that recalls it carries `data-recalls="<block id>"` and links to the block. The checker

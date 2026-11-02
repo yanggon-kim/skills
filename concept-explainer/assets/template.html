@@ -168,6 +168,7 @@ html.js .nojs-only { display: none; }
 .concept .builds-on { color: var(--ink-soft); }
 .concept .builds-on::before { content: "↳ "; color: var(--accent); }
 .concept .breaks { font-size: var(--step--1); color: var(--ink-soft); border-left: 3px dashed var(--pencil); padding-left: 0.75rem; }
+.concept .source { font-family: var(--font-mono); font-size: var(--step--1); color: var(--ink-soft); }
 .foreshadow { border-left: 3px solid var(--mustard); padding-left: 0.75rem; }
 .foreshadow::before { content: "Preview"; display: block; font-family: var(--font-mono); font-size: var(--step--1); letter-spacing: 0.08em; text-transform: uppercase; color: var(--mustard); }
 :lang(ko) .foreshadow::before { content: "미리 보기"; }
@@ -246,8 +247,11 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
          most one block per page, and only here in "What you already know"), an analogy block draws the familiar picture beside a base-scene picture and adds, after the figure,
          <p class="breaks">Where the analogy breaks: ...</p>. Plan it backwards from the
          mechanism's figure: references/page-structure.md § The concept ladder and § Figures. Copy
-         the second block as many times as you need. -->
-    <div class="concept" id="c-{{first-concept}}" data-technique="contrast">
+         the second block as many times as you need.
+         Each block is one part from the parts list (references/page-structure.md § The parts):
+         data-part="element", "fact", "element fact", or "fact convention". A block that states a
+         fact ends with one p.source line saying where it comes from or how to check it. -->
+    <div class="concept" id="c-{{first-concept}}" data-technique="contrast" data-part="element">
       <h3>{{1. First core concept}}</h3>
       <p>{{What it is, shown on the figure before it is named. One concrete example.}}</p>
       <figure class="sheet" aria-labelledby="c1-caption">
@@ -277,7 +281,7 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
       </figure>
     </div>
 
-    <div class="concept" id="c-{{second-concept}}" data-builds-on="c-{{first-concept}}" data-technique="contrast">
+    <div class="concept" id="c-{{second-concept}}" data-builds-on="c-{{first-concept}}" data-technique="contrast" data-part="element fact">
       <h3>{{2. Second core concept}}</h3>
       <p class="label builds-on">{{"Builds on" in the page language}}: {{1. First core concept}}</p>
       <p>{{Start from the earlier figure ("Take the picture from block 1 ..."), add one thing, and show what it means with one concrete example.}}</p>
@@ -315,6 +319,7 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
         </div>
         <figcaption id="c2-caption">{{What is new (in coral) compared with block 1; what varies between the cases and what stays fixed; what each arrow means.}}</figcaption>
       </figure>
+      <p class="source">{{"Source" or "Check" in the page language}}: {{where the fact comes from, or how the reader can check it. If it is a convention, say so.}}</p>
       <!-- SLOT NOTE: the foreshadow. Put it in the ONE block (two at most per page) whose figure first
            shows the phenomenon the page's main question is about. One sentence: what this picture
            already shows about the main question, pointing at something visible in the figure. A
@@ -334,7 +339,8 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
 
   <section id="problem">
     <h2>{{The problem}}</h2>
-    <p>{{A concrete case of what goes wrong without the mechanism. A number if possible.}}</p>
+    <p data-part="assumption">{{The assumption the reader (or the field by habit) brings, as people say it: "Surely ...".}}</p>
+    <p>{{A concrete case where that assumption fails, on the base scene. A number if possible.}}</p>
   </section>
 
   <section id="mechanism">
@@ -370,6 +376,9 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
       <figcaption id="m1-caption">{{What the figure shows; what is new (in coral); what each arrow style means; what it simplifies, in one sentence.}}</figcaption>
     </figure>
 
+    <!-- SLOT NOTE: each mechanism step is a reason. It names, in its text and in data-from, the
+         blocks (or earlier reasons) it follows from. No step rests on a fact the ladder did not show. -->
+    <p data-part="reason" data-from="c-{{first-concept}} c-{{second-concept}}">{{A reason: "Blocks 1 and 2 give ...", shown working on the figure.}}</p>
     <p data-recalls="c-{{second-concept}}">{{Recall the foreshadow where the mechanism explains it: "This is the difference you saw in block 2: ...", with a link to the block.}}</p>
     <p>{{Step 2 and the name for it, with its own figure if it adds a new thing. Then step 3 if needed.}}</p>
     <!-- SLOT NOTE: if the concept changes over time (a procedure, a process, an algorithm's steps),
@@ -417,6 +426,14 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
       <!-- SLOT NOTE: draw the widget's picture on the page's base scene, so the reader recognises it
            from the ladder. If the model simplifies reality, say how in one sentence here. -->
     </div>
+
+    <!-- SLOT NOTE: the transfer question. Where the parts hold a convention, change it here (or in
+         the widget) and let the reader rebuild the result from the same facts; data-changes names
+         the convention's block. Delete data-changes if the page has no convention. -->
+    <details class="predict transfer" data-changes="c-{{second-concept}}">
+      <summary>{{Transfer: "What if we chose differently? ..." — a case the page did not show.}}</summary>
+      <p>{{The answer, rebuilt from the same facts, and why.}}</p>
+    </details>
   </section>
 
   <section id="result">

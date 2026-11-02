@@ -1,6 +1,6 @@
 ---
 name: concept-explainer
-description: Explains any concept, mechanism, algorithm or idea as one self-contained HTML learning page — plain-voice prose, a ladder of figures that starts from the simplest background picture and adds one thing per rung until it shows the mechanism, explanation techniques picked per idea from a toolkit (contrasting cases, sweeps, extreme cases, cause chains, analogies), and one interaction where the reader predicts and then checks. When the concept is a process that changes over time, the page shows it as a timeline — a storyboard of frames on one fixed layout, plus an animated player built from them. The page ends with the expert's version of the reader's question — what a professional would ask next, the primary sources, methods and tools they would use, and an outside check — rewritten as a prompt to paste. Saved locally and published as a private claude.ai artifact. Use it whenever the user wants to understand something rather than get a fact — "explain X", "how does X work", "teach me X", "walk me through X step by step", "I don't get X", "X가 뭔지 설명해줘" — in any field (computer architecture, math, statistics, ML, systems, git, physics), even when they never ask for a page or HTML. Not for one-line lookups, debugging a specific bug, line-by-line walkthroughs of the user's code, slide decks, or documents others will edit.
+description: Explains any concept, mechanism, algorithm or idea as one self-contained HTML learning page — plain-voice prose, a ladder of figures that starts from the simplest background picture and adds one thing per rung until it shows the mechanism, rungs found by taking the conclusion apart from first principles (facts, reasons, the assumption it overturns) plus the elements needed to read them, explanation techniques picked per idea from a toolkit (contrasting cases, sweeps, extreme cases, cause chains, analogies), and one interaction where the reader predicts and then checks. When the concept is a process that changes over time, the page shows it as a timeline — a storyboard of frames on one fixed layout, plus an animated player built from them. The page ends with the expert's version of the reader's question — what a professional would ask next, the primary sources, methods and tools they would use, and an outside check — rewritten as a prompt to paste. Saved locally and published as a private claude.ai artifact. Use it whenever the user wants to understand something rather than get a fact — "explain X", "how does X work", "teach me X", "walk me through X step by step", "I don't get X", "X가 뭔지 설명해줘" — in any field (computer architecture, math, statistics, ML, systems, git, physics), even when they never ask for a page or HTML. Not for one-line lookups, debugging a specific bug, line-by-line walkthroughs of the user's code, slide decks, or documents others will edit.
 ---
 
 # Concept explainer
@@ -20,6 +20,16 @@ scene (the same layout, names and shapes), and each one is an earlier figure plu
 The first rungs teach the background concepts with easy pictures; the mechanism's figures are the
 top rungs. A reader who has read the easy picture can then read the hard one, because the hard one
 is the same picture with a little more on it.
+
+**What goes on the rungs.** The rungs are the conclusion's **parts**, found two ways and merged
+into one list. First, take the conclusion apart from first principles: ask "why is this true?"
+until you reach facts the reader can check (a law of physics, a definition, a line of code, a
+measured number); the answers on the way are **reasons**, and the beliefs the conclusion overturns
+are **assumptions**. Some facts are **conventions**: people chose them and could choose otherwise,
+and that is where the reader can change the outcome. Second, as before, peel the mechanism's figure
+down to the **elements** a reader needs to read those facts and reasons at all (the chart, the
+term, the object). Sort the parts by what needs what, and climb: small parts first, the conclusion
+last. Every part is still explained the house way, with a picture and a concrete example.
 
 Different ideas are easy in different ways, so the page explains each one with the technique that
 fits it, chosen from a toolkit in `references/techniques.md`. The toolkit has three tiers:
@@ -98,14 +108,38 @@ page names in one line what it leaves out. Two thin explanations teach less than
 the request names two things to contrast ("rebase vs merge"), the contrast itself is the one
 concept.
 
-### 2. Get the facts right before writing
+### 2. Take the conclusion apart, and get the facts right
 
-A polished page makes a wrong explanation look trustworthy, so accuracy comes first.
+A page built from a list of topics explains topics; a page built from the conclusion's parts
+explains why the conclusion is true. Find the parts before writing, with the user's concrete case
+in mind. Read `references/page-structure.md` § The parts.
 
-- List **five facts** the page depends on, **the terms the page will use** (every word a smart
-  non-expert might not know, typically four to eight, including the concept's own name), **one
-  common misconception**, and **one real-world example** (a real system, product, dataset or event
-  — not a toy story). The real example usually belongs in "the problem" or "the result".
+1. **Write the conclusion** in one sentence: the answer to the central question. It becomes the
+   one-sentence answer under the title.
+2. **Ask "why?" until you reach facts.** For the conclusion, and then for each answer, ask why it
+   is true. Each answer that follows from others is a **reason**. Stop at a **fact**: something the
+   reader can check without trusting you (a law, a definition, a line of the code, a measured or
+   published number). Usually three to six facts carry one conclusion. If you need more, the scope
+   is too wide; if one fact is "experts say so", keep asking.
+3. **Name the assumption and the conventions.** The **assumption** is what the reader, or the field
+   by habit, takes for granted that the conclusion overturns ("adding a pipeline pragma gives II =
+   1"; "rounding the LP answer gives the best whole answer"). It usually is the page's misconception
+   too. Mark every fact that is a **convention**: a choice people made and could make otherwise
+   (one memory port, one accumulator). Not everything reaches physics: a definition or a convention
+   is a fine place to stop, as long as the page says which it is.
+4. **List the elements.** For each fact and reason, list what the reader must already know to read
+   it: the objects, the picture, the terms. These are the old ladder's parts; plain ones the reader
+   surely has stay in prose.
+5. **Sort by dependency.** Write which part needs which. The sorted list is the reading order:
+   elements and facts in "What you already know", the assumption in the problem, reasons in the
+   mechanism, the conclusion last, conventions changed in "Try it".
+
+Then make the parts right, and collect what the rest of the page needs:
+
+- Also list **the terms the page will use** (every word a smart non-expert might not know,
+  typically four to eight, including the concept's own name) and **one real-world example** (a real
+  system, product, dataset or event — not a toy story). The real example usually belongs in "the
+  problem" or "the result".
 - For each fact, ask: do I know this firmly? For recent topics, niche details, exact numbers, or
   anything about the user's own code or paper, check it — search the web or read the file — before
   you print it.
@@ -124,11 +158,13 @@ A polished page makes a wrong explanation look trustworthy, so accuracy comes fi
 
 ### 3. Choose the explanation techniques
 
-Read `references/techniques.md`. List the page's units: each ladder block, the problem, each
-mechanism step and the widget. For each one, write the question it answers in the reader's words,
-name the question's shape, and pick one Tier 3 technique (two at most) from the shape table. Write
-the plan as a small table for yourself: unit, question, shape, technique, why it fits, and how it
-sits on the base scene. If a row is hard to fill, the unit is unclear or holds two ideas; fix the
+Read `references/techniques.md`. List the page's units from the parts list: each ladder block (one
+element, one fact, or an element with its fact), the problem (the assumption), each mechanism step
+(a reason) and the widget (a convention to change, or the main input). For each one, write the
+question it answers in the reader's words, name the question's shape, and pick one Tier 3 technique
+(two at most) from the shape table; the part's kind suggests a first candidate. Write the plan as a
+small table for yourself: unit, part, question, shape, technique, why it fits, and how it sits on
+the base scene. If a row is hard to fill, the unit is unclear or holds two ideas; fix the
 unit first. Add one line for the foreshadow: the block whose figure first shows the main
 question's phenomenon, the hint sentence, and the place in the mechanism that recalls it. The
 other defaults and skeleton parts need no choice.
@@ -141,12 +177,18 @@ page uses) → the problem → the mechanism → try it → the result → a com
 the expert's version of your question.
 
 "What you already know" has three parts. First, the truly easy background, in prose only. Second,
-the **concept ladder**: one block for each core concept the mechanism will use, in dependency order,
-each with a short explanation, one easy figure and one concrete example. Every block after the
+the **concept ladder**: one block for each element and fact the mechanism will use, in dependency
+order, each with a short explanation, one easy figure and one concrete example. A fact block shows
+the fact holding on its figure and says, in one `p.source` line, how the reader can check it. Every block after the
 first builds on an earlier block, says so in its text ("Take the cut figure from above and ..."),
 and its figure is that block's figure plus one new thing. Third, the term list: every word the rest
 of the page uses, one plain line each, as a summary the reader can glance back at. Use exactly
 those words afterwards, one name per concept.
+
+The rest of the page climbs the same parts. The problem shows the assumption failing on a concrete
+case. Each mechanism step is a reason and says which blocks it follows from ("Blocks 2 and 3 give
+...") — no step may rest on a fact the ladder did not show. "Try it" or the transfer question
+changes a convention and lets the reader rebuild the result.
 
 Show before you name: each ladder block shows its concept working on its figure before it names
 it, and the mechanism section still shows each new term working before it relies on it.
@@ -166,11 +208,11 @@ Read `references/page-structure.md` § Figures before drawing. Plan the ladder b
 1. **Draw the top rung first.** Sketch the mechanism's richest figure: the one that shows the
    answer to the reader's question. Its layout, element names and shapes become the page's **base
    scene**.
-2. **List the dependencies.** Write which concept needs which ("depth needs cut; cut needs the
-   network; the network needs the LUT").
-3. **Peel off one thing at a time.** From the top rung, remove one element or one idea per step,
-   down to the simplest picture. Each step down is one rung: the figure of one concept block, of the
-   problem, or of a mechanism step.
+2. **List the dependencies.** Use step 2's parts list: which reason needs which facts, which fact
+   needs which elements ("depth needs cut; cut needs the network; the network needs the LUT").
+3. **Peel off one part at a time.** From the top rung, remove one part per step — a reason, a fact
+   or an element — down to the simplest picture. Each step down is one rung: the figure of one
+   concept block, of the problem, or of a mechanism step.
 4. **Reverse the list.** That is the reading order. The first ladder block shows the simplest
    picture; each later figure adds one thing, in coral, while what the reader already knows keeps
    its earlier look.
@@ -178,7 +220,7 @@ Read `references/page-structure.md` § Figures before drawing. Plan the ladder b
    base scene as its entry in `references/techniques.md` says. For contrast, sweep and extreme
    cases, decide which one thing varies and what stays fixed; if you cannot name it, the figure is
    not ready. Mark each ladder block (and each mechanism figure that uses a Tier 3 technique) with
-   `data-technique`.
+   `data-technique`, and each unit with its part (`data-part`, and `data-from` on a reason).
 
 Generate every figure from the base scene with one short script (Node or Python) and the same
 drawing function, instead of hand-copying SVG, so positions and names cannot drift. Give each
@@ -244,8 +286,8 @@ Run the mechanical check and fix every error it reports:
 python3 <skill-dir>/scripts/check_page.py <page.html>
 ```
 
-It checks the page contract, the structure (figures, the concept ladder and its shared keys,
-interaction, sections), and the voice (sentence length, passive-voice suspects in English, filler
+It checks the page contract, the structure (figures, the concept ladder and its shared keys, the
+parts and what each reason follows from, interaction, sections), and the voice (sentence length, passive-voice suspects in English, filler
 words). It is a report, not a judge. Read its
 warnings and decide.
 
@@ -259,7 +301,9 @@ overflow that is not there.
 
 Then review the page four ways. Each one alone must teach the same correct mental model:
 
-1. **Text only** — read the prose and skip the figures and the widget.
+1. **Text only** — read the prose and skip the figures and the widget. Start at the conclusion and
+   walk down: every reason names the blocks it follows from, and every chain ends at a fact the
+   page showed and the reader can check.
 2. **Figures only, in order** — flip through the figures and captions from the first ladder block
    to the mechanism. They must read as one story that grows one thing per rung. A figure that
    starts over with a new layout, renames an element, or adds two new ideas at once is a broken
