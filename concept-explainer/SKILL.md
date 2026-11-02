@@ -1,6 +1,6 @@
 ---
 name: concept-explainer
-description: Explains any concept, mechanism, algorithm or idea as one self-contained HTML learning page — plain-voice prose, a ladder of figures that starts from the simplest background picture and adds one thing per rung until it shows the mechanism, rungs found by taking the conclusion apart from first principles (facts, reasons, the assumption it overturns) plus the elements needed to read them, explanation techniques picked per idea from a toolkit (contrasting cases, sweeps, extreme cases, cause chains, analogies), and one interaction where the reader predicts and then checks. When the concept is a process that changes over time, the page shows it as a timeline — a storyboard of frames on one fixed layout, plus an animated player built from them. The page ends with the expert's version of the reader's question — what a professional would ask next, the primary sources, methods and tools they would use, and an outside check — rewritten as a prompt to paste. Saved locally and published as a private claude.ai artifact. Use it whenever the user wants to understand something rather than get a fact — "explain X", "how does X work", "teach me X", "walk me through X step by step", "I don't get X", "X가 뭔지 설명해줘" — in any field (computer architecture, math, statistics, ML, systems, git, physics), even when they never ask for a page or HTML. Not for one-line lookups, debugging a specific bug, line-by-line walkthroughs of the user's code, slide decks, or documents others will edit.
+description: Explains any concept, mechanism, algorithm or idea as one self-contained HTML learning page — plain-voice prose, a ladder of figures that starts from the simplest background picture and adds one thing per rung until it shows the mechanism, rungs found by taking the conclusion apart from first principles (facts, reasons, the assumption it overturns) plus the elements needed to read them, a route map under the answer (an advance organizer: one-line boxes for those parts and arrows to the answer), explanation techniques picked per idea from a toolkit (contrasting cases, sweeps, extreme cases, cause chains, analogies), and one interaction where the reader predicts and then checks. When the concept is a process that changes over time, the page shows it as a timeline — a storyboard of frames on one fixed layout, plus an animated player built from them. The page ends with the expert's version of the reader's question — what a professional would ask next, the primary sources, methods and tools they would use, and an outside check — rewritten as a prompt to paste. Saved locally and published as a private claude.ai artifact. Use it whenever the user wants to understand something rather than get a fact — "explain X", "how does X work", "teach me X", "walk me through X step by step", "I don't get X", "X가 뭔지 설명해줘" — in any field (computer architecture, math, statistics, ML, systems, git, physics), even when they never ask for a page or HTML. Not for one-line lookups, debugging a specific bug, line-by-line walkthroughs of the user's code, slide decks, or documents others will edit.
 ---
 
 # Concept explainer
@@ -31,12 +31,22 @@ down to the **elements** a reader needs to read those facts and reasons at all (
 term, the object). Sort the parts by what needs what, and climb: small parts first, the conclusion
 last. Every part is still explained the house way, with a picture and a concrete example.
 
+**The route map shows that order before the reader starts.** Under the one-sentence answer, the
+page draws its parts as a small argument map — what educational research calls an **advance
+organizer**: one box per part on the way to the answer (the ladder blocks, the assumption the
+problem overturns, the reasons, the answer), each a one-line summary in plain words, with arrows
+for "is needed for". The reader sees which pieces they will understand, in which order, and where
+they join, and each box links to its part. The skill thinks in this order and explains in it: it
+takes the conclusion apart into this graph first, the map prints the graph, and the page walks it
+from the top box to the answer. A script draws the map from the page's own markup, so the map and
+the page cannot disagree.
+
 Different ideas are easy in different ways, so the page explains each one with the technique that
 fits it, chosen from a toolkit in `references/techniques.md`. The toolkit has three tiers:
 
 - **Defaults, in every unit:** a picture, a concrete example, the ladder, and show before you name.
   They are the user's preferred way to learn and never change.
-- **The page skeleton, in fixed places:** anchor in the familiar, foreshadow, problem first,
+- **The page skeleton, in fixed places:** the route map, anchor in the familiar, foreshadow, problem first,
   predict first, manipulate one input, a transfer question, a misconception. The foreshadow is one
   sentence at the end of the ladder block whose figure first shows the main question's phenomenon:
   a hint of what the mechanism will explain, never the answer, recalled by name in the mechanism.
@@ -130,9 +140,12 @@ in mind. Read `references/page-structure.md` § The parts.
 4. **List the elements.** For each fact and reason, list what the reader must already know to read
    it: the objects, the picture, the terms. These are the old ladder's parts; plain ones the reader
    surely has stay in prose.
-5. **Sort by dependency.** Write which part needs which. The sorted list is the reading order:
-   elements and facts in "What you already know", the assumption in the problem, reasons in the
-   mechanism, the conclusion last, conventions changed in "Try it".
+5. **Draw the dependency graph.** For every part write an id, a one-line summary in plain words
+   (about 40 characters, about 20 in Korean: "The LP score is a ceiling: no dot beats 14.5"), and
+   the parts it follows from. Every part must lead to the conclusion; a part that leads nowhere is
+   not needed, so cut it. The graph, read top down, is the reading order: elements and facts in
+   "What you already know", the assumption in the problem, reasons in the mechanism, the conclusion
+   last, conventions changed in "Try it". It is also the page's route map (step 7).
 
 Then make the parts right, and collect what the rest of the page needs:
 
@@ -184,6 +197,10 @@ first builds on an earlier block, says so in its text ("Take the cut figure from
 and its figure is that block's figure plus one new thing. Third, the term list: every word the rest
 of the page uses, one plain line each, as a summary the reader can glance back at. Use exactly
 those words afterwards, one name per concept.
+
+Write step 2's graph into the markup as you go: each part carries `data-part`, its one-line
+`data-summary` and `data-from`, and the one-sentence answer is the `conclusion` part. The route map
+is drawn from these attributes.
 
 The rest of the page climbs the same parts. The problem shows the assumption failing on a concrete
 case. Each mechanism step is a reason and says which blocks it follows from ("Blocks 2 and 3 give
@@ -278,6 +295,15 @@ page contract:
 No external scripts are needed. Google Fonts is the only external stylesheet allowed, and every
 font has a fallback stack, so the local file still reads well offline.
 
+Then draw the route map. Never draw it by hand; run, on the finished file:
+
+```bash
+python3 <skill-dir>/scripts/route_map.py <page.html>
+```
+
+It reads every part's `data-part`, `data-summary` and `data-from` and writes the SVG into the
+template's `figure.route` slot under the answer. Rerun it after any change to those attributes.
+
 ### 8. Check
 
 Run the mechanical check and fix every error it reports:
@@ -299,7 +325,10 @@ To look at the page at phone width locally, load it in a 400px-wide `<iframe>`: 
 clamps `--window-size` to about 500px, so a 400px screenshot crops the page and looks like an
 overflow that is not there.
 
-Then review the page four ways. Each one alone must teach the same correct mental model:
+Then review the page four ways. Each one alone must teach the same correct mental model. First,
+look at the route map alone: follow it from the top box to the answer. Each box must match what its
+part says, each arrow must be a real "is needed for", and the order must be the order the page
+teaches.
 
 1. **Text only** — read the prose and skip the figures and the widget. Start at the conclusion and
    walk down: every reason names the blocks it follows from, and every chain ends at a fact the
@@ -349,4 +378,5 @@ to paste. Do not paste the explanation into the chat — the page is the answer.
 | `references/page-structure.md` | when planning the sections, the figure ladder and the interaction (steps 4–6) |
 | `references/timeline.md` | when a unit's technique is a sequence (step 5) |
 | `assets/template.html` | when assembling the page (step 7) — copy it, do not edit it in place |
+| `scripts/route_map.py` | after the page is assembled (step 7): draws the route map from the markup |
 | `scripts/check_page.py` | after the page is written (step 8) |

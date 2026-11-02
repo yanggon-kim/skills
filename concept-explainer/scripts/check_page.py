@@ -17,6 +17,9 @@ Reports three groups of findings:
   parts     - the conclusion's parts (data-part): facts in the ladder with a p.source line, an
               assumption in the problem or misconception, reasons in the mechanism whose data-from
               points at real ids, and every convention changed in "Try it" (data-changes)
+  route     - the route map (advance organizer) under the answer: every part on the route has a
+              one-line data-summary, leads to the answer, and the drawn map is up to date
+              (scripts/route_map.py draws it)
   voice     - sentence length, passive-voice suspects, filler and hype words
               (Korean is counted in space-separated eojeol, with a lower long-sentence limit)
 
@@ -25,8 +28,12 @@ Standard library only.
 """
 
 import json
+import os
 import re
 import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import route_map  # noqa: E402
 from html.parser import HTMLParser
 
 ALLOWED_SCRIPT_HOSTS = (
@@ -37,7 +44,7 @@ ALLOWED_SCRIPT_HOSTS = (
     "https://code.jquery.com/",
 )
 ALLOWED_STYLE_HOSTS = ("https://fonts.googleapis.com/",)
-PARTS = {"element", "fact", "reason", "assumption", "convention"}
+PARTS = {"element", "fact", "reason", "assumption", "convention", "conclusion"}
 TECHNIQUES = {"contrast", "sweep", "extremes", "sequence", "cause-chain", "analogy", "scale"}
 EXPECTED_SECTIONS = ["familiar", "problem", "mechanism", "try", "result", "misconception", "recap", "deeper"]
 PROSE_TAGS = {"p", "li", "dd", "dt", "summary", "figcaption", "h1", "h2", "h3", "blockquote"}
@@ -363,6 +370,21 @@ def check_parts(nc, add):
                 add("WARN", "parts", f"data-changes names {cid!r}, which is not an id on the page")
 
 
+def check_route(raw, add):
+    """The route map: references/page-structure.md § The route map."""
+    if not re.search(r'<figure\b[^>]*\bclass="(?:[^"]*\s)?route(?:\s[^"]*)?"', raw):
+        add("WARN", "route", 'no route map (figure.route) under the answer; add the slot and run scripts/route_map.py')
+        return
+    _, nodes, problems = route_map.graph(raw)
+    for p in problems:
+        add("WARN", "route", p)
+    drawn = re.search(r'\bdata-route="([0-9a-f]+)"', raw)
+    if not drawn:
+        add("WARN", "route", "the route map is empty; run scripts/route_map.py on the page")
+    elif nodes and drawn.group(1) != route_map.fingerprint(nodes):
+        add("WARN", "route", "the route map is stale (a summary or data-from changed); rerun scripts/route_map.py")
+
+
 def check(path):
     raw = open(path, encoding="utf-8").read()
     findings = []
@@ -459,6 +481,7 @@ def check(path):
             add("WARN", "structure", 'dl.terms is not inside the "What you already know" section')
     check_ladder(nc, add)
     check_parts(nc, add)
+    check_route(raw, add)
     # timeline: a storyboard of frames that the template's script turns into a player
     starts = [m.start() for m in re.finditer(r'<figure[^>]*class="[^"]*\btimeline\b', nc)]
     for n_tl, a in enumerate(starts, 1):

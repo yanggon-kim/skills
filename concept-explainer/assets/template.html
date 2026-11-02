@@ -168,6 +168,14 @@ html.js .nojs-only { display: none; }
 .concept .builds-on { color: var(--ink-soft); }
 .concept .builds-on::before { content: "↳ "; color: var(--accent); }
 .concept .breaks { font-size: var(--step--1); color: var(--ink-soft); border-left: 3px dashed var(--pencil); padding-left: 0.75rem; }
+/* Route map: the advance organizer under the one-sentence answer (scripts/route_map.py draws it) */
+.route .t-band { fill: var(--ink-soft); font-family: var(--font-mono); font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase; paint-order: stroke; stroke: var(--sheet); stroke-width: 5px; stroke-linejoin: round; }
+.route .t-kind { fill: var(--pencil); font-family: var(--font-mono); font-size: 14px; }
+.route .t-choice { fill: var(--mustard); }
+.route .t-node { fill: var(--ink); font-family: var(--font-body); font-size: 16px; }
+.route .f-route-answer { fill: var(--accent); fill-opacity: 0.16; }
+.route a:hover rect, .route a:focus rect { stroke-width: 2.5; }
+.route .diagram-scroll svg { min-width: 0; max-width: 32rem; margin-inline: auto; }
 .concept .source { font-family: var(--font-mono); font-size: var(--step--1); color: var(--ink-soft); }
 .foreshadow { border-left: 3px solid var(--mustard); padding-left: 0.75rem; }
 .foreshadow::before { content: "Preview"; display: block; font-family: var(--font-mono); font-size: var(--step--1); letter-spacing: 0.08em; text-transform: uppercase; color: var(--mustard); }
@@ -229,7 +237,17 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
     <p class="label">{{"Explainer" in the page language}} · {{field, e.g. GPU architecture}}</p>
     <h1>{{Concept name}}</h1>
     <p class="question">{{The reader's question, in their words}}</p>
-    <p class="answer">{{One or two sentences that state the central idea. A skimmer stops here and still has it.}}</p>
+    <p class="answer" id="answer" data-part="conclusion" data-from="m-{{last-reason}} {{assumption-id}}" data-summary="{{the answer in one plain line}}">{{One or two sentences that state the central idea. A skimmer stops here and still has it.}}</p>
+    <!-- SLOT NOTE: the route map, the page's advance organizer: one box per part on the way to the
+         answer (ladder blocks, the problem's assumption, the reasons, the answer), each a one-line
+         data-summary, with arrows for "is needed for". Do not draw it by hand: after the page is
+         built, run scripts/route_map.py page.html, which reads data-part, data-summary and
+         data-from and writes the SVG between the two markers. references/page-structure.md
+         § The route map. -->
+    <figure class="route sheet wide" aria-labelledby="route-caption">
+      <div class="diagram-scroll"><!-- route:start --><!-- route:end --></div>
+      <figcaption id="route-caption">{{"The route this page takes" in the page language: read top to bottom; an arrow means "is needed for"; a dashed arrow comes from the assumption the answer overturns; each box links to its part.}}</figcaption>
+    </figure>
   </header>
 
   <section id="familiar">
@@ -251,7 +269,7 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
          Each block is one part from the parts list (references/page-structure.md § The parts):
          data-part="element", "fact", "element fact", or "fact convention". A block that states a
          fact ends with one p.source line saying where it comes from or how to check it. -->
-    <div class="concept" id="c-{{first-concept}}" data-technique="contrast" data-part="element">
+    <div class="concept" id="c-{{first-concept}}" data-technique="contrast" data-part="element" data-summary="{{one plain line}}">
       <h3>{{1. First core concept}}</h3>
       <p>{{What it is, shown on the figure before it is named. One concrete example.}}</p>
       <figure class="sheet" aria-labelledby="c1-caption">
@@ -281,7 +299,7 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
       </figure>
     </div>
 
-    <div class="concept" id="c-{{second-concept}}" data-builds-on="c-{{first-concept}}" data-technique="contrast" data-part="element fact">
+    <div class="concept" id="c-{{second-concept}}" data-builds-on="c-{{first-concept}}" data-technique="contrast" data-part="element fact" data-summary="{{one plain line}}">
       <h3>{{2. Second core concept}}</h3>
       <p class="label builds-on">{{"Builds on" in the page language}}: {{1. First core concept}}</p>
       <p>{{Start from the earlier figure ("Take the picture from block 1 ..."), add one thing, and show what it means with one concrete example.}}</p>
@@ -339,7 +357,7 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
 
   <section id="problem">
     <h2>{{The problem}}</h2>
-    <p data-part="assumption">{{The assumption the reader (or the field by habit) brings, as people say it: "Surely ...".}}</p>
+    <p id="{{assumption-id}}" data-part="assumption" data-from="c-{{second-concept}}" data-summary="{{the assumption in one plain line}}">{{The assumption the reader (or the field by habit) brings, as people say it: "Surely ...".}}</p>
     <p>{{A concrete case where that assumption fails, on the base scene. A number if possible.}}</p>
   </section>
 
@@ -378,7 +396,7 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
 
     <!-- SLOT NOTE: each mechanism step is a reason. It names, in its text and in data-from, the
          blocks (or earlier reasons) it follows from. No step rests on a fact the ladder did not show. -->
-    <p data-part="reason" data-from="c-{{first-concept}} c-{{second-concept}}">{{A reason: "Blocks 1 and 2 give ...", shown working on the figure.}}</p>
+    <p id="m-{{last-reason}}" data-part="reason" data-from="c-{{first-concept}} c-{{second-concept}}" data-summary="{{the reason in one plain line}}">{{A reason: "Blocks 1 and 2 give ...", shown working on the figure.}}</p>
     <p data-recalls="c-{{second-concept}}">{{Recall the foreshadow where the mechanism explains it: "This is the difference you saw in block 2: ...", with a link to the block.}}</p>
     <p>{{Step 2 and the name for it, with its own figure if it adds a new thing. Then step 3 if needed.}}</p>
     <!-- SLOT NOTE: if the concept changes over time (a procedure, a process, an algorithm's steps),

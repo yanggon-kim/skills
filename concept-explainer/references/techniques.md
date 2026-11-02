@@ -21,7 +21,7 @@ according to the shape of the question each unit answers.
 | tier | techniques | when |
 |---|---|---|
 | **1. Defaults** | picture, concrete example, ladder, show then name | in every unit, always. They are the house method: the reader's favourite way to learn. |
-| **2. Page skeleton** | anchor in the familiar, foreshadow, problem first, predict first, manipulate one input, transfer question, confront a misconception | each in its fixed place on the page (`references/page-structure.md` § Section order). Not chosen; the structure provides them. |
+| **2. Page skeleton** | route map, anchor in the familiar, foreshadow, problem first, predict first, manipulate one input, transfer question, confront a misconception | each in its fixed place on the page (`references/page-structure.md` § Section order). Not chosen; the structure provides them. |
 | **3. Chosen per unit** | contrast, sweep, extreme cases, sequence, cause chain, analogy, numbers and scale | one per unit (two at most), picked by the shape of the question the unit answers. |
 
 A **unit** is one ladder block, the problem section, one mechanism step, or the widget.
@@ -112,6 +112,7 @@ These are described in full in `references/page-structure.md`. In short:
 
 | technique | place | what it does for the reader |
 |---|---|---|
+| route map (advance organizer) | under the one-sentence answer | shows, before the lesson, which parts the reader will understand, in which order, and how they join into the answer (`references/page-structure.md` § The route map) |
 | anchor in the familiar | "What you already know", first paragraph | connects the new idea to something the reader has done |
 | foreshadow | the end of the ladder block whose figure first shows the main question's phenomenon; recalled in the mechanism | plants the main question early, on a picture the reader has just understood, so the mechanism lands on prepared ground |
 | problem first | "The problem" | makes the reader feel the cost before the mechanism removes it |

@@ -1,7 +1,7 @@
 # Page structure, figures and interaction
 
 ## Contents
-1. Section order (with the parts, the concept ladder, the words this page uses, and the expert's
+1. Section order (with the parts, the route map, the concept ladder, the words this page uses, and the expert's
    version of your question)
 2. Figures: the ladder
 3. Interaction
@@ -20,7 +20,7 @@ lesson.
 
 | # | section | job | length |
 |---|---|---|---|
-| 0 | **Title + one-sentence answer** | The title names the concept. Under it: the reader's question as an `h1`-adjacent line, then a one-sentence answer that states the central idea. A skimmer gets the idea here in under 20 seconds. | 1 question, 1–2 sentences |
+| 0 | **Title + one-sentence answer + route map** | The title names the concept. Under it: the reader's question as an `h1`-adjacent line, then a one-sentence answer that states the central idea. A skimmer gets the idea here in under 20 seconds. Under the answer, the route map: the parts on the way to the answer, as one-line boxes and arrows (§ The route map). | 1 question, 1–2 sentences, 1 map |
 | 1 | **What you already know** | Three parts. (a) The plain background: anchor in something familiar, in prose only. (b) The concept ladder: one block per core concept the mechanism uses, in dependency order, each with a short explanation, one easy figure and one concrete example; each block builds on an earlier one, and its figure is that block's figure plus one new thing. (c) The words this page uses: a definition list (`dl.terms`), one plain line each, as a summary to glance back at. | 2–4 sentences + 2–8 blocks + 4–10 terms |
 | 2 | **The problem** | What goes wrong, or what is hard, without the mechanism. Make the reader feel the cost with a concrete case and, if possible, a number. The assumption fails here, on the base scene. Show it on a ladder figure when you can. | 1 short paragraph (+ figure) |
 | 3 | **The mechanism** | How it works, step by step, with as many figures as the steps need. Each step is a reason and names the blocks it follows from. Each figure climbs from the top rung of the concept ladder and adds one thing. It recalls the ladder's foreshadow where the hinted phenomenon is explained. Show each step working before you name it. | 2–6 short paragraphs + figures |
@@ -72,8 +72,41 @@ Rules for the parts:
 - **A convention is a lever.** Where the parts hold a convention, the reader changes it in "Try it"
   or in the transfer question and sees the result rebuilt from the same facts. This is the step
   where the reader goes past the page: from "why it is so" to "what would change it".
-- **The parts list is for you.** The page does not print it. The reader sees blocks, steps and a
-  widget; the kinds show only through the `p.source` lines and the "follows from" phrases.
+- **The parts become the route map.** The graph of parts is printed once, as the route map under
+  the answer. Elsewhere the reader sees blocks, steps and a widget; the kinds show through the
+  `p.source` lines and the "follows from" phrases.
+
+### The route map
+
+An **advance organizer** (Ausubel's term) is a short overview, given before the lesson, that shows
+how the new ideas will fit together; an **argument map** draws claims as boxes and their support as
+arrows. The route map is both: before the reader starts, it shows which parts they will understand,
+in which order, and how those parts join into the answer. It is the page's plan made visible: the
+skill takes the conclusion apart into this graph first (`SKILL.md` step 2), and the page then
+explains the graph top down.
+
+- **Where.** In the masthead, right under the one-sentence answer, in a `<figure class="route">`.
+- **What is on it.** One box per part on the way to the answer: each ladder block, the problem's
+  assumption, each reason in the mechanism, and the answer itself. A pure convention (a choice the
+  widget changes) is a lever, not a step, so it is not a box; a block that states a convention
+  shows a small "a choice" tag. The misconception, the widget and the expert section are not on it.
+- **Each box: one line in plain words.** `data-summary`, about 40 characters (about 20 in Korean).
+  The reader has not learned the terms yet, so use the page's plain words, not jargon ("The LP
+  score is a ceiling" is fine once the box's block says what LP is; "LP relaxation bound" is not).
+  Above the summary the script prints the kind and number ("block 3 · fact", "reason 2").
+- **Arrows mean "is needed for".** They come from `data-from` (a ladder block without one uses its
+  `data-builds-on`). The arrow from the assumption is dashed: the answer overturns it. An arrow that
+  another path already implies is left out, so the map shows the route, not every citation.
+- **Bands, top to bottom.** "What you already know", "The problem", "How it works", "The answer",
+  in that order, so the map reads in the page's order.
+- **Every box links to its part,** and every part leads to the answer. A part that leads nowhere is
+  either missing a `data-from` or not needed; `check_page.py` warns about it.
+- **Small.** About 6–12 boxes. More means the scope is too wide or the parts are too small.
+- **Never drawn by hand.** `scripts/route_map.py` reads the markup and writes the SVG between
+  `<!-- route:start -->` and `<!-- route:end -->`, so the map and the page cannot disagree. Rerun
+  it after any change; `check_page.py` warns when the map is stale.
+- **The caption** says how to read it, in the page language: top to bottom, what an arrow and a
+  dashed arrow mean, and that each box links to its part.
 
 ### The concept ladder
 
@@ -122,14 +155,18 @@ Markup (the template has it):
   <p class="foreshadow">This picture already shows the heart of Q6: with the same depth, ...</p>
 </div>
 ...
-<p data-part="assumption">The usual guess: ...</p>                      <!-- in #problem -->
-<p data-part="reason" data-from="c-cut c-depth">Blocks 4 and 5 give ...</p>  <!-- in #mechanism -->
+<p class="answer" id="answer" data-part="conclusion" data-from="m-proof p-guess"
+   data-summary="FlowMap gets the least depth">...</p>                    <!-- in the masthead -->
+<p id="p-guess" data-part="assumption" data-from="c-cut" data-summary="...">The usual guess: ...</p>  <!-- in #problem -->
+<p id="m-label" data-part="reason" data-from="c-cut c-depth" data-summary="...">Blocks 4 and 5 give ...</p>  <!-- in #mechanism -->
 <p data-recalls="c-cut">This is the difference you saw in <a href="#c-cut">block 4</a>: ...</p>
 <details class="transfer" data-changes="c-port">...</details>          <!-- in #try -->
 ```
 
-`data-part` takes one or two of `element`, `fact`, `reason`, `assumption`, `convention`. A block
-that states a convention carries both `fact convention`. `data-from` lists the ids of the blocks or
+`data-part` takes one or two of `element`, `fact`, `reason`, `assumption`, `convention`,
+`conclusion`. A block that states a convention carries both `fact convention`. Every part on the
+route (blocks, the problem's assumption, reasons, the answer) also carries an `id` and a one-line
+`data-summary` for the route map. `data-from` lists the ids of the blocks or
 reasons a reason follows from. `data-changes` on the widget or a transfer question names the
 convention block it changes.
 
@@ -418,7 +455,9 @@ The page must still teach with scripts off:
 
 ## 4. The four-way review
 
-After the page is built, review it four ways. Each one alone must teach the same correct model:
+After the page is built, look at the route map alone: follow it from the top box to the answer.
+Does each box match its part, is each arrow a real "is needed for", and is the order the order the
+page teaches? Then review the page four ways. Each one alone must teach the same correct model:
 
 1. **Text only.** Read the prose and skip the figures and the widget. Is the mechanism complete?
    Start at the conclusion and walk down: does every reason name the blocks it follows from, and
