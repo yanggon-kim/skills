@@ -1,6 +1,6 @@
 ---
 name: concept-explainer
-description: Explains any concept, mechanism, algorithm or idea as one self-contained HTML learning page — plain-voice prose, one diagram of the mechanism, and one interaction where the reader predicts and then checks. When the concept is a process that changes over time, the page shows it as a timeline — a storyboard of frames on one fixed layout, plus an animated player built from them. The page ends with the expert's version of the reader's question — what a professional would ask next, the primary sources, methods and tools they would use, and an outside check — rewritten as a prompt to paste. Saved locally and published as a private claude.ai artifact. Use it whenever the user wants to understand something rather than get a fact — "explain X", "how does X work", "teach me X", "walk me through X step by step", "I don't get X", "X가 뭔지 설명해줘" — in any field (computer architecture, math, statistics, ML, systems, git, physics), even when they never ask for a page or HTML. Not for one-line lookups, debugging a specific bug, line-by-line walkthroughs of the user's code, slide decks, or documents others will edit.
+description: Explains any concept, mechanism, algorithm or idea as one self-contained HTML learning page — plain-voice prose, a ladder of figures that starts from the simplest background picture and adds one thing per rung until it shows the mechanism, and one interaction where the reader predicts and then checks. When the concept is a process that changes over time, the page shows it as a timeline — a storyboard of frames on one fixed layout, plus an animated player built from them. The page ends with the expert's version of the reader's question — what a professional would ask next, the primary sources, methods and tools they would use, and an outside check — rewritten as a prompt to paste. Saved locally and published as a private claude.ai artifact. Use it whenever the user wants to understand something rather than get a fact — "explain X", "how does X work", "teach me X", "walk me through X step by step", "I don't get X", "X가 뭔지 설명해줘" — in any field (computer architecture, math, statistics, ML, systems, git, physics), even when they never ask for a page or HTML. Not for one-line lookups, debugging a specific bug, line-by-line walkthroughs of the user's code, slide decks, or documents others will edit.
 ---
 
 # Concept explainer
@@ -11,11 +11,18 @@ test**. The page carries three representations of the same idea, each doing a jo
 | part | the reader's action | what it gives |
 |---|---|---|
 | prose | reads and reasons | definitions, causes, conclusions |
-| one diagram | sees the structure | parts and how they connect |
+| a ladder of figures | sees the structure grow | parts and how they connect, one new thing at a time |
 | one interaction | predicts, changes an input, compares | proof that the model works |
 
-When the concept changes over time — a procedure, a process, an algorithm's steps — the diagram
-becomes a **timeline**: a **storyboard** (every step as a frame on the same fixed layout, side by
+The figures are the core of the page. Explain with pictures wherever a picture helps, in the
+background as much as in the mechanism. They form a **ladder**: every figure is drawn from one base
+scene (the same layout, names and shapes), and each one is an earlier figure plus one new thing.
+The first rungs teach the background concepts with easy pictures; the mechanism's figures are the
+top rungs. A reader who has read the easy picture can then read the hard one, because the hard one
+is the same picture with a little more on it.
+
+When the concept changes over time — a procedure, a process, an algorithm's steps — the mechanism's
+figure becomes a **timeline**: a **storyboard** (every step as a frame on the same fixed layout, side by
 side) and a **player** (the same frames animated in place, with play, pause, step and scrub). The
 storyboard lets the reader compare states; the player lets them follow the motion.
 
@@ -75,8 +82,10 @@ A polished page makes a wrong explanation look trustworthy, so accuracy comes fi
 - For each fact, ask: do I know this firmly? For recent topics, niche details, exact numbers, or
   anything about the user's own code or paper, check it — search the web or read the file — before
   you print it.
-- Anything still uncertain goes into the page's "Assumptions and limits" box, stated plainly. Never
-  hide a simplification; name it ("This page ignores caches. Real hardware adds ...").
+- Anything still uncertain, and every simplification, is stated plainly in one sentence at the
+  place where it matters — in the paragraph, caption or widget note that relies on it. Never hide a
+  simplification; name it where the reader meets it ("This figure ignores caches. Real hardware
+  adds ..."). The page has no separate limits box.
 - **Look at the request through an expert's eyes.** Answer, for yourself, about this concept and
   this request: (1) what would a top professional in this field do here that the reader is not
   asking for; (2) what is the rawest material they would start from (the original paper, the spec,
@@ -89,16 +98,20 @@ A polished page makes a wrong explanation look trustworthy, so accuracy comes fi
 ### 3. Write the prose
 
 Read `references/voice.md` first. Follow the section order in `references/page-structure.md`:
-question → what you already know (background and the words the page uses) → the problem → the
-mechanism → try it → the result → a common misconception → recap → assumptions and limits → the
-expert's version of your question.
+question → what you already know (the plain background, then the concept ladder, then the words the
+page uses) → the problem → the mechanism → try it → the result → a common misconception → recap →
+the expert's version of your question.
 
-The terms are not a glossary at the end. "What you already know" explains the background and then
-defines, one plain line each, every word the rest of the page uses, so the reader meets each word
-before it appears. Use exactly those words afterwards, one name per concept.
+"What you already know" has three parts. First, the truly easy background, in prose only. Second,
+the **concept ladder**: one block for each core concept the mechanism will use, in dependency order,
+each with a short explanation, one easy figure and one concrete example. Every block after the
+first builds on an earlier block, says so in its text ("Take the cut figure from above and ..."),
+and its figure is that block's figure plus one new thing. Third, the term list: every word the rest
+of the page uses, one plain line each, as a summary the reader can glance back at. Use exactly
+those words afterwards, one name per concept.
 
-Show before you name: the list near the top gives each word a short definition, and the mechanism
-section still shows each new term working, with its concrete example, before it relies on it.
+Show before you name: each ladder block shows its concept working on its figure before it names
+it, and the mechanism section still shows each new term working before it relies on it.
 The central idea must be findable in under 20 seconds — it sits in the one-sentence answer under
 the title. If a stranger skimming the top of the page cannot find it, rewrite the top.
 
@@ -108,22 +121,39 @@ expert's; its words are still for the newcomer. Give every paper, tool or comman
 half-sentence saying what it is, and write the rewritten prompt in the reader's own voice and
 language, ready to paste.
 
-### 4. Draw the diagram
+### 4. Plan and draw the figure ladder
 
-One primary diagram, inline SVG, placed beside the mechanism it explains. Rules and diagram types are
-in `references/page-structure.md` § Diagram. The short version: one reading direction, at most seven
-primary elements, every arrow has one defined meaning, labels make sense without the prose, and it
-still reads in grayscale. Use inline SVG, not Mermaid or images, so the page works offline and the
-diagram follows the light and dark themes.
+Read `references/page-structure.md` § Figures before drawing. Plan the ladder backwards:
 
-**If the concept changes over time, draw a timeline instead.** Ask: is the answer to the reader's
-question a sequence of states ("what happens when ...", "walk me through ...", a pipeline, a
-protocol, an algorithm's steps, a git operation)? If yes, read `references/timeline.md` and build
-the storyboard: 3–12 frames, one change per frame, the same layout and the same keyed elements in
-every frame, one caption sentence each. You write only the storyboard; the template's script builds
-the player from those frames, so the two views cannot disagree, and the storyboard alone still
-teaches without JavaScript or motion. A static structure or a relationship between quantities keeps
-the single diagram.
+1. **Draw the top rung first.** Sketch the mechanism's richest figure: the one that shows the
+   answer to the reader's question. Its layout, element names and shapes become the page's **base
+   scene**.
+2. **List the dependencies.** Write which concept needs which ("depth needs cut; cut needs the
+   network; the network needs the LUT").
+3. **Peel off one thing at a time.** From the top rung, remove one element or one idea per step,
+   down to the simplest picture. Each step down is one rung: the figure of one concept block, of the
+   problem, or of a mechanism step.
+4. **Reverse the list.** That is the reading order. The first ladder block shows the simplest
+   picture; each later figure adds one thing, in coral, while what the reader already knows keeps
+   its earlier look.
+
+Generate every figure from the base scene with one short script (Node or Python) and the same
+drawing function, instead of hand-copying SVG, so positions and names cannot drift. Give each
+drawn element that recurs a `data-key` that stays the same in every figure. Use as many figures as
+the explanation needs; the limit is on what a figure **introduces** — at most seven primary
+elements the reader has not seen before — not on how many figures the page has. Use inline SVG, not
+Mermaid or images, so the page works offline and the figures follow the light and dark themes.
+
+**Plain background stays in prose.** A concept the reader surely has (an AND gate, a list, an
+average) gets a sentence, not a rung.
+
+**If the concept changes over time, the mechanism's rungs are a timeline.** Ask: is the answer to
+the reader's question a sequence of states ("what happens when ...", "walk me through ...", a
+pipeline, a protocol, an algorithm's steps, a git operation)? If yes, read `references/timeline.md`
+and build the storyboard: 3–12 frames, one change per frame, the same layout and the same keyed
+elements in every frame, one caption sentence each, drawn on the page's base scene. You write only
+the storyboard; the template's script builds the player from those frames, so the two views cannot
+disagree, and the storyboard alone still teaches without JavaScript or motion.
 
 ### 5. Build the interaction
 
@@ -133,7 +163,8 @@ it ("now try a case the page did not show") is encouraged. The reader **predicts
 first**, then acts, then compares two states, then reads why the result changed. Details and the
 fallback for concepts with no natural dial are in `references/page-structure.md` § Interaction. If
 the interaction computes anything, compute it from the real rule, not from invented numbers, and say
-on the page what the model simplifies.
+next to the widget, in one sentence, what the model simplifies. Draw the widget's picture on the
+same base scene as the ladder, so the reader recognises it.
 
 For a pure procedure with no real input to change, the timeline's player is the interaction: ask
 the reader to predict a later frame before pressing play, and ask a transfer question afterwards.
@@ -170,8 +201,9 @@ Run the mechanical check and fix every error it reports:
 python3 <skill-dir>/scripts/check_page.py <page.html>
 ```
 
-It checks the page contract, the structure (diagram, interaction, sections), and the voice (sentence
-length, passive-voice suspects in English, filler words). It is a report, not a judge. Read its
+It checks the page contract, the structure (figures, the concept ladder and its shared keys,
+interaction, sections), and the voice (sentence length, passive-voice suspects in English, filler
+words). It is a report, not a judge. Read its
 warnings and decide.
 
 If the interaction computes anything, run its model function once outside the page (for example
@@ -184,13 +216,16 @@ overflow that is not there.
 
 Then review the page four ways. Each one alone must teach the same correct mental model:
 
-1. **Text only** — read the prose and skip the figure and the widget.
-2. **Diagram only** — read the figure and its caption.
+1. **Text only** — read the prose and skip the figures and the widget.
+2. **Figures only, in order** — flip through the figures and captions from the first ladder block
+   to the mechanism. They must read as one story that grows one thing per rung. A figure that
+   starts over with a new layout, renames an element, or adds two new ideas at once is a broken
+   rung; fix it.
 3. **Interaction only** — use the widget at its minimum, typical and maximum values; press reset
    twice.
 4. **Without JavaScript** — the predictions still have answers and the comparison still shows.
 
-Fix every place where two parts disagree. A diagram that says one thing and a paragraph that says
+Fix every place where two parts disagree. A figure that says one thing and a paragraph that says
 another teaches confusion.
 
 Last, read the page once without its final section. The lesson must be complete and plain without
@@ -219,7 +254,7 @@ to paste. Do not paste the explanation into the chat — the page is the answer.
 | file | read it when |
 |---|---|
 | `references/voice.md` | before writing any prose (step 3) |
-| `references/page-structure.md` | when planning the sections, diagram and interaction (steps 3–5) |
+| `references/page-structure.md` | when planning the sections, the figure ladder and the interaction (steps 3–5) |
 | `references/timeline.md` | when the concept changes over time (step 4) |
 | `assets/template.html` | when assembling the page (step 6) — copy it, do not edit it in place |
 | `scripts/check_page.py` | after the page is written (step 7) |

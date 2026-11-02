@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Noto+Serif+KR:wght@400;600&display=swap">
 <style>
 /* Layout: one reading column of ~66ch on a paper field; figures and the widget step out to a wider
-   "cutout" sheet. Paper, ink and pencil. Coral marks the one thing to look at. */
+   "cutout" sheet. Paper, ink and pencil. Coral marks the one new thing in each figure. */
 :root {
   --paper: #f4eee2;        /* page field */
   --sheet: #fbf7ee;        /* raised cutout: figures, widget */
@@ -162,15 +162,17 @@ button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
 html:not(.js) .js-only { display: none; }
 html.js .nojs-only { display: none; }
 
-/* Terms (inside "What you already know"), misconception, recap, limits */
+/* Concept ladder and terms (inside "What you already know"), misconception, recap */
+.concept { display: grid; gap: 0.9rem; }
+.concept + .concept { border-top: 1px dashed var(--idle); padding-top: 1.5rem; }
+.concept .builds-on { color: var(--ink-soft); }
+.concept .builds-on::before { content: "↳ "; color: var(--accent); }
 .misconception { display: grid; gap: 0.6rem; }
 .misconception .wrong { text-decoration: line-through; text-decoration-color: var(--accent); text-decoration-thickness: 2px; color: var(--ink-soft); }
 .terms { display: grid; grid-template-columns: minmax(7rem, max-content) 1fr; gap: 0.6rem 1.25rem; }
 .terms dt { font-family: var(--font-mono); font-size: var(--step--1); padding-top: 0.2em; color: var(--accent-ink); }
 .terms dd { margin: 0; min-width: 0; }
 @media (max-width: 30rem) { .terms { grid-template-columns: 1fr; gap: 0.2rem; } .terms dd { margin-bottom: 0.6rem; } }
-.limits { border: 1px dashed var(--pencil); border-radius: 2px; padding: 1rem 1.25rem; display: grid; gap: 0.6rem; font-size: var(--step--1); color: var(--ink-soft); }
-.limits .label { color: var(--ink-soft); }
 
 /* The expert's version of your question: the last section, a door out of the page */
 .deeper .lens { display: grid; gap: 0.9rem; counter-reset: lens; }
@@ -179,6 +181,7 @@ html.js .nojs-only { display: none; }
 .deeper .lens dd { margin: 0.2rem 0 0; min-width: 0; }
 .deeper .prompt { white-space: pre-wrap; overflow-wrap: anywhere; font-family: var(--font-mono); border-left: 3px solid var(--teal); }
 .deeper .prompt-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.deeper .sources { font-size: var(--step--1); color: var(--ink-soft); }
 
 /* Timeline (references/timeline.md): a storyboard of frames, and a player built from it */
 .timeline .storyboard { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr)); gap: 1rem; counter-reset: frame; }
@@ -204,6 +207,19 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
 
 <main class="page" lang="{{en | ko | ...}}">
 
+  <!-- Shared arrowheads for every figure on the page. Figures refer to them with url(#arrow) and
+       url(#arrow-accent); do not repeat these ids inside a figure. -->
+  <svg width="0" height="0" aria-hidden="true" style="position:absolute">
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" class="f-ink"></path>
+      </marker>
+      <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" class="f-accent"></path>
+      </marker>
+    </defs>
+  </svg>
+
   <header class="masthead">
     <p class="label">{{"Explainer" in the page language}} · {{field, e.g. GPU architecture}}</p>
     <h1>{{Concept name}}</h1>
@@ -213,10 +229,61 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
 
   <section id="familiar">
     <h2>{{What you already know}}</h2>
-    <p>{{2–4 sentences: the background the page builds on, anchored in something familiar.}}</p>
+    <p>{{2–4 sentences: the plain background the page builds on, anchored in something familiar. Prose only: a concept the reader surely has gets a sentence, not a figure.}}</p>
+
+    <!-- SLOT NOTE: the concept ladder. One .concept block per core concept the mechanism will use,
+         in dependency order. Every block after the first names the earlier block it builds on, in
+         its text and in data-builds-on, and its figure is that block's figure plus ONE new thing,
+         drawn in coral, on the same base scene (same positions, names, shapes; same data-key for the
+         same element). Plan it backwards from the mechanism's figure: references/page-structure.md
+         § The concept ladder and § Figures. Copy the second block as many times as you need. -->
+    <div class="concept" id="c-{{first-concept}}">
+      <h3>{{1. First core concept}}</h3>
+      <p>{{What it is, shown on the figure before it is named. One concrete example.}}</p>
+      <figure class="sheet" aria-labelledby="c1-caption">
+        <div class="diagram-scroll">
+          <svg viewBox="0 0 640 200" role="img" aria-labelledby="c1-title c1-desc">
+            <title id="c1-title">{{Figure title}}</title>
+            <desc id="c1-desc">{{The main relationship in one or two sentences: the figure's alt text.}}</desc>
+            <g data-key="a">
+              <rect x="20" y="70" width="150" height="60" rx="2" class="f-accent s-ink"></rect>
+              <text x="95" y="105" text-anchor="middle" class="t-label">{{Part A}}</text>
+            </g>
+          </svg>
+        </div>
+        <figcaption id="c1-caption">{{What the figure shows. This is the simplest rung: the base scene's first element.}}</figcaption>
+      </figure>
+    </div>
+
+    <div class="concept" id="c-{{second-concept}}" data-builds-on="c-{{first-concept}}">
+      <h3>{{2. Second core concept}}</h3>
+      <p class="label builds-on">{{"Builds on" in the page language}}: {{1. First core concept}}</p>
+      <p>{{Start from the earlier figure ("Take the picture from block 1 ..."), add one thing, and show what it means with one concrete example.}}</p>
+      <figure class="sheet" aria-labelledby="c2-caption">
+        <div class="diagram-scroll">
+          <svg viewBox="0 0 640 200" role="img" aria-labelledby="c2-title c2-desc">
+            <title id="c2-title">{{Figure title}}</title>
+            <desc id="c2-desc">{{The main relationship, and what is new compared with block 1.}}</desc>
+            <g data-key="a">
+              <rect x="20" y="70" width="150" height="60" rx="2" class="f-sheet s-ink"></rect>
+              <text x="95" y="105" text-anchor="middle" class="t-label">{{Part A}}</text>
+            </g>
+            <line data-key="ab" x1="175" y1="100" x2="245" y2="100" class="s-accent" marker-end="url(#arrow-accent)"></line>
+            <g data-key="b">
+              <rect x="250" y="70" width="150" height="60" rx="2" class="f-accent s-ink"></rect>
+              <text x="325" y="105" text-anchor="middle" class="t-label">{{Part B}}</text>
+            </g>
+            <text x="210" y="60" text-anchor="middle" class="t-mono">{{arrow meaning}}</text>
+          </svg>
+        </div>
+        <figcaption id="c2-caption">{{What the figure shows; what is new (in coral) compared with block 1; what each arrow means.}}</figcaption>
+      </figure>
+    </div>
+
     <p class="label">{{"Words this page uses" in the page language}}</p>
-    <!-- SLOT NOTE: every term the rest of the page uses, one plain line each. Background words
-         first, then the words this page introduces, in the order they appear. -->
+    <!-- SLOT NOTE: every term the rest of the page uses, one plain line each, as a summary after the
+         ladder. Background words first, then the words the ladder and the page introduce, in the
+         order they appear. -->
     <dl class="terms">
       <dt>{{term}}</dt><dd>{{One plain line.}}</dd>
     </dl>
@@ -229,38 +296,40 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
 
   <section id="mechanism">
     <h2>{{How it works}}</h2>
-    <p>{{Step 1, shown working before it is named.}}</p>
+    <p>{{Step 1, shown working before it is named. Start from the top rung of the concept ladder: "This is the picture from block 2, now with ..."}}</p>
 
-    <figure class="sheet wide" aria-labelledby="fig-caption">
+    <!-- SLOT NOTE: as many figures as the steps need. Each one is drawn on the same base scene as
+         the ladder and adds one thing to an earlier figure (data-builds-on names it). Elements the
+         reader already knows keep their old look; the new thing is coral. -->
+    <figure class="sheet wide" aria-labelledby="m1-caption" data-builds-on="c-{{second-concept}}">
       <div class="diagram-scroll">
-        <!-- SLOT NOTE: replace this placeholder drawing with the real diagram. Keep role, title,
-             desc, the viewBox and the class-based colors. At most seven primary elements. -->
-        <svg viewBox="0 0 640 200" role="img" aria-labelledby="fig-title fig-desc">
-          <title id="fig-title">{{Diagram title}}</title>
-          <desc id="fig-desc">{{The main relationship in one or two sentences: the diagram's alt text.}}</desc>
-          <defs>
-            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-              <path d="M0,0 L10,5 L0,10 z" class="f-ink"></path>
-            </marker>
-          </defs>
-          <rect x="20" y="70" width="150" height="60" rx="2" class="f-sheet s-ink"></rect>
-          <text x="95" y="105" text-anchor="middle" class="t-label">{{Part A}}</text>
-          <line x1="175" y1="100" x2="245" y2="100" class="s-ink" marker-end="url(#arrow)"></line>
-          <rect x="250" y="70" width="150" height="60" rx="2" class="f-accent s-ink"></rect>
-          <text x="325" y="105" text-anchor="middle" class="t-label">{{Part B}}</text>
-          <line x1="405" y1="100" x2="475" y2="100" class="s-pencil dashed" marker-end="url(#arrow)"></line>
-          <rect x="480" y="70" width="140" height="60" rx="2" class="f-idle s-pencil"></rect>
-          <text x="550" y="105" text-anchor="middle" class="t-label">{{Part C}}</text>
+        <svg viewBox="0 0 640 200" role="img" aria-labelledby="m1-title m1-desc">
+          <title id="m1-title">{{Figure title}}</title>
+          <desc id="m1-desc">{{The main relationship, and what is new compared with the ladder figure it builds on.}}</desc>
+          <g data-key="a">
+            <rect x="20" y="70" width="150" height="60" rx="2" class="f-sheet s-ink"></rect>
+            <text x="95" y="105" text-anchor="middle" class="t-label">{{Part A}}</text>
+          </g>
+          <line data-key="ab" x1="175" y1="100" x2="245" y2="100" class="s-ink" marker-end="url(#arrow)"></line>
+          <g data-key="b">
+            <rect x="250" y="70" width="150" height="60" rx="2" class="f-sheet s-ink"></rect>
+            <text x="325" y="105" text-anchor="middle" class="t-label">{{Part B}}</text>
+          </g>
+          <line data-key="bc" x1="405" y1="100" x2="475" y2="100" class="s-accent dashed" marker-end="url(#arrow-accent)"></line>
+          <g data-key="c">
+            <rect x="480" y="70" width="140" height="60" rx="2" class="f-accent s-ink"></rect>
+            <text x="550" y="105" text-anchor="middle" class="t-label">{{Part C}}</text>
+          </g>
           <text x="210" y="60" text-anchor="middle" class="t-mono">{{arrow meaning}}</text>
         </svg>
       </div>
-      <figcaption id="fig-caption">{{What the figure shows; what each arrow style and color means; what it leaves out.}}</figcaption>
+      <figcaption id="m1-caption">{{What the figure shows; what is new (in coral); what each arrow style means; what it simplifies, in one sentence.}}</figcaption>
     </figure>
 
-    <p>{{Step 2 and the name for it. Then step 3 if needed.}}</p>
+    <p>{{Step 2 and the name for it, with its own figure if it adds a new thing. Then step 3 if needed.}}</p>
     <!-- SLOT NOTE: if the concept changes over time (a procedure, a process, an algorithm's steps),
-         replace the figure above with a timeline: a storyboard of frames plus a player. Read
-         references/timeline.md. Otherwise delete this note. -->
+         the mechanism's figures become a timeline drawn on the same base scene: a storyboard of
+         frames plus a player. Read references/timeline.md. Otherwise delete this note. -->
   </section>
 
   <section id="try">
@@ -300,6 +369,8 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
       </div>
 
       <p class="why" id="why" aria-live="polite">{{Why the result differs between the two states. The script updates this sentence.}}</p>
+      <!-- SLOT NOTE: draw the widget's picture on the page's base scene, so the reader recognises it
+           from the ladder. If the model simplifies reality, say how in one sentence here. -->
     </div>
   </section>
 
@@ -320,14 +391,6 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
       <li>{{One idea per line, in the order the page taught them.}}</li>
     </ul>
   </section>
-
-  <aside class="limits" aria-labelledby="limits-label">
-    <p class="label" id="limits-label">{{Assumptions and limits}}</p>
-    <ul>
-      <li>{{What the page simplified, what it left out, anything not verified.}}</li>
-    </ul>
-    <!-- SLOT NOTE: if you checked facts on the web, list the sources here as links. -->
-  </aside>
 
   <section id="deeper" class="deeper">
     <h2>{{The expert's version of your question}}</h2>
@@ -352,6 +415,8 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
       <button type="button" class="js-only" data-copy="deeper-prompt" data-done="{{Copied}}">{{Copy}}</button>
     </div>
     <pre class="prompt" id="deeper-prompt" aria-labelledby="deeper-prompt-label">{{The reader's request rewritten to ask for exactly the four things above, in the reader's own voice and language, ready to paste. It keeps the reader's level: it asks for the deeper work, explained plainly.}}</pre>
+    <!-- SLOT NOTE: if you checked facts on the web, list those sources here as links. Otherwise delete this line. -->
+    <p class="sources">{{"Sources" in the page language}}: <a href="{{https://...}}">{{source}}</a></p>
   </section>
 
 </main>
@@ -380,7 +445,7 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
     afterMetric.textContent = String(s.metric);
     afterText.textContent = s.text;
     why.textContent = s.why;
-    // SLOT NOTE: update the diagram here (setAttribute on SVG elements; show or hide an SVG
+    // SLOT NOTE: update the widget's figure here (setAttribute on SVG elements; show or hide an SVG
     // element with el.classList.toggle("is-hidden", cond), because SVG ignores el.hidden).
   }
 

@@ -1,50 +1,90 @@
-# Page structure, diagram and interaction
+# Page structure, figures and interaction
 
 ## Contents
-1. Section order (with the words this page uses, and the expert's version of your question)
-2. Diagram
+1. Section order (with the concept ladder, the words this page uses, and the expert's version of
+   your question)
+2. Figures: the ladder
 3. Interaction
 4. The four-way review
 
 ## 1. Section order
 
-The order follows how understanding is built: the reader's question, what they already have, why
-the problem exists, how the mechanism solves it, a chance to test it, and what to take away. Every
-section is short. A typical page carries 600–1,300 words in total, counting captions, terms and the
-limits box (this is what `check_page.py` counts; it warns outside 400–1,500). The core explanation
-(problem + mechanism + result) is about 250–450 of them. The last section, the expert's version of
-your question, is counted on its own (about 120–300 words), so it never crowds out the lesson.
+The order follows how understanding is built: the reader's question, what they already have and
+the concepts they will need (each taught with an easy figure), why the problem exists, how the
+mechanism solves it, a chance to test it, and what to take away. Every section is short. A typical
+page carries 800–2,200 words in total, counting captions and terms (this is what `check_page.py`
+counts; it warns outside 400–3,000). A page with a long concept ladder sits near the top of that
+range; that is fine, because each rung is short and has a picture. The last section, the expert's
+version of your question, is counted on its own (about 120–300 words), so it never crowds out the
+lesson.
 
 | # | section | job | length |
 |---|---|---|---|
 | 0 | **Title + one-sentence answer** | The title names the concept. Under it: the reader's question as an `h1`-adjacent line, then a one-sentence answer that states the central idea. A skimmer gets the idea here in under 20 seconds. | 1 question, 1–2 sentences |
-| 1 | **What you already know** | Two parts. First, the background: anchor in something familiar, a daily experience or a concept the reader surely has. This is the bridge, not an analogy that later breaks. Second, the words this page uses: a definition list (`dl.terms`) with every term the rest of the page relies on, one plain line each. Background words come first, then the words this page introduces, in the order they appear. | 2–4 sentences + 4–8 terms |
-| 2 | **The problem** | What goes wrong, or what is hard, without the mechanism. Make the reader feel the cost with a concrete case and, if possible, a number. | 1 short paragraph |
-| 3 | **The mechanism** | How it works, step by step, with the diagram beside it. Show each step working before you name it. | 2–4 short paragraphs + diagram |
-| 4 | **Try it** | The interaction: predict, act, compare, explain. | widget + 2–3 sentences |
+| 1 | **What you already know** | Three parts. (a) The plain background: anchor in something familiar, in prose only. (b) The concept ladder: one block per core concept the mechanism uses, in dependency order, each with a short explanation, one easy figure and one concrete example; each block builds on an earlier one, and its figure is that block's figure plus one new thing. (c) The words this page uses: a definition list (`dl.terms`), one plain line each, as a summary to glance back at. | 2–4 sentences + 2–8 blocks + 4–10 terms |
+| 2 | **The problem** | What goes wrong, or what is hard, without the mechanism. Make the reader feel the cost with a concrete case and, if possible, a number. Show it on a ladder figure when you can. | 1 short paragraph (+ figure) |
+| 3 | **The mechanism** | How it works, step by step, with as many figures as the steps need. Each figure climbs from the top rung of the concept ladder and adds one thing. Show each step working before you name it. | 2–6 short paragraphs + figures |
+| 4 | **Try it** | The interaction: predict, act, compare, explain. Its picture uses the same base scene. | widget + 2–3 sentences |
 | 5 | **The result** | What the mechanism buys, and what it costs. Every mechanism has a trade-off; name it. | 1 paragraph |
 | 6 | **A common misconception** | One wrong belief people hold, why it is tempting, and what is true instead. | 3–5 sentences |
 | 7 | **Recap** | Three to five lines, one idea each, in the order the page taught them. | 3–5 bullets |
-| 8 | **Assumptions and limits** | What the page simplified, what it left out, and anything not verified. | 2–5 bullets |
-| 9 | **The expert's version of your question** | The reader's request, upgraded: what a top professional would do that the reader did not ask for, the raw material they start from, their methods and tools, and what outside check shows the answer is right. Ends with the request rewritten as a prompt, ready to paste. | 1–2 sentences + 4 items + the prompt |
+| 8 | **The expert's version of your question** | The reader's request, upgraded: what a top professional would do that the reader did not ask for, the raw material they start from, their methods and tools, and what outside check shows the answer is right. Ends with the request rewritten as a prompt, ready to paste, and the sources you checked. | 1–2 sentences + 4 items + the prompt |
+
+There is no "assumptions and limits" box. State each simplification in one plain sentence where
+the reader meets it: in the paragraph, the figure caption or the widget note that relies on it
+("This page counts every gate as one unit of delay; real gates differ.").
+
+### The concept ladder
+
+The ladder is where the page teaches what the reader is missing before the mechanism needs it. It
+is the most important part of "What you already know", and usually the longest.
+
+- **Which concepts get a block.** Every concept that the mechanism's explanation relies on and that
+  a smart non-expert does not already have. A concept the reader surely has (an AND gate, a list)
+  stays in the plain background as a sentence. The concept's own name usually gets the last block
+  ("FlowMap in plain words") or none, if the mechanism section introduces it.
+- **Dependency order.** A block uses only concepts from the background or from earlier blocks. Write
+  the dependencies down before you order the blocks.
+- **Each block builds on one earlier block.** The first block starts from nothing. Every later block
+  names the block it builds on, in its text ("Take the cut picture from above. Now cover the whole
+  network ...") and in its markup (`data-builds-on`). It is usually the block just before it, but
+  it can be any earlier one.
+- **One block = one idea.** A heading that names the concept, two to five short paragraphs, one
+  figure, and one concrete example worked on that figure. A small table is welcome when it lists
+  cases the figure shows (each way to cut a node, with its inputs and whether it fits).
+- **Its figure is a rung.** The figure is the figure of the block it builds on, plus one new thing.
+  § Figures says how to draw it.
+
+Markup (the template has it):
+
+```html
+<div class="concept" id="c-cut" data-builds-on="c-network">
+  <h3>4. Cut: the list of inputs a LUT takes</h3>
+  <p>...</p>
+  <figure class="sheet">...one SVG drawn on the base scene...</figure>
+</div>
+```
+
+Number the blocks only when the order is the real dependency order the reader should follow (it
+usually is, in a ladder).
 
 ### The words this page uses
 
-The term list sits inside "What you already know" so that the reader meets every word before the
-page uses it, instead of finding the definitions after the reading is done. Rules for the list:
+The term list closes "What you already know", after the ladder. The reader has met every core term
+in a block by then; the list is the one place to glance back at all of them. Rules for the list:
 
 - **Complete for this page.** Any term that a smart non-expert might not know, and that appears
   later on the page, is in the list. Check this after the page is written: scan the prose, the
-  diagram labels and the widget for words that are missing.
+  figure labels and the widget for words that are missing.
 - **One plain line each.** A definition says what the thing is or does, in plain words, with a
   number where it helps ("A warp is 32 threads that run the same instruction together.").
-- **Background first.** Words the reader needs to follow the problem come first. Words the concept
-  itself introduces come after them, in the order the page uses them.
-- **One name per concept.** The list fixes the name. The prose, the diagram and the widget use that
+- **Background first.** Background words come first, then the words the ladder and the page
+  introduce, in the order they appear.
+- **Introduced before used.** A word a ladder block needs before its own block teaches it is
+  defined in the plain background, so no block relies on a word the reader has not met.
+- **One name per concept.** The list fixes the name. The prose, the figures and the widget use that
   name and no synonym. If the field has a common synonym, give it once in the definition ("also
   called ...").
-- **Defined here, shown later.** The definition is a map, not the explanation. The mechanism
-  section still shows each new term working before it relies on it.
 
 ### The expert's version of your question
 
@@ -90,8 +130,10 @@ Rules for the section:
 - **Plain words.** Each source, tool or term the page has not already defined gets a plain
   half-sentence saying what it is. The term list at the top stays the lesson's list; do not add this
   section's words to it.
-- **Last on the page.** It follows "Assumptions and limits": the limits say what this page left out,
-  and this section says how an expert would go further.
+- **Last on the page.** It follows the recap. The page states its simplifications where they
+  happen; this section says how an expert would go further.
+- **Sources go here.** If you checked facts on the web, list those sources as links in a short
+  "Sources" line after the prompt, so the lesson above stays uncluttered.
 - **The prompt is text.** It sits in `<pre class="prompt">`, selectable without JavaScript; the copy
   button is an extra.
 
@@ -99,47 +141,89 @@ Headings are plain statements or the plain section names above; avoid clever hea
 sections only when the order is a real sequence the reader follows (it usually is not — the page is
 read top to bottom anyway).
 
-## 2. Diagram
+## 2. Figures: the ladder
 
-If the concept changes over time, the diagram is a timeline (a storyboard plus a player); follow
-`references/timeline.md`. Each of its frames follows the rules below.
+Explain with pictures wherever a picture helps — in the concept ladder as much as in the mechanism.
+The page has no limit on the number of figures. What makes many figures easy instead of tiring is
+that they are **one picture growing**: a reader who learned the easy picture can read the hard one,
+because the hard one is the same picture with a little more on it.
 
-### Choose the type that matches the idea
+### The base scene
 
-| the idea is about | diagram type |
+The page has one visual vocabulary, the **base scene**:
+
+- **One layout.** The same thing sits at the same place in every figure. Node `n` that sat
+  top-centre in the cut figure sits top-centre in the mechanism figure.
+- **One name per element.** The label in every figure matches the term list.
+- **One look per kind of thing.** The same shape and color mean the same kind of thing in every
+  figure (a gate is a circle, an input is a square, a LUT is a soft hull).
+
+Define it once in code: the positions, the element list and a drawing function. Generate every
+figure — ladder rungs, mechanism figures, timeline frames and the widget's picture — from that
+code with a short Node or Python script, so nothing drifts. Give each recurring element a
+`data-key` that stays the same in every figure (the same convention the timeline uses).
+
+### Plan it backwards
+
+1. **Top rung first.** Sketch the mechanism's richest figure, the one that shows the answer. Its
+   layout becomes the base scene.
+2. **Dependencies.** List which concept needs which.
+3. **Peel off one thing at a time.** From the top rung, remove one element or one idea per step,
+   down to the simplest picture. Every step down is one rung.
+4. **Reverse.** That list, reversed, is the reading order: ladder blocks, then the problem, then
+   the mechanism's figures, then the widget.
+
+Not every rung needs the whole scene. An early rung can show a crop of it (one LUT and its truth
+table, or one node and its inputs) as long as what it shows sits and looks as it will later.
+
+### Rules for each rung
+
+- **One new thing per figure.** The rung adds exactly one idea to the figure it builds on: a new
+  element, a new label (a number on every node), a new grouping (a hull around some nodes), or a
+  second case beside the first.
+- **New in coral, known in its old look.** The new thing is drawn in coral (`.f-accent`,
+  `.s-accent`, `.t-accent`). What the reader already knows keeps the ink, pencil and idle colors it
+  had, so the eye goes to the change.
+- **Say what it builds on.** The text before the figure, or its caption, names the earlier figure
+  ("the same network as in block 2, now with ...").
+- **At most seven new primary elements.** Boxes, lanes or nodes the reader has not seen before.
+  Elements carried over from earlier rungs do not count, so a figure can hold a whole network the
+  reader already knows. If one figure must introduce more than seven, split it into two rungs.
+- **The mechanism continues the ladder.** Mechanism figures start from the top rung of the concept
+  ladder, not from a new drawing. A mechanism that changes over time is a timeline whose frames are
+  drawn on the base scene (`references/timeline.md`).
+
+### Choose the base scene's type
+
+| the idea is about | base scene type |
 |---|---|
 | steps in order | flow (left to right, or top to bottom) |
 | a thing that changes mode | state diagram |
-| parts and how they connect | system map |
+| parts and how they connect | system map, graph or network |
 | events over time, overlap, waiting | timeline (time runs left to right) |
 | two designs or two cases | side-by-side comparison, same scale on both sides |
 | a stack of abstractions | layers |
 | why A leads to B | cause-and-effect chain |
 
-### Rules
+### Rules for every figure
 
 - **One reading direction.** Left to right or top to bottom. The eye never has to backtrack.
-- **At most seven primary elements.** Boxes, lanes or nodes that carry meaning. Labels and arrows
-  do not count. If you need more, the diagram is two ideas; keep the one that shows the mechanism.
-  A two-case concept (merge vs rebase) may use two side-by-side panels of at most seven elements
-  each, or put the second case in the widget. Small graphs inside the widget follow the same rules
-  but do not count as a second diagram.
 - **Every arrow has one meaning.** "Data moves", "time passes", "causes" — pick one per arrow style.
-  If two styles appear, a small legend says what each means.
+  If two styles appear, a small legend says what each means. Keep the same meaning in every figure.
 - **Labels work without the prose.** A reader who looks only at the figure and its caption gets
   the main relationship.
 - **It reads in grayscale.** Color supports a distinction that shape, line style, position or a
-  label already makes. Coral marks the one thing the reader should look at, not everything.
+  label already makes. Coral marks the one new thing, not everything.
 - **Draw to scale where scale is the point.** If one bar means 4 cycles and another 32, their
   lengths are 4:32.
 - **Accessible.** `role="img"` on the `<svg>`, with `<title>` and `<desc>` inside it, referenced by
   `aria-labelledby`. The `<desc>` is the alt text: the main relationship in one or two sentences.
-- **Caption.** The `<figcaption>` says what the figure shows and, where it matters, what it does
-  not show. List the relationships the figure encodes ("left to right = time; gray = idle lane").
+- **Caption.** The `<figcaption>` says what the figure shows, what is new in it, and, where it
+  matters, what it simplifies or leaves out.
 
 ### SVG mechanics
 
-- Set a `viewBox` and `width="100%"`; never a fixed pixel width. Wrap wide diagrams in the
+- Set a `viewBox` and `width="100%"`; never a fixed pixel width. Wrap wide figures in the
   template's `.diagram-scroll` box so the page body never scrolls sideways.
 - Color every shape and text through the template's CSS classes, which read the theme tokens. A
   literal hex color in the SVG breaks dark mode.
@@ -148,11 +232,13 @@ If the concept changes over time, the diagram is a timeline (a storyboard plus a
   - strokes: `.s-ink`, `.s-pencil`, `.s-accent`, `.s-teal`, `.s-mustard`; add `.thick` or
     `.dashed` to change weight or style
   - text: `.t-label` (body face), `.t-mono` (small monospaced annotation), `.t-accent`
-  - arrowheads: reuse the template's `<marker id="arrow">`; copy it with a new id and an
-    `.f-accent` path for a coral arrow.
+  - arrowheads: the template defines `#arrow` (ink) and `#arrow-accent` (coral) once, in a hidden
+    SVG at the top of the page; every figure refers to them with `url(#arrow)`. Do not repeat
+    `<defs>` with the same ids inside each figure.
 - Give every drawn shape an explicit fill (`fill="none"` counts). Leave room in the `viewBox` for
   the outermost labels.
 - Keep text at 13px or larger in SVG units at the default width, so it stays legible on a phone.
+- Give each figure's `<title>` and `<desc>` ids unique to that figure.
 
 ## 3. Interaction
 
@@ -165,8 +251,9 @@ An interaction earns its place only if using it teaches something reading cannot
 2. **Change one real input.** One slider, one toggle, or one step button that maps to a real
    variable of the mechanism (threads that take the branch, prior probability, number of commits).
    Not a color picker. Not five sliders.
-3. **Show the mechanism respond.** The diagram or a small visual next to the control redraws. Show
-   the internal state, not only a final number.
+3. **Show the mechanism respond.** A figure drawn on the page's base scene redraws next to the
+   control, so the reader recognises the picture from the ladder. Show the internal state, not only
+   a final number.
 4. **Compare two states.** Keep the starting state visible, or show "before" and "after" side by
    side, so the reader sees the difference instead of remembering it.
 5. **Explain why the result changed.** One or two sentences, updated with the state, in the page's
@@ -197,7 +284,7 @@ Never ship an interaction that teaches nothing. If none fits, use predict-then-r
 ### Correctness and robustness
 
 - Compute every displayed number from the real rule (Bayes' formula, the real cycle count of the
-  model). If the model simplifies reality, the "Assumptions and limits" box says how.
+  model). If the model simplifies reality, one sentence next to the widget says how.
 - Test the minimum, typical and maximum inputs. Watch for division by zero, empty states and
   negative values at the extremes.
 - Use real `<button>` and `<input>` elements with `<label>`s and stable `id`s, so they work with the
@@ -222,12 +309,15 @@ The page must still teach with scripts off:
 
 After the page is built, review it four ways. Each one alone must teach the same correct model:
 
-1. **Text only.** Read the prose and skip the figure and the widget. Is the mechanism complete?
-2. **Diagram only.** Look at the figure and its caption. Is the main relationship clear?
+1. **Text only.** Read the prose and skip the figures and the widget. Is the mechanism complete?
+2. **Figures only, in order.** Flip through every figure and caption from the first ladder block to
+   the widget. Does it read as one picture growing, one thing per rung? Does any figure start over
+   with a new layout, rename an element, or add two ideas at once?
 3. **Interaction only.** Use the widget at minimum, typical and maximum values, then reset twice.
    Does each state's explanation match the prose?
 4. **Without JavaScript.** Do the predictions have answers? Is the comparison visible?
 
-Write down every disagreement between parts and fix it. Common ones: the diagram labels a part with
-a different term than the prose; the widget's numbers do not match the worked example; the recap
-mentions something the page never explained.
+Write down every disagreement between parts and fix it. Common ones: a figure labels a part with a
+different term than the prose; a mechanism figure moves a node the ladder placed elsewhere; the
+widget's numbers do not match the worked example; the recap mentions something the page never
+explained.

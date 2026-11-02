@@ -5,8 +5,11 @@ Usage: python3 check_page.py page.html [--json]
 
 Reports three groups of findings:
   contract  - artifact page-contract problems (skeleton tags, CDN, theme tokens, leftover slots)
-  structure - the parts a concept-explainer page needs (diagram, interaction, sections, and the
+  structure - the parts a concept-explainer page needs (figures, interaction, sections, and the
               closing "expert's version of your question")
+  ladder    - the figure ladder: concept blocks in "What you already know", each with a figure that
+              builds on an earlier block's figure (shared data-key elements), and mechanism figures
+              that continue from the ladder
   voice     - sentence length, passive-voice suspects, filler and hype words
               (Korean is counted in space-separated eojeol, with a lower long-sentence limit)
 
@@ -173,6 +176,65 @@ def check_timeline(nc, add_outer, tag=""):
             add("WARN", "timeline", f"player is missing {what}")
 
 
+def section_span(nc, sid):
+    """Start and end offsets of <section id=sid>, up to the next <section (sections are not nested)."""
+    m = re.search(r'<section[^>]*\bid="' + re.escape(sid) + r'"', nc)
+    if not m:
+        return None
+    nxt = nc.find("<section", m.end())
+    return m.start(), (nxt if nxt != -1 else len(nc))
+
+
+def keys_in(html):
+    return set(re.findall(r'data-key="([^"]+)"', html))
+
+
+def check_ladder(nc, add):
+    """The figure ladder: concept blocks that build on each other, drawn on one base scene."""
+    fam = section_span(nc, "familiar")
+    if not fam:
+        return
+    body = nc[fam[0]:fam[1]]
+    starts = list(re.finditer(r'<div\b[^>]*\bclass="(?:[^"]*\s)?concept(?:\s[^"]*)?"[^>]*>', body))
+    if not starts:
+        add("WARN", "ladder", 'no .concept blocks in "What you already know"; teach each core concept with a short block and an easy figure')
+        return
+    blocks = []
+    for i, m in enumerate(starts):
+        end = starts[i + 1].start() if i + 1 < len(starts) else len(body)
+        tag = m.group(0)
+        bid = re.search(r'\bid="([^"]+)"', tag)
+        on = re.search(r'\bdata-builds-on="([^"]+)"', tag)
+        span = body[m.end():end]
+        blocks.append({"id": bid.group(1) if bid else f"#{i + 1}", "on": on.group(1) if on else None,
+                       "svg": "<svg" in span, "keys": keys_in(span)})
+    seen = {}
+    for i, b in enumerate(blocks):
+        name = b["id"]
+        if not b["svg"]:
+            add("WARN", "ladder", f"block {name} has no figure; a core concept gets an easy picture (plain background stays in prose, outside the blocks)")
+        elif not b["keys"]:
+            add("WARN", "ladder", f"block {name}: its figure has no data-key elements, so later figures cannot be checked against it")
+        if i > 0 and not b["on"]:
+            add("WARN", "ladder", f"block {name} does not say which earlier block it builds on (data-builds-on)")
+        if b["on"]:
+            parent = seen.get(b["on"])
+            if parent is None:
+                add("WARN", "ladder", f"block {name} builds on {b['on']!r}, which is not an earlier block")
+            elif b["keys"] and parent["keys"] and not (b["keys"] & parent["keys"]):
+                add("WARN", "ladder", f"block {name} shares no data-key with {b['on']}; its figure should be that figure plus one new thing")
+        seen[b["id"]] = b
+    mech = section_span(nc, "mechanism")
+    ladder_keys = set().union(*(b["keys"] for b in blocks))
+    if mech and ladder_keys:
+        mbody = nc[mech[0]:mech[1]]
+        if "<svg" in mbody and not (keys_in(mbody) & ladder_keys):
+            add("WARN", "ladder", "the mechanism's figures share no data-key with the ladder figures; draw them on the same base scene")
+        for on in re.findall(r'\bdata-builds-on="([^"]+)"', mbody):
+            if on not in seen:
+                add("WARN", "ladder", f"a mechanism figure builds on {on!r}, which is not a concept block")
+
+
 def check(path):
     raw = open(path, encoding="utf-8").read()
     findings = []
@@ -250,8 +312,8 @@ def check(path):
     if not any(a.get("aria-live") for _, a in p.tags) and any(t in tagnames for t in ("button", "input")):
         add("WARN", "structure", "no aria-live region for the interaction's explanation")
     missing = [s for s in EXPECTED_SECTIONS if s not in p.ids]
-    if "limits" not in p.classes and "limits" not in p.ids:
-        missing.append("limits")
+    if "limits" in p.classes or "limits" in p.ids:
+        add("WARN", "structure", "an assumptions-and-limits box found; state each simplification where the reader meets it instead")
     if missing:
         add("WARN", "structure", "sections not found by id/class: " + ", ".join(missing))
     # the term list belongs inside "What you already know", not in a glossary at the end
@@ -267,6 +329,7 @@ def check(path):
         end = nxt if nxt != -1 else len(nc)
         if not any(fam.start() < t < end for t in terms_at):
             add("WARN", "structure", 'dl.terms is not inside the "What you already know" section')
+    check_ladder(nc, add)
     # timeline: a storyboard of frames that the template's script turns into a player
     starts = [m.start() for m in re.finditer(r'<figure[^>]*class="[^"]*\btimeline\b', nc)]
     for n_tl, a in enumerate(starts, 1):
@@ -362,7 +425,7 @@ def check(path):
         add("WARN", "voice", f"{len(qs)} prose blocks contain questions; keep questions to the opening and prediction prompts")
     if words < 400:
         add("WARN", "voice", f"only {words} words of prose; the page may be too thin")
-    if words > 1500:
+    if words > 3000:
         add("WARN", "voice", f"{words} words of prose; the page may be too long for one concept")
     if deeper_words and not 80 <= deeper_words <= 350:
         add("WARN", "deeper", f"{deeper_words} words in the expert's version; aim for about 120-300")

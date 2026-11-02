@@ -2,7 +2,7 @@
 
 Many concepts are procedures: a state that changes step by step or over time. Git rebasing a
 branch, a pipeline moving instructions through stages, a cache filling, a protocol exchanging
-messages, an algorithm sorting an array. Prose and one still diagram describe the states, but the
+messages, an algorithm sorting an array. Prose and still figures describe the states, but the
 reader has to build the motion in their head. A timeline shows it.
 
 A timeline has two views of one sequence of frames:
@@ -29,9 +29,12 @@ the two views cannot disagree.
 Use one when the answer to the reader's question is a sequence: "what happens when ...", "how does X
 proceed", "walk me through", or any mechanism whose state changes over steps, cycles or time.
 Do not use one for a static structure (a memory hierarchy, a class diagram) or for a relationship
-between quantities (Bayes' rule). Those keep the normal single diagram.
+between quantities (Bayes' rule). Those use ordinary still figures.
 
-For a procedure, the timeline **is** the page's one diagram, placed in the mechanism section.
+For a procedure, the timeline is the mechanism's figure, placed in the mechanism section. It is part
+of the page's figure ladder (`references/page-structure.md` § Figures): draw its frames on the
+page's base scene, so frame 1 looks like the top rung of the concept ladder the reader just read,
+and the frames then add the procedure's changes one per step.
 
 - If the concept also has a real input to change (pipeline depth, number of commits, cache size),
   keep the normal "Try it" widget for that input.
@@ -50,7 +53,11 @@ Write the procedure as a list of states before drawing anything.
   frame 3 and frame 4 in one sentence. That sentence is the caption.
 - **Same layout in every frame.** Every frame contains the same elements in the same places, except
   for what the step changes. Fixed positions are what make the changes visible.
-- **At most seven primary elements per frame**, the same limit as any diagram.
+- **At most seven new primary elements per frame**, the same limit as any figure. Elements the
+  reader already knows from the concept ladder do not count.
+- **Drawn on the base scene.** Elements keep the positions, names and shapes they had in the ladder
+  figures. If the base scene is wider than a frame allows, a frame may show the part of the scene
+  the procedure touches, at the same relative positions.
 
 ## 3. Draw the frames
 
@@ -78,13 +85,14 @@ elements.
   labels stay readable in the small view. Put fewer, larger labels in a frame rather than many
   small ones; the caption carries the detail. The player shows the same SVG larger.
 - **Shared definitions go once, outside the frames.** Arrowheads and other `<defs>` would repeat
-  their ids if every frame carried them. Put them once in a hidden SVG just before the timeline,
-  and let every frame refer to them with `url(#id)`:
+  their ids if every frame carried them. The template already defines `#arrow` and `#arrow-accent`
+  in a hidden SVG at the top of the page; add any other shared definition there, or in a hidden SVG
+  just before the timeline, and let every frame refer to it with `url(#id)`:
   `<svg width="0" height="0" aria-hidden="true" style="position:absolute"><defs><marker id="tl-arrow" ...>...</marker></defs></svg>`.
 - **Color.** Coral (`.f-accent`, `.s-accent`) marks what changed in this frame. Everything else
   keeps its normal ink and idle colors, so the eye goes to the change.
-- **Generate, do not hand-copy.** Write the base scene once, then produce each frame by changing
-  attributes, for example with a short Python or Node script. Copying SVG by hand across ten frames
+- **Generate, do not hand-copy.** Produce each frame from the page's base scene by changing
+  attributes, with the same short Python or Node script that draws the ladder figures. Copying SVG by hand across ten frames
   invites a mismatched key or a shifted element.
 
 ## 4. Markup
@@ -155,7 +163,7 @@ How the player behaves, so you can describe it correctly on the page:
 
 Frame captions are the timeline's text version, so they are not counted against the page's prose
 budget. `check_page.py` reports them separately. Keep each caption to one sentence; nine frames add
-about 150–250 words of captions on top of the usual 600–1,300 words of prose.
+about 150–250 words of captions on top of the usual 800–2,200 words of prose.
 
 ## 7. Checks
 
