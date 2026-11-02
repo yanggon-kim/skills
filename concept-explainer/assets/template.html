@@ -235,8 +235,11 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
          in dependency order. Every block after the first names the earlier block it builds on, in
          its text and in data-builds-on, and its figure is that block's figure plus ONE new thing,
          drawn in coral, on the same base scene (same positions, names, shapes; same data-key for the
-         same element). Plan it backwards from the mechanism's figure: references/page-structure.md
-         § The concept ladder and § Figures. Copy the second block as many times as you need. -->
+         same element). Each figure shows its idea in 2–4 contrasting cases (<g class="case">): one
+         thing varies, everything else stays fixed, each case is labelled with its result, and a
+         failing case shows the boundary. Plan it backwards from the mechanism's figure:
+         references/page-structure.md § The concept ladder and § Figures. Copy the second block as
+         many times as you need. -->
     <div class="concept" id="c-{{first-concept}}">
       <h3>{{1. First core concept}}</h3>
       <p>{{What it is, shown on the figure before it is named. One concrete example.}}</p>
@@ -245,13 +248,25 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
           <svg viewBox="0 0 640 200" role="img" aria-labelledby="c1-title c1-desc">
             <title id="c1-title">{{Figure title}}</title>
             <desc id="c1-desc">{{The main relationship in one or two sentences: the figure's alt text.}}</desc>
-            <g data-key="a">
-              <rect x="20" y="70" width="150" height="60" rx="2" class="f-accent s-ink"></rect>
-              <text x="95" y="105" text-anchor="middle" class="t-label">{{Part A}}</text>
+            <!-- Two cases side by side: the same scene, one thing varied, each labelled with its result. -->
+            <g class="case" data-case="1">
+              <g data-key="a">
+                <rect x="60" y="50" width="180" height="70" rx="2" class="f-accent s-ink"></rect>
+                <text x="150" y="90" text-anchor="middle" class="t-label">{{Part A, case 1}}</text>
+              </g>
+              <text x="150" y="160" text-anchor="middle" class="t-mono">{{result, e.g. 3 inputs ✓}}</text>
+            </g>
+            <line x1="320" y1="30" x2="320" y2="180" class="s-pencil dashed"></line>
+            <g class="case" data-case="2">
+              <g data-key="a">
+                <rect x="400" y="50" width="180" height="70" rx="2" class="f-accent s-ink"></rect>
+                <text x="490" y="90" text-anchor="middle" class="t-label">{{Part A, case 2}}</text>
+              </g>
+              <text x="490" y="160" text-anchor="middle" class="t-accent">{{result, e.g. 4 inputs ✗}}</text>
             </g>
           </svg>
         </div>
-        <figcaption id="c1-caption">{{What the figure shows. This is the simplest rung: the base scene's first element.}}</figcaption>
+        <figcaption id="c1-caption">{{What the figure shows; what varies between the cases and what stays fixed. This is the simplest rung: the base scene's first element.}}</figcaption>
       </figure>
     </div>
 
@@ -263,20 +278,35 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
         <div class="diagram-scroll">
           <svg viewBox="0 0 640 200" role="img" aria-labelledby="c2-title c2-desc">
             <title id="c2-title">{{Figure title}}</title>
-            <desc id="c2-desc">{{The main relationship, and what is new compared with block 1.}}</desc>
-            <g data-key="a">
-              <rect x="20" y="70" width="150" height="60" rx="2" class="f-sheet s-ink"></rect>
-              <text x="95" y="105" text-anchor="middle" class="t-label">{{Part A}}</text>
+            <desc id="c2-desc">{{The main relationship, what is new compared with block 1, and how the two cases differ.}}</desc>
+            <g class="case" data-case="1">
+              <g data-key="a">
+                <rect x="20" y="50" width="110" height="60" rx="2" class="f-sheet s-ink"></rect>
+                <text x="75" y="85" text-anchor="middle" class="t-label">{{Part A}}</text>
+              </g>
+              <line data-key="ab" x1="135" y1="80" x2="175" y2="80" class="s-accent" marker-end="url(#arrow-accent)"></line>
+              <g data-key="b">
+                <rect x="180" y="50" width="110" height="60" rx="2" class="f-accent s-ink"></rect>
+                <text x="235" y="85" text-anchor="middle" class="t-label">{{Part B}}</text>
+              </g>
+              <text x="155" y="160" text-anchor="middle" class="t-mono">{{result, e.g. depth 2 · area 3}}</text>
             </g>
-            <line data-key="ab" x1="175" y1="100" x2="245" y2="100" class="s-accent" marker-end="url(#arrow-accent)"></line>
-            <g data-key="b">
-              <rect x="250" y="70" width="150" height="60" rx="2" class="f-accent s-ink"></rect>
-              <text x="325" y="105" text-anchor="middle" class="t-label">{{Part B}}</text>
+            <line x1="320" y1="30" x2="320" y2="180" class="s-pencil dashed"></line>
+            <g class="case" data-case="2">
+              <g data-key="a">
+                <rect x="350" y="50" width="110" height="60" rx="2" class="f-sheet s-ink"></rect>
+                <text x="405" y="85" text-anchor="middle" class="t-label">{{Part A}}</text>
+              </g>
+              <line data-key="ab" x1="465" y1="80" x2="505" y2="80" class="s-accent dashed" marker-end="url(#arrow-accent)"></line>
+              <g data-key="b">
+                <rect x="510" y="50" width="110" height="60" rx="2" class="f-accent s-ink"></rect>
+                <text x="565" y="85" text-anchor="middle" class="t-label">{{Part B, other choice}}</text>
+              </g>
+              <text x="485" y="160" text-anchor="middle" class="t-mono">{{result, e.g. depth 2 · area 2}}</text>
             </g>
-            <text x="210" y="60" text-anchor="middle" class="t-mono">{{arrow meaning}}</text>
           </svg>
         </div>
-        <figcaption id="c2-caption">{{What the figure shows; what is new (in coral) compared with block 1; what each arrow means.}}</figcaption>
+        <figcaption id="c2-caption">{{What is new (in coral) compared with block 1; what varies between the cases and what stays fixed; what each arrow means.}}</figcaption>
       </figure>
     </div>
 
@@ -300,7 +330,8 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
 
     <!-- SLOT NOTE: as many figures as the steps need. Each one is drawn on the same base scene as
          the ladder and adds one thing to an earlier figure (data-builds-on names it). Elements the
-         reader already knows keep their old look; the new thing is coral. -->
+         reader already knows keep their old look; the new thing is coral. Where a step changes a
+         result, show it as contrasting cases too (before / after the step, two choices). -->
     <figure class="sheet wide" aria-labelledby="m1-caption" data-builds-on="c-{{second-concept}}">
       <div class="diagram-scroll">
         <svg viewBox="0 0 640 200" role="img" aria-labelledby="m1-title m1-desc">

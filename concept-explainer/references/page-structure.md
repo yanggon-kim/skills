@@ -50,8 +50,9 @@ is the most important part of "What you already know", and usually the longest.
   network ...") and in its markup (`data-builds-on`). It is usually the block just before it, but
   it can be any earlier one.
 - **One block = one idea.** A heading that names the concept, two to five short paragraphs, one
-  figure, and one concrete example worked on that figure. A small table is welcome when it lists
-  cases the figure shows (each way to cut a node, with its inputs and whether it fits).
+  figure, and a concrete example worked on that figure. The figure shows the idea in 2–4
+  contrasting cases (§ Figures, Show each idea in contrasting cases). A small table is welcome when
+  it lists the same cases (each way to cut a node, with its inputs and whether it fits).
 - **Its figure is a rung.** The figure is the figure of the block it builds on, plus one new thing.
   § Figures says how to draw it.
 
@@ -179,8 +180,8 @@ table, or one node and its inputs) as long as what it shows sits and looks as it
 ### Rules for each rung
 
 - **One new thing per figure.** The rung adds exactly one idea to the figure it builds on: a new
-  element, a new label (a number on every node), a new grouping (a hull around some nodes), or a
-  second case beside the first.
+  element, a new label (a number on every node), or a new grouping (a hull around some nodes). It
+  then shows that one idea in several cases; the cases are not extra ideas.
 - **New in coral, known in its old look.** The new thing is drawn in coral (`.f-accent`,
   `.s-accent`, `.t-accent`). What the reader already knows keeps the ink, pencil and idle colors it
   had, so the eye goes to the change.
@@ -188,10 +189,45 @@ table, or one node and its inputs) as long as what it shows sits and looks as it
   ("the same network as in block 2, now with ...").
 - **At most seven new primary elements.** Boxes, lanes or nodes the reader has not seen before.
   Elements carried over from earlier rungs do not count, so a figure can hold a whole network the
-  reader already knows. If one figure must introduce more than seven, split it into two rungs.
+  reader already knows, and a new element repeated in every case counts once. If one figure must
+  introduce more than seven, split it into two rungs.
 - **The mechanism continues the ladder.** Mechanism figures start from the top rung of the concept
   ladder, not from a new drawing. A mechanism that changes over time is a timeline whose frames are
   drawn on the base scene (`references/timeline.md`).
+
+### Show each idea in contrasting cases
+
+One example shows that a concept exists; contrasting cases show what it is. People pick out a
+property when they see it change while everything else stays the same. So a figure that teaches a
+concept shows **2–4 cases side by side**, all drawn on the base scene:
+
+- **Vary one thing; hold the rest.** The same network, the same layout, the same scale in every
+  case. Only the property the figure teaches changes. If two things change at once, the reader
+  cannot tell which one caused the difference.
+- **Label each case with its result.** Under each case, the measured value or the verdict, in the
+  terms of the page: "3 inputs ✓", "4 inputs ✗", "depth 2 · area 3". The labels make the contrast
+  readable without the prose.
+- **Show the boundary when there is one.** Include a case that fails (a non-example) next to the
+  ones that work. Only examples that work never show where the concept stops.
+- **Say what varies and what is fixed.** The caption names both: "Both mappings have depth 2; only
+  the number of LUTs differs."
+- **Repeat the cases in a table when it helps.** A small table under the figure, one row per case,
+  lets the reader compare the numbers.
+
+Pick the kind of contrast that fits the concept:
+
+| kind | use it for | example |
+|---|---|---|
+| example / non-example | a concept with a condition or a limit | cuts of node n with 2, 3 and 4 inputs: the first two fit a 3-input LUT, the third does not |
+| two choices for the same problem | a concept that is a score or a criterion | two mappings of one network: same depth 2, area 3 against 2 |
+| a sweep of one value | a concept whose result grows or shrinks with one input | cuts of height 1, 2 and 3 for the same node |
+| before / after | what a mechanism changes | the same network mapped by FlowMap (5 LUTs) and with slack (4 LUTs) |
+
+Lay the cases out as small multiples: equal panels in one row, each a `<g class="case"
+data-case="...">` in the SVG, with the result label under each panel. On a phone the row may scroll
+inside `.diagram-scroll`; keep at most four panels so each stays readable. A figure whose idea is a
+single structure (the first rung, a lone LUT and its truth table) may show one case; most rungs
+should not.
 
 ### Choose the base scene's type
 
@@ -312,7 +348,8 @@ After the page is built, review it four ways. Each one alone must teach the same
 1. **Text only.** Read the prose and skip the figures and the widget. Is the mechanism complete?
 2. **Figures only, in order.** Flip through every figure and caption from the first ladder block to
    the widget. Does it read as one picture growing, one thing per rung? Does any figure start over
-   with a new layout, rename an element, or add two ideas at once?
+   with a new layout, rename an element, or add two ideas at once? For each figure, can you name in
+   one word what varies between its cases, and does a failing case show the boundary?
 3. **Interaction only.** Use the widget at minimum, typical and maximum values, then reset twice.
    Does each state's explanation match the prose?
 4. **Without JavaScript.** Do the predictions have answers? Is the comparison visible?

@@ -8,8 +8,8 @@ Reports three groups of findings:
   structure - the parts a concept-explainer page needs (figures, interaction, sections, and the
               closing "expert's version of your question")
   ladder    - the figure ladder: concept blocks in "What you already know", each with a figure that
-              builds on an earlier block's figure (shared data-key elements), and mechanism figures
-              that continue from the ladder
+              builds on an earlier block's figure (shared data-key elements) and shows 2-4
+              contrasting cases (g.case), and mechanism figures that continue from the ladder
   voice     - sentence length, passive-voice suspects, filler and hype words
               (Korean is counted in space-separated eojeol, with a lower long-sentence limit)
 
@@ -206,8 +206,9 @@ def check_ladder(nc, add):
         bid = re.search(r'\bid="([^"]+)"', tag)
         on = re.search(r'\bdata-builds-on="([^"]+)"', tag)
         span = body[m.end():end]
+        cases = len(re.findall(r'\bclass="(?:[^"]*\s)?case(?:\s[^"]*)?"', span))
         blocks.append({"id": bid.group(1) if bid else f"#{i + 1}", "on": on.group(1) if on else None,
-                       "svg": "<svg" in span, "keys": keys_in(span)})
+                       "svg": "<svg" in span, "keys": keys_in(span), "cases": cases})
     seen = {}
     for i, b in enumerate(blocks):
         name = b["id"]
@@ -215,6 +216,8 @@ def check_ladder(nc, add):
             add("WARN", "ladder", f"block {name} has no figure; a core concept gets an easy picture (plain background stays in prose, outside the blocks)")
         elif not b["keys"]:
             add("WARN", "ladder", f"block {name}: its figure has no data-key elements, so later figures cannot be checked against it")
+        if b["svg"] and b["cases"] < 2 and i > 0:
+            add("WARN", "ladder", f"block {name}: its figure shows {b['cases'] or 'one'} case; show 2-4 contrasting cases (<g class=\"case\">) that differ in one thing")
         if i > 0 and not b["on"]:
             add("WARN", "ladder", f"block {name} does not say which earlier block it builds on (data-builds-on)")
         if b["on"]:

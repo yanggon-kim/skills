@@ -21,6 +21,13 @@ The first rungs teach the background concepts with easy pictures; the mechanism'
 top rungs. A reader who has read the easy picture can then read the hard one, because the hard one
 is the same picture with a little more on it.
 
+Each figure teaches by **contrast**. Instead of one example, it shows two to four cases side by
+side on the same scene, with one thing changed and everything else held fixed, and it labels each
+case with its result: a cut with 2, 3 and 4 inputs, where 2 and 3 fit a 3-input LUT and 4 does not;
+two mappings of the same network with the same depth and different area. People notice a property
+when they see it vary while the rest stays still, so the contrast makes the concept visible, and a
+case that fails shows where its boundary is.
+
 When the concept changes over time — a procedure, a process, an algorithm's steps — the mechanism's
 figure becomes a **timeline**: a **storyboard** (every step as a frame on the same fixed layout, side by
 side) and a **player** (the same frames animated in place, with play, pause, step and scrub). The
@@ -136,6 +143,10 @@ Read `references/page-structure.md` § Figures before drawing. Plan the ladder b
 4. **Reverse the list.** That is the reading order. The first ladder block shows the simplest
    picture; each later figure adds one thing, in coral, while what the reader already knows keeps
    its earlier look.
+5. **Choose each rung's contrast.** For every figure, decide which one thing varies across its
+   cases and what stays fixed, and pick 2–4 cases: an example and a non-example at the boundary,
+   two choices for the same problem, a sweep of one value, or before and after. If you cannot name
+   the one thing that varies, the figure is not ready.
 
 Generate every figure from the base scene with one short script (Node or Python) and the same
 drawing function, instead of hand-copying SVG, so positions and names cannot drift. Give each
@@ -220,7 +231,8 @@ Then review the page four ways. Each one alone must teach the same correct menta
 2. **Figures only, in order** — flip through the figures and captions from the first ladder block
    to the mechanism. They must read as one story that grows one thing per rung. A figure that
    starts over with a new layout, renames an element, or adds two new ideas at once is a broken
-   rung; fix it.
+   rung; fix it. For each figure, name in one word what varies between its cases; if two things
+   vary, or nothing does, fix the figure.
 3. **Interaction only** — use the widget at its minimum, typical and maximum values; press reset
    twice.
 4. **Without JavaScript** — the predictions still have answers and the comparison still shows.
