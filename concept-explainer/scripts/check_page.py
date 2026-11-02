@@ -11,8 +11,8 @@ Reports three groups of findings:
               builds on an earlier block's figure (shared data-key elements), and mechanism figures
               that continue from the ladder
   technique - each ladder block names its chosen technique (data-technique) and its markup matches:
-              contrast/sweep/extremes need 2+ g.case panels, cause-chain arrows, sequence a
-              timeline; analogy is not a technique of this skill
+              contrast/sweep/extremes need 2+ g.case panels, analogy a p.breaks sentence (and
+              only one, in "What you already know"), cause-chain arrows, sequence a timeline
   foreshadow- one or two p.foreshadow hints in the ladder, each recalled later by data-recalls
   voice     - sentence length, passive-voice suspects, filler and hype words
               (Korean is counted in space-separated eojeol, with a lower long-sentence limit)
@@ -34,7 +34,7 @@ ALLOWED_SCRIPT_HOSTS = (
     "https://code.jquery.com/",
 )
 ALLOWED_STYLE_HOSTS = ("https://fonts.googleapis.com/",)
-TECHNIQUES = {"contrast", "sweep", "extremes", "sequence", "cause-chain", "scale"}
+TECHNIQUES = {"contrast", "sweep", "extremes", "sequence", "cause-chain", "analogy", "scale"}
 EXPECTED_SECTIONS = ["familiar", "problem", "mechanism", "try", "result", "misconception", "recap", "deeper"]
 PROSE_TAGS = {"p", "li", "dd", "dt", "summary", "figcaption", "h1", "h2", "h3", "blockquote"}
 SKIP_TAGS = {"script", "style", "svg", "code", "pre", "kbd", "title"}
@@ -206,6 +206,8 @@ def check_technique(techs, html, where, add):
     cases = len(re.findall(r'\bclass="(?:[^"]*\s)?case(?:\s[^"]*)?"', html))
     if any(t in ("contrast", "sweep", "extremes") for t in techs) and cases < 2:
         add("WARN", "technique", f"{where}: {'/'.join(t for t in techs if t in ('contrast', 'sweep', 'extremes'))} needs 2-4 side-by-side cases (<g class=\"case\">); found {cases}")
+    if "analogy" in techs and not re.search(r'<p\b[^>]*\bclass="(?:[^"]*\s)?breaks(?:\s[^"]*)?"', html):
+        add("WARN", "technique", f"{where}: an analogy needs a <p class=\"breaks\"> sentence saying where it breaks")
     if "cause-chain" in techs and "marker-end" not in html:
         add("WARN", "technique", f"{where}: a cause chain needs arrows (marker-end) that mean \"causes\"")
     if "sequence" in techs and not re.search(r'class="[^"]*\btimeline\b', html):
@@ -253,6 +255,13 @@ def check_ladder(nc, add):
             elif b["keys"] and parent["keys"] and not (b["keys"] & parent["keys"]):
                 add("WARN", "ladder", f"block {name} shares no data-key with {b['on']}; its figure should be that figure plus one new thing")
         seen[b["id"]] = b
+    # analogies are rare: at most one, and only in "What you already know"
+    n_analogy = sum(1 for b in blocks if b["tech"] and "analogy" in b["tech"])
+    if n_analogy > 1:
+        add("WARN", "technique", f"{n_analogy} analogy blocks; use an analogy rarely, at most once per page")
+    outside = nc[:fam[0]] + nc[fam[1]:]
+    if re.search(r'\bdata-technique="[^"]*\banalogy\b', outside):
+        add("WARN", "technique", 'an analogy outside "What you already know"; use analogies only in the ladder, and rarely')
     # the foreshadow: one or two hints in the ladder, each recalled after "What you already know"
     shadows = [b for b in blocks if re.search(r'<p\b[^>]*\bclass="(?:[^"]*\s)?foreshadow(?:\s[^"]*)?"', b["span"])]
     loose = len(re.findall(r'class="(?:[^"]*\s)?foreshadow(?:\s[^"]*)?"', body)) - len(shadows)

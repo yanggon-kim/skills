@@ -54,7 +54,8 @@ is the most important part of "What you already know", and usually the longest.
 - **One chosen technique per block.** Pick it from `references/techniques.md` by the shape of the
   question the block answers, and name it in `data-technique`. Contrasting cases (§ Figures, Show
   each idea in contrasting cases) are the strongest candidate and fit most "what is it?" blocks; a
-  "why?" block takes a cause chain. A small table is
+  "why?" block takes a cause chain; rarely, one abstract first contact may take an analogy (at most
+  one per page, ladder blocks only). A small table is
   welcome when it lists the cases the figure shows (each way to cut a node, with its inputs and
   whether it fits).
 - **Its figure is a rung.** The figure is the figure of the block it builds on, plus one new thing.
@@ -243,8 +244,9 @@ use the same small-multiples layout.
 ### Other techniques on the base scene
 
 A block whose question is not "what is it?" uses another technique, still drawn on the base scene:
-a cause chain as numbered callouts and "causes" arrows on one picture of the scene; a sequence as a
-timeline. Each
+a cause chain as numbered callouts and "causes" arrows on one picture of the scene; an analogy as
+the familiar picture beside a base-scene picture, matched part to part, followed by a
+`<p class="breaks">` sentence that says where the analogy breaks; a sequence as a timeline. Each
 technique's entry in `references/techniques.md` says how to draw it and when not to use it.
 
 ### Choose the base scene's type
@@ -364,6 +366,7 @@ The page must still teach with scripts off:
 After the page is built, review it four ways. Each one alone must teach the same correct model:
 
 1. **Text only.** Read the prose and skip the figures and the widget. Is the mechanism complete?
+   Does every analogy say where it breaks?
 2. **Figures only, in order.** Flip through every figure and caption from the first ladder block to
    the widget. Does it read as one picture growing, one thing per rung? Does any figure start over
    with a new layout, rename an element, or add two ideas at once? For each unit, does the chosen

@@ -167,6 +167,7 @@ html.js .nojs-only { display: none; }
 .concept + .concept { border-top: 1px dashed var(--idle); padding-top: 1.5rem; }
 .concept .builds-on { color: var(--ink-soft); }
 .concept .builds-on::before { content: "↳ "; color: var(--accent); }
+.concept .breaks { font-size: var(--step--1); color: var(--ink-soft); border-left: 3px dashed var(--pencil); padding-left: 0.75rem; }
 .foreshadow { border-left: 3px solid var(--mustard); padding-left: 0.75rem; }
 .foreshadow::before { content: "Preview"; display: block; font-family: var(--font-mono); font-size: var(--step--1); letter-spacing: 0.08em; text-transform: uppercase; color: var(--mustard); }
 :lang(ko) .foreshadow::before { content: "미리 보기"; }
@@ -240,8 +241,10 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
          drawn in coral, on the same base scene (same positions, names, shapes; same data-key for the
          same element). Each block names one technique in data-technique, chosen by the shape of
          the question it answers (references/techniques.md): contrast, sweep, extremes, sequence,
-         cause-chain or scale. The two blocks below use contrast, the strongest candidate: 2–4
-         cases (<g class="case">), one thing varied, each labelled with its result. Plan it backwards from the
+         cause-chain, analogy or scale. The two blocks below use contrast, the strongest candidate:
+         2–4 cases (<g class="case">), one thing varied, each labelled with its result. Rarely (at
+         most one block per page, and only here in "What you already know"), an analogy block draws the familiar picture beside a base-scene picture and adds, after the figure,
+         <p class="breaks">Where the analogy breaks: ...</p>. Plan it backwards from the
          mechanism's figure: references/page-structure.md § The concept ladder and § Figures. Copy
          the second block as many times as you need. -->
     <div class="concept" id="c-{{first-concept}}" data-technique="contrast">

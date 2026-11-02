@@ -22,7 +22,7 @@ according to the shape of the question each unit answers.
 |---|---|---|
 | **1. Defaults** | picture, concrete example, ladder, show then name | in every unit, always. They are the house method: the reader's favourite way to learn. |
 | **2. Page skeleton** | anchor in the familiar, foreshadow, problem first, predict first, manipulate one input, transfer question, confront a misconception | each in its fixed place on the page (`references/page-structure.md` § Section order). Not chosen; the structure provides them. |
-| **3. Chosen per unit** | contrast, sweep, extreme cases, sequence, cause chain, numbers and scale | one per unit (two at most), picked by the shape of the question the unit answers. |
+| **3. Chosen per unit** | contrast, sweep, extreme cases, sequence, cause chain, analogy, numbers and scale | one per unit (two at most), picked by the shape of the question the unit answers. |
 
 A **unit** is one ladder block, the problem section, one mechanism step, or the widget.
 
@@ -41,6 +41,7 @@ contrast is the strongest general tool.
 | "What happens, step by step?" | a procedure or a process | sequence |
 | "What does it change?" | a mechanism or a rule applied to a fixed case | contrast (before / after) |
 | "Why does that happen?" | a cause that leads to an effect | cause chain |
+| "What is this even like?" | an abstract idea with nothing physical to draw, or a first contact with an unfamiliar field | analogy, only in "What you already know" and rarely (see its entry) |
 | "How big is it? Does it matter?" | a size, a cost, a growth rate | numbers and scale |
 
 Contrast is the strongest candidate, not a rule. Use it whenever the unit's idea is a property
@@ -61,13 +62,13 @@ and disconnected.
   under each; a cause chain always reads in one direction with one arrow meaning "causes". The
   reader learns each format once.
 
-**Failure 2: a broken ladder.** A technique that brings its own picture starts a new drawing, and
-the reader loses the base scene.
+**Failure 2: a broken ladder.** A technique that needs its own picture (an analogy above all)
+starts a new drawing, and the reader loses the base scene.
 
 - **Every chosen technique is drawn on the base scene.** Each entry in § 7 says how.
-- **No analogies.** This skill does not use them: an analogy is a second picture from another
-  world, and it breaks somewhere. An abstract idea gets the defaults instead: a concrete example
-  drawn on the base scene, usually shown by contrast.
+- **An analogy is drawn beside the base scene, never instead of it.** The familiar picture stands
+  next to the base-scene picture, with each part matched to its partner, so the reader carries the
+  intuition across and then keeps the base scene.
 - **The defaults still hold.** Whatever is chosen, the unit still has a picture, a concrete example,
   builds on an earlier rung, and shows before it names.
 
@@ -80,7 +81,7 @@ block first shows the main question's phenomenon, the sentence, and where the me
 | unit | question in the reader's words | shape | technique | why it fits | how it sits on the base scene |
 |---|---|---|---|---|---|
 | c-area | "What does the area limit allow?" | boundary | contrast: example / non-example | the line is the boundary; one plan outside shows it | three plans on the grid, same line |
-| c-whole | "What does the whole-number rule change?" | what changes | contrast: before / after | the rule is the only difference between the two panels | the same region, all points against only the dots |
+| c-ceiling | "What is this ceiling?" | abstract | analogy | nothing physical to point at yet | room-and-ceiling picture beside the grid, parts matched |
 | c-corner | "Why is the best point a corner?" | why | cause chain | the answer is a chain of three facts | the score line on the grid, three arrows |
 | widget | "When does rounding work?" | depends on input | sweep + extreme cases | budget is a real input; the small budgets show LP = ILP | the grid with the budget line moving |
 
@@ -215,6 +216,31 @@ draw it on the base scene, and an example.
   slides the line without turning it → the last point the line touches as it leaves the region is
   a corner.
 
+### Analogy
+
+**Restricted: only in "What you already know", and rarely.** At most one analogy per page, in one
+ladder block, and only when the defaults cannot do the job: no literal picture on the base scene
+shows the idea yet. Most pages need none. Never use one in the problem, the mechanism or the
+widget: by then the reader has the base scene, and a second picture from another world only
+competes with it.
+
+- **What it does.** Gives a newcomer an intuition from a world they already know, so an abstract
+  idea gets a shape before it gets its precise form.
+- **Use it when** the idea is abstract and has nothing physical to draw yet, or the reader is new to
+  the whole field, and only in a "What you already know" block.
+- **Avoid it when** a literal picture on the base scene already shows the idea (then the analogy
+  adds a second picture for no gain), or when the analogy breaks in a place the page relies on.
+- **On the base scene.** Two panels side by side: the familiar picture and the base-scene picture,
+  with matched parts labelled with the same letters or colors ("room height" ↔ "LP score"). The
+  analogy never replaces the base scene; the next unit continues from the base-scene panel.
+- **Where it breaks.** Every analogy breaks somewhere. Say where in one sentence, in a
+  `<p class="breaks">`, right after the figure. An analogy without this sentence plants a wrong
+  belief that the page never removes.
+- **Example.** The LP relaxation's score is a ceiling: like a room's ceiling, nothing standing in
+  the room (no whole plan) can be taller. Where it breaks: a room's ceiling is known before you
+  move in; the LP ceiling is found by solving the relaxation, and it changes when the problem is
+  split.
+
 ### Numbers and scale
 
 - **What it does.** Turns "big", "slow" or "expensive" into a number the reader can compare, and
@@ -232,7 +258,7 @@ draw it on the base scene, and an example.
 Each ladder block, and each mechanism figure that uses a Tier 3 technique, names it:
 
 ```html
-<div class="concept" id="c-whole" data-builds-on="c-score" data-technique="contrast"> ... </div>
+<div class="concept" id="c-ceiling" data-builds-on="c-whole" data-technique="analogy"> ... </div>
 <figure class="sheet wide" data-builds-on="c-whole" data-technique="contrast"> ... </figure>
 ```
 
@@ -241,7 +267,7 @@ the problem) that recalls it carries `data-recalls="<block id>"` and links to th
 warns when the ladder has no foreshadow, when it has more than two, and when a foreshadow's block
 is never recalled.
 
-Allowed values: `contrast`, `sweep`, `extremes`, `sequence`, `cause-chain`, `scale`.
+Allowed values: `contrast`, `sweep`, `extremes`, `sequence`, `cause-chain`, `analogy`, `scale`.
 Two values are separated by a space. `scripts/check_page.py` warns when a ladder block has no
 `data-technique`, when a value is unknown or more than two are given, and when the markup does not
 match the technique:
@@ -249,6 +275,7 @@ match the technique:
 | technique | the checker expects |
 |---|---|
 | contrast, sweep, extremes | at least two `<g class="case">` panels |
+| analogy | a `<p class="breaks">` sentence in the block |
 | cause-chain | arrows in the figure (`marker-end`) |
 | sequence | a timeline (`figure.timeline`) |
 | scale | nothing mechanical; check the numbers by hand |
