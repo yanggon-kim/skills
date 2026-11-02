@@ -15,7 +15,7 @@ Reports three groups of findings:
               only one, in "What you already know"), cause-chain arrows, sequence a timeline
   foreshadow- one or two p.foreshadow hints in the ladder, each recalled later by data-recalls
   parts     - the conclusion's parts (data-part): facts in the ladder with a p.source line, an
-              assumption in the problem or misconception, reasons in the mechanism whose data-from
+              assumption in the problem, reasons in the mechanism whose data-from
               points at real ids, and every convention changed in "Try it" (data-changes)
   route     - the route map (advance organizer) under the answer: every part on the route has a
               one-line data-summary, leads to the answer, and the drawn map is up to date
@@ -46,7 +46,7 @@ ALLOWED_SCRIPT_HOSTS = (
 ALLOWED_STYLE_HOSTS = ("https://fonts.googleapis.com/",)
 PARTS = {"element", "fact", "reason", "assumption", "convention", "conclusion"}
 TECHNIQUES = {"contrast", "sweep", "extremes", "sequence", "cause-chain", "analogy", "scale"}
-EXPECTED_SECTIONS = ["familiar", "problem", "mechanism", "try", "result", "misconception", "recap", "deeper"]
+EXPECTED_SECTIONS = ["familiar", "problem", "mechanism", "try", "recap", "deeper"]
 PROSE_TAGS = {"p", "li", "dd", "dt", "summary", "figcaption", "h1", "h2", "h3", "blockquote"}
 SKIP_TAGS = {"script", "style", "svg", "code", "pre", "kbd", "title"}
 
@@ -308,7 +308,7 @@ def check_parts(nc, add):
         add("WARN", "parts", "no data-part anywhere; take the conclusion apart (SKILL.md step 2) and mark each unit's part")
         return
     ids = set(re.findall(r'\bid="([^"]+)"', nc))
-    spans = {k: section_span(nc, k) for k in ("familiar", "problem", "mechanism", "try", "misconception")}
+    spans = {k: section_span(nc, k) for k in ("familiar", "problem", "mechanism", "try")}
 
     def where(pos):
         for k, sp in spans.items():
@@ -343,8 +343,8 @@ def check_parts(nc, add):
                 add("WARN", "parts", f"convention {name} is never changed; let the widget or a transfer question change it (data-changes=\"{tid.group(1)}\")")
         if "assumption" in kinds:
             has_assumption = True
-            if sec not in ("problem", "misconception"):
-                add("WARN", "parts", f"the assumption {name} sits outside the problem and the misconception; show it failing in the problem")
+            if sec != "problem":
+                add("WARN", "parts", f"the assumption {name} sits outside the problem; show it failing in the problem")
         if "reason" in kinds:
             has_reason = True
             frm = re.search(r'\bdata-from="([^"]*)"', m.group(0))

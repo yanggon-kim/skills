@@ -11,7 +11,7 @@
 
 The order follows how understanding is built: the reader's question, what they already have and
 the concepts they will need (each taught with an easy figure), why the problem exists, how the
-mechanism solves it, a chance to test it, and what to take away. Every section is short. A typical
+mechanism solves it, a chance to test it, and what to take away, with its cost. Every section is short. A typical
 page carries 800–2,200 words in total, counting captions and terms (this is what `check_page.py`
 counts; it warns outside 400–3,000). A page with a long concept ladder sits near the top of that
 range; that is fine, because each rung is short and has a picture. The last section, the expert's
@@ -25,14 +25,21 @@ lesson.
 | 2 | **The problem** | What goes wrong, or what is hard, without the mechanism. Make the reader feel the cost with a concrete case and, if possible, a number. The assumption fails here, on the base scene. Show it on a ladder figure when you can. | 1 short paragraph (+ figure) |
 | 3 | **The mechanism** | How it works, step by step, with as many figures as the steps need. Each step is a reason and names the blocks it follows from. Each figure climbs from the top rung of the concept ladder and adds one thing. It recalls the ladder's foreshadow where the hinted phenomenon is explained. Show each step working before you name it. | 2–6 short paragraphs + figures |
 | 4 | **Try it** | The interaction: predict, act, compare, explain. Its picture uses the same base scene. Where the parts include a convention, the widget or the transfer question changes it and the reader rebuilds the result. | widget + 2–3 sentences |
-| 5 | **The result** | What the mechanism buys, and what it costs. Every mechanism has a trade-off; name it. | 1 paragraph |
-| 6 | **A common misconception** | One wrong belief people hold, why it is tempting, and what is true instead. | 3–5 sentences |
-| 7 | **Recap** | Three to five lines, one idea each, in the order the page taught them. | 3–5 bullets |
-| 8 | **The expert's version of your question** | The reader's request, upgraded: what a top professional would do that the reader did not ask for, the raw material they start from, their methods and tools, and what outside check shows the answer is right. Ends with the request rewritten as a prompt, ready to paste, and the sources you checked. | 1–2 sentences + 4 items + the prompt |
+| 5 | **Recap** | Three to five lines, one idea each, in the order the page taught them. The last line names the trade-off: what the mechanism costs for what it buys ("The cost: ..."). | 3–5 bullets + 1 cost line |
+| 6 | **The expert's version of your question** | The reader's request, upgraded: what a top professional would do that the reader did not ask for, the raw material they start from, their methods and tools, and what outside check shows the answer is right. Ends with the request rewritten as a prompt, ready to paste, and the sources you checked. | 1–2 sentences + 4 items + the prompt |
 
-There is no "assumptions and limits" box. State each simplification in one plain sentence where
-the reader meets it: in the paragraph, the figure caption or the widget note that relies on it
-("This page counts every gate as one unit of delay; real gates differ.").
+There is no "assumptions and limits" box, and no separate result or misconception section. State
+each simplification in one plain sentence where the reader meets it: in the paragraph, the figure
+caption or the widget note that relies on it ("This page counts every gate as one unit of delay;
+real gates differ."). The same holds for wrong beliefs:
+
+- **The reader's assumption** — what they bring before the lesson — fails in "The problem", on the
+  base scene (§ The parts).
+- **A misunderstanding of the mechanism itself** — one a reader can only form after learning it —
+  is corrected in one sentence at the mechanism step where it would arise ("This does not make the
+  answer approximate: the search keeps only whole plans as answers.").
+- **The trade-off** — what the mechanism costs for what it buys — is the recap's last line, so the
+  reader leaves knowing it is not free.
 
 ### The parts: what the ladder is made of
 
@@ -53,7 +60,7 @@ Each part is one of five kinds:
 | **element** | an object, picture or term the reader needs in order to read a fact or a reason | the grid of plans; the area line | a ladder block (plain ones stay in prose) | picture, show then name; contrast when it has a boundary |
 | **fact** | true and checkable without trusting the page: a law, a definition, a line of the code, a published or measured number | "x and y must be whole numbers" (the problem says so) | a ladder block, often with its element; one `p.source` line says how to check it | contrast or extreme cases that show the fact holding |
 | **reason** | a step that follows from earlier parts | "the LP score is a ceiling for every whole plan" | the mechanism; it names the parts it follows from | cause chain |
-| **assumption** | what the reader, or the field by habit, takes for granted and the conclusion overturns | "round the LP answer and you have the best whole plan" | the problem (it fails there) and the misconception | problem first; contrast (believed vs. real) |
+| **assumption** | what the reader, or the field by habit, takes for granted and the conclusion overturns | "round the LP answer and you have the best whole plan" | the problem (it fails there) | problem first; contrast (believed vs. real) |
 | **convention** | a fact people chose and could choose otherwise; mark it as a convention where the page states it | "one memory port" in a loop page; "a 0.5 rounding threshold" | the ladder states it; "Try it" or the transfer question changes it | manipulate one input |
 
 Rules for the parts:
@@ -89,7 +96,7 @@ explains the graph top down.
 - **What is on it.** One box per part on the way to the answer: each ladder block, the problem's
   assumption, each reason in the mechanism, and the answer itself. A pure convention (a choice the
   widget changes) is a lever, not a step, so it is not a box; a block that states a convention
-  shows a small "a choice" tag. The misconception, the widget and the expert section are not on it.
+  shows a small "a choice" tag. The widget, the recap and the expert section are not on it.
 - **Each box: one line in plain words.** `data-summary`, about 40 characters (about 20 in Korean).
   The reader has not learned the terms yet, so use the page's plain words, not jargon ("The LP
   score is a ceiling" is fine once the box's block says what LP is; "LP relaxation bound" is not).

@@ -93,7 +93,7 @@ def graph(html):
         if main is None:          # a pure convention is a lever for "Try it", not a step on the route
             continue
         band = "conclusion" if main == "conclusion" else n["section"]
-        if band not in BANDS:     # e.g. the misconception's assumption: not on the route
+        if band not in BANDS:     # e.g. a part in "Try it": not on the route
             continue
         if not n["summary"]:
             problems.append(f"{n['id'] or main}: a part on the route has no data-summary (one plain line for the route map)")

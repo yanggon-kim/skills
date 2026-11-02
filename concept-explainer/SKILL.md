@@ -47,7 +47,7 @@ fits it, chosen from a toolkit in `references/techniques.md`. The toolkit has th
 - **Defaults, in every unit:** a picture, a concrete example, the ladder, and show before you name.
   They are the user's preferred way to learn and never change.
 - **The page skeleton, in fixed places:** the route map, anchor in the familiar, foreshadow, problem first,
-  predict first, manipulate one input, a transfer question, a misconception. The foreshadow is one
+  predict first, manipulate one input, a transfer question. The foreshadow is one
   sentence at the end of the ladder block whose figure first shows the main question's phenomenon:
   a hint of what the mechanism will explain, never the answer, recalled by name in the mechanism.
   ("This picture already shows the heart of Q6: with the same depth, the way you choose cuts
@@ -133,8 +133,9 @@ in mind. Read `references/page-structure.md` § The parts.
    is too wide; if one fact is "experts say so", keep asking.
 3. **Name the assumption and the conventions.** The **assumption** is what the reader, or the field
    by habit, takes for granted that the conclusion overturns ("adding a pipeline pragma gives II =
-   1"; "rounding the LP answer gives the best whole answer"). It usually is the page's misconception
-   too. Mark every fact that is a **convention**: a choice people made and could make otherwise
+   1"; "rounding the LP answer gives the best whole answer"). It is the page's main misconception,
+   and the problem section shows it failing; the page has no separate misconception section. Mark
+   every fact that is a **convention**: a choice people made and could make otherwise
    (one memory port, one accumulator). Not everything reaches physics: a definition or a convention
    is a fine place to stop, as long as the page says which it is.
 4. **List the elements.** For each fact and reason, list what the reader must already know to read
@@ -152,7 +153,13 @@ Then make the parts right, and collect what the rest of the page needs:
 - Also list **the terms the page will use** (every word a smart non-expert might not know,
   typically four to eight, including the concept's own name) and **one real-world example** (a real
   system, product, dataset or event — not a toy story). The real example usually belongs in "the
-  problem" or "the result".
+  problem".
+- Write down **the trade-off**: what the mechanism costs (time, area, memory, complexity) for what
+  it buys. Every mechanism has one, and the reader should not leave thinking it is free. It becomes
+  the last line of the recap.
+- Write down **any common misunderstanding of the mechanism itself** — one that a reader can only
+  form after learning it ("the solver uses fractions, so the answer is approximate"). It cannot go
+  in the problem, so correct it in one sentence at the mechanism step where it would arise.
 - For each fact, ask: do I know this firmly? For recent topics, niche details, exact numbers, or
   anything about the user's own code or paper, check it — search the web or read the file — before
   you print it.
@@ -186,8 +193,11 @@ other defaults and skeleton parts need no choice.
 
 Read `references/voice.md` first. Follow the section order in `references/page-structure.md`:
 question → what you already know (the plain background, then the concept ladder, then the words the
-page uses) → the problem → the mechanism → try it → the result → a common misconception → recap →
-the expert's version of your question.
+page uses) → the problem → the mechanism → try it → recap → the expert's version of your question.
+The recap's last line names the trade-off ("The cost: ..."). There is no separate result or
+misconception section: the assumption fails in the problem, and a misunderstanding of the
+mechanism is corrected in one sentence where it would arise, the same way simplifications are
+stated where the reader meets them.
 
 "What you already know" has three parts. First, the truly easy background, in prose only. Second,
 the **concept ladder**: one block for each element and fact the mechanism will use, in dependency

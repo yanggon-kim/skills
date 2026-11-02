@@ -21,7 +21,7 @@ according to the shape of the question each unit answers.
 | tier | techniques | when |
 |---|---|---|
 | **1. Defaults** | picture, concrete example, ladder, show then name | in every unit, always. They are the house method: the reader's favourite way to learn. |
-| **2. Page skeleton** | route map, anchor in the familiar, foreshadow, problem first, predict first, manipulate one input, transfer question, confront a misconception | each in its fixed place on the page (`references/page-structure.md` § Section order). Not chosen; the structure provides them. |
+| **2. Page skeleton** | route map, anchor in the familiar, foreshadow, problem first, predict first, manipulate one input, transfer question | each in its fixed place on the page (`references/page-structure.md` § Section order). Not chosen; the structure provides them. |
 | **3. Chosen per unit** | contrast, sweep, extreme cases, sequence, cause chain, analogy, numbers and scale | one per unit (two at most), picked by the shape of the question the unit answers. |
 
 A **unit** is one ladder block, the problem section, one mechanism step, or the widget.
@@ -119,7 +119,6 @@ These are described in full in `references/page-structure.md`. In short:
 | predict first | `<details class="predict">` before the widget or timeline | commits the reader to a guess, so the answer sticks or corrects |
 | manipulate one input | "Try it" widget | lets the reader test the model on cases the page did not show |
 | transfer question | `<details>` after the widget | checks that the model works on a new case |
-| confront a misconception | "A common misconception" | names the wrong belief, why it is tempting, and what is true |
 
 ### Foreshadow
 

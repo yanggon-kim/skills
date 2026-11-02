@@ -162,7 +162,7 @@ button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
 html:not(.js) .js-only { display: none; }
 html.js .nojs-only { display: none; }
 
-/* Concept ladder and terms (inside "What you already know"), misconception, recap */
+/* Concept ladder and terms (inside "What you already know"), recap */
 .concept { display: grid; gap: 0.9rem; }
 .concept + .concept { border-top: 1px dashed var(--idle); padding-top: 1.5rem; }
 .concept .builds-on { color: var(--ink-soft); }
@@ -180,8 +180,6 @@ html.js .nojs-only { display: none; }
 .foreshadow { border-left: 3px solid var(--mustard); padding-left: 0.75rem; }
 .foreshadow::before { content: "Preview"; display: block; font-family: var(--font-mono); font-size: var(--step--1); letter-spacing: 0.08em; text-transform: uppercase; color: var(--mustard); }
 :lang(ko) .foreshadow::before { content: "미리 보기"; }
-.misconception { display: grid; gap: 0.6rem; }
-.misconception .wrong { text-decoration: line-through; text-decoration-color: var(--accent); text-decoration-thickness: 2px; color: var(--ink-soft); }
 .terms { display: grid; grid-template-columns: minmax(7rem, max-content) 1fr; gap: 0.6rem 1.25rem; }
 .terms dt { font-family: var(--font-mono); font-size: var(--step--1); padding-top: 0.2em; color: var(--accent-ink); }
 .terms dd { margin: 0; min-width: 0; }
@@ -454,21 +452,11 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
     </details>
   </section>
 
-  <section id="result">
-    <h2>{{What it buys, and what it costs}}</h2>
-    <p>{{The payoff and the trade-off.}}</p>
-  </section>
-
-  <section id="misconception" class="misconception">
-    <h2>{{A common misconception}}</h2>
-    <p class="wrong">{{The wrong belief, stated as people say it.}}</p>
-    <p>{{Why it is tempting, and what is true instead.}}</p>
-  </section>
-
   <section id="recap">
     <h2>{{Recap}}</h2>
     <ul>
       <li>{{One idea per line, in the order the page taught them.}}</li>
+      <li>{{"The cost" in the page language}}: {{the trade-off: what the mechanism costs for what it buys.}}</li>
     </ul>
   </section>
 
