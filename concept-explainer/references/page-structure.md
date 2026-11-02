@@ -50,16 +50,20 @@ is the most important part of "What you already know", and usually the longest.
   network ...") and in its markup (`data-builds-on`). It is usually the block just before it, but
   it can be any earlier one.
 - **One block = one idea.** A heading that names the concept, two to five short paragraphs, one
-  figure, and a concrete example worked on that figure. The figure shows the idea in 2–4
-  contrasting cases (§ Figures, Show each idea in contrasting cases). A small table is welcome when
-  it lists the same cases (each way to cut a node, with its inputs and whether it fits).
+  figure, and a concrete example worked on that figure.
+- **One chosen technique per block.** Pick it from `references/techniques.md` by the shape of the
+  question the block answers, and name it in `data-technique`. Contrasting cases (§ Figures, Show
+  each idea in contrasting cases) are the strongest candidate and fit most "what is it?" blocks; a
+  "why?" block takes a cause chain, an abstract first contact may take an analogy. A small table is
+  welcome when it lists the cases the figure shows (each way to cut a node, with its inputs and
+  whether it fits).
 - **Its figure is a rung.** The figure is the figure of the block it builds on, plus one new thing.
   § Figures says how to draw it.
 
 Markup (the template has it):
 
 ```html
-<div class="concept" id="c-cut" data-builds-on="c-network">
+<div class="concept" id="c-cut" data-builds-on="c-network" data-technique="contrast">
   <h3>4. Cut: the list of inputs a LUT takes</h3>
   <p>...</p>
   <figure class="sheet">...one SVG drawn on the base scene...</figure>
@@ -197,9 +201,10 @@ table, or one node and its inputs) as long as what it shows sits and looks as it
 
 ### Show each idea in contrasting cases
 
-One example shows that a concept exists; contrasting cases show what it is. People pick out a
-property when they see it change while everything else stays the same. So a figure that teaches a
-concept shows **2–4 cases side by side**, all drawn on the base scene:
+Contrast is the strongest of the chosen techniques (`references/techniques.md`), so it gets its
+full rules here. One example shows that a concept exists; contrasting cases show what it is. People
+pick out a property when they see it change while everything else stays the same. When a block or
+step uses contrast, its figure shows **2–4 cases side by side**, all drawn on the base scene:
 
 - **Vary one thing; hold the rest.** The same network, the same layout, the same scale in every
   case. Only the property the figure teaches changes. If two things change at once, the reader
@@ -225,9 +230,16 @@ Pick the kind of contrast that fits the concept:
 
 Lay the cases out as small multiples: equal panels in one row, each a `<g class="case"
 data-case="...">` in the SVG, with the result label under each panel. On a phone the row may scroll
-inside `.diagram-scroll`; keep at most four panels so each stays readable. A figure whose idea is a
-single structure (the first rung, a lone LUT and its truth table) may show one case; most rungs
-should not.
+inside `.diagram-scroll`; keep at most four panels so each stays readable. Sweeps and extreme cases
+use the same small-multiples layout.
+
+### Other techniques on the base scene
+
+A block whose question is not "what is it?" uses another technique, still drawn on the base scene:
+a cause chain as numbered callouts and "causes" arrows on one picture of the scene; an analogy as
+the familiar picture beside a base-scene picture, matched part to part, followed by a
+`<p class="breaks">` sentence that says where the analogy breaks; a sequence as a timeline. Each
+technique's entry in `references/techniques.md` says how to draw it and when not to use it.
 
 ### Choose the base scene's type
 
@@ -346,10 +358,12 @@ The page must still teach with scripts off:
 After the page is built, review it four ways. Each one alone must teach the same correct model:
 
 1. **Text only.** Read the prose and skip the figures and the widget. Is the mechanism complete?
+   Does every analogy say where it breaks?
 2. **Figures only, in order.** Flip through every figure and caption from the first ladder block to
    the widget. Does it read as one picture growing, one thing per rung? Does any figure start over
-   with a new layout, rename an element, or add two ideas at once? For each figure, can you name in
-   one word what varies between its cases, and does a failing case show the boundary?
+   with a new layout, rename an element, or add two ideas at once? For each unit, does the chosen
+   technique fit the question's shape? Where a figure shows cases, can you name in one word what
+   varies between them, and does a failing case show the boundary?
 3. **Interaction only.** Use the widget at minimum, typical and maximum values, then reset twice.
    Does each state's explanation match the prose?
 4. **Without JavaScript.** Do the predictions have answers? Is the comparison visible?

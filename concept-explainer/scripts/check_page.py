@@ -8,8 +8,11 @@ Reports three groups of findings:
   structure - the parts a concept-explainer page needs (figures, interaction, sections, and the
               closing "expert's version of your question")
   ladder    - the figure ladder: concept blocks in "What you already know", each with a figure that
-              builds on an earlier block's figure (shared data-key elements) and shows 2-4
-              contrasting cases (g.case), and mechanism figures that continue from the ladder
+              builds on an earlier block's figure (shared data-key elements), and mechanism figures
+              that continue from the ladder
+  technique - each ladder block names its chosen technique (data-technique) and its markup matches:
+              contrast/sweep/extremes need 2+ g.case panels, analogy a p.breaks sentence,
+              cause-chain arrows, sequence a timeline
   voice     - sentence length, passive-voice suspects, filler and hype words
               (Korean is counted in space-separated eojeol, with a lower long-sentence limit)
 
@@ -30,6 +33,7 @@ ALLOWED_SCRIPT_HOSTS = (
     "https://code.jquery.com/",
 )
 ALLOWED_STYLE_HOSTS = ("https://fonts.googleapis.com/",)
+TECHNIQUES = {"contrast", "sweep", "extremes", "sequence", "cause-chain", "analogy", "scale"}
 EXPECTED_SECTIONS = ["familiar", "problem", "mechanism", "try", "result", "misconception", "recap", "deeper"]
 PROSE_TAGS = {"p", "li", "dd", "dt", "summary", "figcaption", "h1", "h2", "h3", "blockquote"}
 SKIP_TAGS = {"script", "style", "svg", "code", "pre", "kbd", "title"}
@@ -189,6 +193,26 @@ def keys_in(html):
     return set(re.findall(r'data-key="([^"]+)"', html))
 
 
+def check_technique(techs, html, where, add):
+    """The chosen technique's markup is present: references/techniques.md § Markup and checks."""
+    unknown = [t for t in techs if t not in TECHNIQUES]
+    if unknown:
+        add("WARN", "technique", f"{where}: unknown technique {', '.join(unknown)}; use {', '.join(sorted(TECHNIQUES))}")
+    if len(techs) > 2:
+        add("WARN", "technique", f"{where}: {len(techs)} techniques; choose one per unit, two at most")
+    if not techs:
+        add("WARN", "technique", f"{where}: data-technique is empty")
+    cases = len(re.findall(r'\bclass="(?:[^"]*\s)?case(?:\s[^"]*)?"', html))
+    if any(t in ("contrast", "sweep", "extremes") for t in techs) and cases < 2:
+        add("WARN", "technique", f"{where}: {'/'.join(t for t in techs if t in ('contrast', 'sweep', 'extremes'))} needs 2-4 side-by-side cases (<g class=\"case\">); found {cases}")
+    if "analogy" in techs and not re.search(r'<p\b[^>]*\bclass="(?:[^"]*\s)?breaks(?:\s[^"]*)?"', html):
+        add("WARN", "technique", f"{where}: an analogy needs a <p class=\"breaks\"> sentence saying where it breaks")
+    if "cause-chain" in techs and "marker-end" not in html:
+        add("WARN", "technique", f"{where}: a cause chain needs arrows (marker-end) that mean \"causes\"")
+    if "sequence" in techs and not re.search(r'class="[^"]*\btimeline\b', html):
+        add("WARN", "technique", f"{where}: a sequence is drawn as a timeline (figure.timeline)")
+
+
 def check_ladder(nc, add):
     """The figure ladder: concept blocks that build on each other, drawn on one base scene."""
     fam = section_span(nc, "familiar")
@@ -206,9 +230,10 @@ def check_ladder(nc, add):
         bid = re.search(r'\bid="([^"]+)"', tag)
         on = re.search(r'\bdata-builds-on="([^"]+)"', tag)
         span = body[m.end():end]
-        cases = len(re.findall(r'\bclass="(?:[^"]*\s)?case(?:\s[^"]*)?"', span))
+        tech = re.search(r'\bdata-technique="([^"]*)"', tag)
         blocks.append({"id": bid.group(1) if bid else f"#{i + 1}", "on": on.group(1) if on else None,
-                       "svg": "<svg" in span, "keys": keys_in(span), "cases": cases})
+                       "svg": "<svg" in span, "keys": keys_in(span), "span": span,
+                       "tech": tech.group(1).split() if tech else None})
     seen = {}
     for i, b in enumerate(blocks):
         name = b["id"]
@@ -216,8 +241,10 @@ def check_ladder(nc, add):
             add("WARN", "ladder", f"block {name} has no figure; a core concept gets an easy picture (plain background stays in prose, outside the blocks)")
         elif not b["keys"]:
             add("WARN", "ladder", f"block {name}: its figure has no data-key elements, so later figures cannot be checked against it")
-        if b["svg"] and b["cases"] < 2 and i > 0:
-            add("WARN", "ladder", f"block {name}: its figure shows {b['cases'] or 'one'} case; show 2-4 contrasting cases (<g class=\"case\">) that differ in one thing")
+        if b["tech"] is None:
+            add("WARN", "technique", f"block {name} names no technique (data-technique); choose one from references/techniques.md")
+        else:
+            check_technique(b["tech"], b["span"], f"block {name}", add)
         if i > 0 and not b["on"]:
             add("WARN", "ladder", f"block {name} does not say which earlier block it builds on (data-builds-on)")
         if b["on"]:
@@ -233,6 +260,10 @@ def check_ladder(nc, add):
         mbody = nc[mech[0]:mech[1]]
         if "<svg" in mbody and not (keys_in(mbody) & ladder_keys):
             add("WARN", "ladder", "the mechanism's figures share no data-key with the ladder figures; draw them on the same base scene")
+        for t in re.finditer(r'<figure\b[^>]*\bdata-technique="([^"]*)"[^>]*>', mbody):
+            end = mbody.find("</figure>", t.end())
+            fig = mbody[t.start():end if end != -1 else len(mbody)]
+            check_technique(t.group(1).split(), fig, "a mechanism figure", add)
         for on in re.findall(r'\bdata-builds-on="([^"]+)"', mbody):
             if on not in seen:
                 add("WARN", "ladder", f"a mechanism figure builds on {on!r}, which is not a concept block")

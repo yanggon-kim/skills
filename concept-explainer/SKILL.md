@@ -1,6 +1,6 @@
 ---
 name: concept-explainer
-description: Explains any concept, mechanism, algorithm or idea as one self-contained HTML learning page — plain-voice prose, a ladder of figures that starts from the simplest background picture and adds one thing per rung until it shows the mechanism, and one interaction where the reader predicts and then checks. When the concept is a process that changes over time, the page shows it as a timeline — a storyboard of frames on one fixed layout, plus an animated player built from them. The page ends with the expert's version of the reader's question — what a professional would ask next, the primary sources, methods and tools they would use, and an outside check — rewritten as a prompt to paste. Saved locally and published as a private claude.ai artifact. Use it whenever the user wants to understand something rather than get a fact — "explain X", "how does X work", "teach me X", "walk me through X step by step", "I don't get X", "X가 뭔지 설명해줘" — in any field (computer architecture, math, statistics, ML, systems, git, physics), even when they never ask for a page or HTML. Not for one-line lookups, debugging a specific bug, line-by-line walkthroughs of the user's code, slide decks, or documents others will edit.
+description: Explains any concept, mechanism, algorithm or idea as one self-contained HTML learning page — plain-voice prose, a ladder of figures that starts from the simplest background picture and adds one thing per rung until it shows the mechanism, explanation techniques picked per idea from a toolkit (contrasting cases, sweeps, extreme cases, cause chains, analogies), and one interaction where the reader predicts and then checks. When the concept is a process that changes over time, the page shows it as a timeline — a storyboard of frames on one fixed layout, plus an animated player built from them. The page ends with the expert's version of the reader's question — what a professional would ask next, the primary sources, methods and tools they would use, and an outside check — rewritten as a prompt to paste. Saved locally and published as a private claude.ai artifact. Use it whenever the user wants to understand something rather than get a fact — "explain X", "how does X work", "teach me X", "walk me through X step by step", "I don't get X", "X가 뭔지 설명해줘" — in any field (computer architecture, math, statistics, ML, systems, git, physics), even when they never ask for a page or HTML. Not for one-line lookups, debugging a specific bug, line-by-line walkthroughs of the user's code, slide decks, or documents others will edit.
 ---
 
 # Concept explainer
@@ -21,12 +21,27 @@ The first rungs teach the background concepts with easy pictures; the mechanism'
 top rungs. A reader who has read the easy picture can then read the hard one, because the hard one
 is the same picture with a little more on it.
 
-Each figure teaches by **contrast**. Instead of one example, it shows two to four cases side by
-side on the same scene, with one thing changed and everything else held fixed, and it labels each
-case with its result: a cut with 2, 3 and 4 inputs, where 2 and 3 fit a 3-input LUT and 4 does not;
-two mappings of the same network with the same depth and different area. People notice a property
-when they see it vary while the rest stays still, so the contrast makes the concept visible, and a
-case that fails shows where its boundary is.
+Different ideas are easy in different ways, so the page explains each one with the technique that
+fits it, chosen from a toolkit in `references/techniques.md`. The toolkit has three tiers:
+
+- **Defaults, in every unit:** a picture, a concrete example, the ladder, and show before you name.
+  They are the user's preferred way to learn and never change.
+- **The page skeleton, in fixed places:** anchor in the familiar, problem first, predict first,
+  manipulate one input, a transfer question, a misconception.
+- **Chosen per unit, by the shape of the question it answers:** contrast, sweep, extreme cases,
+  sequence, cause chain, analogy, numbers and scale. "What is it?" points to contrasting cases;
+  "why?" to a cause chain; "what happens step by step?" to a sequence; an abstract idea with
+  nothing to draw, to an analogy.
+
+**Contrast is the strongest candidate**: two to four cases side by side on the same scene, one thing
+changed and the rest fixed, each labelled with its result (a cut with 2, 3 and 4 inputs, where 4
+does not fit). People notice a property when they see it vary while the rest stays still. But it is
+a candidate, not a rule: a procedure is clearer as a sequence and a "why" as a cause chain.
+
+Two rules keep the mix calm. One chosen technique per unit (two at most), changed only when the
+question's shape changes, never for variety. And every technique is drawn on the base scene, so the
+ladder never breaks; an analogy stands beside the base scene, never instead of it, and says where
+it breaks.
 
 When the concept changes over time — a procedure, a process, an algorithm's steps — the mechanism's
 figure becomes a **timeline**: a **storyboard** (every step as a frame on the same fixed layout, side by
@@ -102,7 +117,16 @@ A polished page makes a wrong explanation look trustworthy, so accuracy comes fi
   reader out into the field, so a wrong link or an invented tool does real harm. The answers feed
   only the page's last section; they do not change the scope from step 1 or the level of the lesson.
 
-### 3. Write the prose
+### 3. Choose the explanation techniques
+
+Read `references/techniques.md`. List the page's units: each ladder block, the problem, each
+mechanism step and the widget. For each one, write the question it answers in the reader's words,
+name the question's shape, and pick one Tier 3 technique (two at most) from the shape table. Write
+the plan as a small table for yourself: unit, question, shape, technique, why it fits, and how it
+sits on the base scene. If a row is hard to fill, the unit is unclear or holds two ideas; fix the
+unit first. The defaults and the page skeleton need no choice.
+
+### 4. Write the prose
 
 Read `references/voice.md` first. Follow the section order in `references/page-structure.md`:
 question → what you already know (the plain background, then the concept ladder, then the words the
@@ -128,7 +152,7 @@ expert's; its words are still for the newcomer. Give every paper, tool or comman
 half-sentence saying what it is, and write the rewritten prompt in the reader's own voice and
 language, ready to paste.
 
-### 4. Plan and draw the figure ladder
+### 5. Plan and draw the figure ladder
 
 Read `references/page-structure.md` § Figures before drawing. Plan the ladder backwards:
 
@@ -143,10 +167,11 @@ Read `references/page-structure.md` § Figures before drawing. Plan the ladder b
 4. **Reverse the list.** That is the reading order. The first ladder block shows the simplest
    picture; each later figure adds one thing, in coral, while what the reader already knows keeps
    its earlier look.
-5. **Choose each rung's contrast.** For every figure, decide which one thing varies across its
-   cases and what stays fixed, and pick 2–4 cases: an example and a non-example at the boundary,
-   two choices for the same problem, a sweep of one value, or before and after. If you cannot name
-   the one thing that varies, the figure is not ready.
+5. **Draw each rung with its chosen technique.** Use the technique from step 3's plan, drawn on the
+   base scene as its entry in `references/techniques.md` says. For contrast, sweep and extreme
+   cases, decide which one thing varies and what stays fixed; if you cannot name it, the figure is
+   not ready. Mark each ladder block (and each mechanism figure that uses a Tier 3 technique) with
+   `data-technique`.
 
 Generate every figure from the base scene with one short script (Node or Python) and the same
 drawing function, instead of hand-copying SVG, so positions and names cannot drift. Give each
@@ -166,7 +191,7 @@ elements in every frame, one caption sentence each, drawn on the page's base sce
 the storyboard; the template's script builds the player from those frames, so the two views cannot
 disagree, and the storyboard alone still teaches without JavaScript or motion.
 
-### 5. Build the interaction
+### 6. Build the interaction
 
 One interactive widget that changes one real input and shows the mechanism respond. Prediction
 questions are not extra widgets: one before the widget is required, and one transfer question after
@@ -181,7 +206,7 @@ For a pure procedure with no real input to change, the timeline's player is the 
 the reader to predict a later frame before pressing play, and ask a transfer question afterwards.
 Build a separate widget only when the concept also has a real input to change.
 
-### 6. Assemble the page
+### 7. Assemble the page
 
 If the Artifact tool is available, load its `artifact-design` guidance now, before writing the
 file — the tool asks for it before any page is written. Its page contract applies in full. Its
@@ -204,7 +229,7 @@ page contract:
 No external scripts are needed. Google Fonts is the only external stylesheet allowed, and every
 font has a fallback stack, so the local file still reads well offline.
 
-### 7. Check
+### 8. Check
 
 Run the mechanical check and fix every error it reports:
 
@@ -231,8 +256,10 @@ Then review the page four ways. Each one alone must teach the same correct menta
 2. **Figures only, in order** — flip through the figures and captions from the first ladder block
    to the mechanism. They must read as one story that grows one thing per rung. A figure that
    starts over with a new layout, renames an element, or adds two new ideas at once is a broken
-   rung; fix it. For each figure, name in one word what varies between its cases; if two things
-   vary, or nothing does, fix the figure.
+   rung; fix it. For each unit, name the question's shape and the technique you chose; check that
+   the technique fits the shape and sits on the base scene. Where the figure shows cases, name in
+   one word what varies between them; if two things vary, or nothing does, fix the figure. Where it
+   uses an analogy, check that the page says where the analogy breaks.
 3. **Interaction only** — use the widget at its minimum, typical and maximum values; press reset
    twice.
 4. **Without JavaScript** — the predictions still have answers and the comparison still shows.
@@ -245,7 +272,7 @@ it; if the expert view leaked upward (harder words, extra scope), move it back d
 the final section's links open, that the rewritten prompt names the concept and stands on its own in
 a new conversation, and that the copy button copies it.
 
-### 8. Save and publish
+### 9. Save and publish
 
 1. Save the page as `<concept-slug>.html` in the current working directory, unless the user named a
    place.
@@ -255,7 +282,7 @@ a new conversation, and that the copy button copies it.
 3. If no Artifact tool is available in this session, stop after saving and say that the page was
    not published.
 
-### 9. Report
+### 10. Report
 
 Reply with the artifact link, the local path, and one or two sentences on what the page covers and
 what it leaves out. Add one line saying the page ends with a sharper version of the request, ready
@@ -265,8 +292,9 @@ to paste. Do not paste the explanation into the chat — the page is the answer.
 
 | file | read it when |
 |---|---|
-| `references/voice.md` | before writing any prose (step 3) |
-| `references/page-structure.md` | when planning the sections, the figure ladder and the interaction (steps 3–5) |
-| `references/timeline.md` | when the concept changes over time (step 4) |
-| `assets/template.html` | when assembling the page (step 6) — copy it, do not edit it in place |
-| `scripts/check_page.py` | after the page is written (step 7) |
+| `references/techniques.md` | when choosing how to explain each unit (step 3) |
+| `references/voice.md` | before writing any prose (step 4) |
+| `references/page-structure.md` | when planning the sections, the figure ladder and the interaction (steps 4–6) |
+| `references/timeline.md` | when a unit's technique is a sequence (step 5) |
+| `assets/template.html` | when assembling the page (step 7) — copy it, do not edit it in place |
+| `scripts/check_page.py` | after the page is written (step 8) |
