@@ -29,6 +29,8 @@
 "use strict";
 
 function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+// a sentence may carry inline HTML (<strong>, <sub>); the SVG title and desc take its plain text
+function plain(s) { return String(s).replace(/<[^>]+>/g, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&"); }
 function off(visible) { return visible ? "" : " off"; }
 
 const LABELS = {
@@ -74,7 +76,7 @@ function narrate(o) {
     const split = `<line data-key="split" x1="${PW}" y1="40" x2="${PW}" y2="${H - 10}" class="s-grid dashed${off(two)}"></line>`;
     const A = `<g class="case" data-case="A">${o.drawPanel("", F.a || {}, two ? 0 : (W - PW) / 2, top, true)}</g>`;
     const B = `<g class="case" data-case="B">${o.drawPanel("B", F.b || F.a || {}, PW, top, two)}</g>`;
-    return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="${o.id}${i + 1}-title ${o.id}${i + 1}-desc"><title id="${o.id}${i + 1}-title">${esc(F.tag)}</title><desc id="${o.id}${i + 1}-desc">${esc(F.text)}</desc>${head}${split}${A}${B}</svg>`;
+    return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="${o.id}${i + 1}-title ${o.id}${i + 1}-desc"><title id="${o.id}${i + 1}-title">${esc(plain(F.tag))}</title><desc id="${o.id}${i + 1}-desc">${esc(plain(F.text))}</desc>${head}${split}${A}${B}</svg>`;
   });
   validate(o.id, frames);
   const storyboard = frames.map((svg, i) => `            <li class="frame">\n              ${svg}\n              <p class="frame-caption">${o.steps[i].text}</p>\n            </li>`).join("\n");
@@ -103,4 +105,4 @@ ${storyboard}
   return { html: figure + "\n" + list, figure, list, frames };
 }
 
-module.exports = { narrate, validate, background, keys, esc, off };
+module.exports = { narrate, validate, background, keys, esc, off, plain };
