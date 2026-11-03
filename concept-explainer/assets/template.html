@@ -180,10 +180,11 @@ html.js .nojs-only { display: none; }
    frame lights up; all frames fold under the player */
 .all-frames > summary { cursor: pointer; font-size: var(--step--1); color: var(--ink-soft); margin: 0.4rem 0; }
 .sync-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; }
-.sync-steps li { display: grid; grid-template-columns: 1.8rem 1fr; gap: 0.4rem; padding: 0.45rem 0.6rem; border-left: 3px solid var(--idle); border-radius: 2px; color: var(--ink-soft); cursor: pointer; line-height: 1.55; }
+/* the tag hangs in the left margin, so a sentence may hold inline markup (<strong>, <sub>) without breaking its line */
+.sync-steps li { position: relative; padding: 0.45rem 0.6rem 0.45rem 2.6rem; border-left: 3px solid var(--idle); border-radius: 2px; color: var(--ink-soft); cursor: pointer; line-height: 1.55; }
 .sync-steps li:hover { color: var(--ink); }
 .sync-steps li.on { border-left-color: var(--accent); background: var(--paper); color: var(--ink); }
-.sync-tag { font-family: var(--font-mono); color: var(--accent-ink); }
+.sync-tag { position: absolute; left: 0.6rem; top: 0.45rem; font-family: var(--font-mono); color: var(--accent-ink); }
 /* Comparison table: closes a family of versions (references/page-structure.md § The comparison table) */
 .compare-table { margin: 0; display: grid; gap: 0.5rem; }
 .table-scroll { overflow-x: auto; }
