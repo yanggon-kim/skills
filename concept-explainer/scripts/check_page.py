@@ -19,6 +19,8 @@ Reports three groups of findings:
               points at real ids, and every convention changed in "Try it" (data-changes)
   compare   - comparison tables (figure.compare-table): data-compares names real ids, one column per
               version, a tr.same row (or p.same) for what they share, td.new on each new step
+  narrated  - narrated figures: one sentence per frame (ol.sync-steps after the timeline figure), and
+              blocks whose long paragraph explains a single static figure
   route     - the route map (advance organizer) under the answer: every part on the route has a
               one-line data-summary, leads to the answer, and the drawn map is up to date
               (scripts/route_map.py draws it)
@@ -433,6 +435,38 @@ def check_compare(nc, add):
             add("WARN", "compare", "no td.new: mark the cell where each version brings its new step")
 
 
+def check_narrated(nc, add):
+    """Narrated figures: references/page-structure.md § Narrated figures."""
+    figs = list(re.finditer(r'<figure\b[^>]*\bclass="[^"]*\btimeline\b[^"]*"[^>]*>', nc))
+    for i, m in enumerate(figs):
+        end = nc.find("</figure>", m.end())
+        if end < 0:
+            continue
+        frames = len(re.findall(r'<li[^>]*class="[^"]*\bframe\b', nc[m.end():end]))
+        nxt = figs[i + 1].start() if i + 1 < len(figs) else len(nc)
+        tail = nc[end + len("</figure>"):nxt]
+        lst = re.match(r'\s*<ol\b[^>]*\bclass="[^"]*\bsync-steps\b[^"]*"[^>]*>(.*?)</ol>', tail, re.S)
+        if lst:
+            n = len(re.findall(r'<li\b', lst.group(1)))
+            if n != frames:
+                add("WARN", "narrated", f"a sentence list has {n} sentences but its figure has {frames} frames; keep one sentence per frame")
+        elif "narrated" in m.group(0):
+            add("WARN", "narrated", "a narrated figure has no <ol class=\"sync-steps\"> right after it")
+    # long paragraphs explained by a static figure: candidates for a narrated figure
+    fam = section_span(nc, "familiar")
+    if fam:
+        body = nc[fam[0]:fam[1]]
+        for b in re.finditer(r'<div\b[^>]*\bclass="(?:[^"]*\s)?concept(?:\s[^"]*)?"[^>]*\bid="([^"]+)"[^>]*>', body):
+            nb = body.find('<div class="concept"', b.end())
+            span = body[b.end():nb if nb > 0 else len(body)]
+            if "timeline" in span or "<svg" not in span:
+                continue
+            prose = " ".join(re.sub(r"<[^>]+>", " ", p) for p in re.findall(r'<p\b(?![^>]*class="(?:source|foreshadow|label)[^"]*")[^>]*>(.*?)</p>', span, re.S))
+            n = len([x for x in re.split(r"(?<=[.!?。])\s+", prose.strip()) if x.strip()])
+            if n >= 5:
+                add("WARN", "narrated", f"block {b.group(1)} explains its figure in {n} sentences with one static picture; consider a narrated figure (one frame per sentence)")
+
+
 def check(path):
     raw = open(path, encoding="utf-8").read()
     findings = []
@@ -531,6 +565,7 @@ def check(path):
     check_parts(nc, add)
     check_route(raw, add)
     check_compare(nc, add)
+    check_narrated(nc, add)
     # timeline: a storyboard of frames that the template's script turns into a player
     starts = [m.start() for m in re.finditer(r'<figure[^>]*class="[^"]*\btimeline\b', nc)]
     for n_tl, a in enumerate(starts, 1):

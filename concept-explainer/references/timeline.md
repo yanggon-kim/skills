@@ -71,6 +71,11 @@ elements.
 - **Every frame has every keyed element.** An element that is not present at a step stays in the
   frame with `class="off"` (opacity 0). Never leave it out: the player matches elements by key and
   can only animate what exists in both frames.
+- **Narrated figures use the same player.** A narrated figure (`references/page-structure.md`
+  § Narrated figures) is a timeline whose frames follow the sentences of a paragraph instead of the
+  steps of a process. For a comparison frame, give every frame two panel slots: one panel in the
+  middle with the second slot hidden, then both side by side in the comparison frame. Key every
+  element of both slots, so the player can slide the first panel aside.
 - **Watch out for time-cursor frames.** A natural way to generate frames is to draw the whole
   process once and cut it at a moving "now": frame k shows only what happened before time t_k. Done
   naively, this breaks both rules above — future bars are left out instead of hidden, and the keys

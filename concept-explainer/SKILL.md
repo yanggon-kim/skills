@@ -188,7 +188,10 @@ question it answers in the reader's words, name the question's shape, and pick o
 (two at most) from the shape table; the part's kind suggests a first candidate. Write the plan as a
 small table for yourself: unit, part, question, shape, technique, why it fits, and how it sits on
 the base scene. If a row is hard to fill, the unit is unclear or holds two ideas; fix the
-unit first. If three or more units teach versions of the same thing (a history such as
+unit first. Also decide each unit's form: a **narrated figure** (one short sentence per frame, the
+sentence of the current frame lit under the player) when its paragraph has three or more
+sentences that point at different parts of one figure, and a static figure otherwise
+(`references/page-structure.md` § Narrated figures). If three or more units teach versions of the same thing (a history such as
 `__syncthreads()` → `bar.arrive` → `mbarrier`, or rival answers to one need), plan a comparison
 table that closes that run: one column per version, one row per difference the units show, and a
 line on what they all share (`references/page-structure.md` § The comparison table). Add one line for the foreshadow: the block whose figure first shows the main
@@ -222,6 +225,11 @@ The rest of the page climbs the same parts. The problem shows the assumption fai
 case. Each mechanism step is a reason and says which blocks it follows from ("Blocks 2 and 3 give
 ...") — no step may rest on a fact the ladder did not show. "Try it" or the transfer question
 changes a convention and lets the reader rebuild the result.
+
+In a narrated figure, write one short sentence per frame, with the thing that changes in that frame
+as its subject, so each word points at something the reader can see. When the sentences compare
+cases, the comparing sentence's frame shows the cases side by side. The plain background stays
+prose, but it still shows pictures: at least a static figure of the example the page will use.
 
 Show before you name: each ladder block shows its concept working on its figure before it names
 it, and the mechanism section still shows each new term working before it relies on it.
@@ -349,7 +357,8 @@ teaches.
 1. **Text only** — read the prose and skip the figures and the widget. Start at the conclusion and
    walk down: every reason names the blocks it follows from, and every chain ends at a fact the
    page showed and the reader can check.
-2. **Figures only, in order** — flip through the figures and captions from the first ladder block
+2. **Figures only, in order** — step through each narrated figure with its sentences (each frame
+   must change exactly what its sentence names, and a comparison must end side by side). Then flip through the figures and captions from the first ladder block
    to the mechanism. They must read as one story that grows one thing per rung. A figure that
    starts over with a new layout, renames an element, or adds two new ideas at once is a broken
    rung; fix it. For each unit, name the question's shape and the technique you chose; check that

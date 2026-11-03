@@ -407,6 +407,69 @@ the familiar picture beside a base-scene picture, matched part to part, followed
 `<p class="breaks">` sentence that says where the analogy breaks; a sequence as a timeline. Each
 technique's entry in `references/techniques.md` says how to draw it and when not to use it.
 
+### Narrated figures: one sentence, one frame
+
+A paragraph that explains a figure asks the reader to do two things at once: read a sentence, and
+find in the picture what the sentence is talking about. When the paragraph introduces several
+things that are parts of the same picture ("the group", "a path", "the cut", "paths that share no
+node"), that second job fails silently: the reader no longer knows what each word points at, and
+every later sentence floats. A **narrated figure** removes the second job. The paragraph becomes a
+numbered list of short sentences, and each sentence has its own frame of the figure, in which the
+thing the sentence names is the thing that changes. The reader steps through it, and the sentence
+of the current frame lights up under the player. This applies three findings from multimedia
+learning research: show words and the picture they describe at the same time, highlight what the
+words refer to, and let the reader set the pace.
+
+- **When.** Use it where a paragraph has three or more sentences that each point at a different
+  part of one figure. That is most concept blocks, the problem section (the assumption failing is a
+  short story: the guess, applying it, where it breaks, why) and the mechanism's steps. Keep a
+  static figure for a block of one or two sentences, and keep plain prose for text with nothing to
+  point at (the plain background, the recap, the trade-off, the expert's section). The plain
+  background still uses static figures generously: a picture of the example the page will use is
+  almost always worth it.
+- **One sentence, one frame.** Write each sentence so that its subject is something visible, and
+  make that thing, and only that, change in its frame (in coral or in a path colour). A sentence
+  whose frame changes nothing is not pulling its weight; two sentences that need the same frame
+  are one sentence.
+- **3 to 8 frames.** More than eight means the block holds two ideas: split it.
+- **Contrast ends side by side.** When the paragraph compares cases, the frame of the comparing
+  sentence shows the cases next to each other, with what the sentence names highlighted in each.
+  Never let a comparison end on a lone picture that sends the reader back through the frames to
+  see the other case. The way to build this: give every frame two panel slots; a frame with one
+  panel shows it in the middle and hides the second slot with `.off`; the comparison frame moves
+  the first panel to the left and shows the second beside it. The player slides one into the
+  other.
+- **The last frame holds the whole picture.** Whatever the steps added, the final frame shows it
+  all at once (the side-by-side frame, for a contrast), so the reader leaves with one complete
+  image.
+- **Reader-paced.** No autoplay; a hold of about 4 seconds when the reader presses play. Clicking a
+  sentence jumps to its frame.
+- **Readable without JavaScript.** The sentences are an ordinary list, and all frames sit in a
+  folded `<details>` ("all frames at once") under the player.
+- **A timeline is a narrated figure** whose frames are the steps of a process. Give the mechanism's
+  timeline a synced sentence list too: its frame captions are the sentences.
+
+Markup (the template has the script and the CSS):
+
+```html
+<figure class="timeline wide-frames narrated sheet wide" aria-labelledby="w1-caption">
+  <div class="player js-only">...the template's player...</div>
+  <details class="all-frames"><summary>All frames at once</summary>
+    <ol class="storyboard"><li class="frame"><svg>...</svg><p class="frame-caption">sentence 1</p></li>...</ol>
+  </details>
+  <figcaption id="w1-caption">what the colours, rings and numbers mean</figcaption>
+</figure>
+<ol class="sync-steps">
+  <li><span class="sync-tag">①</span> sentence 1</li> ...
+</ol>
+```
+
+The frames follow the timeline rules (`references/timeline.md`): the same keyed elements in every
+frame, hidden with `.off` when unused. A narrated block names `sequence` in `data-technique`, with
+`contrast` beside it when it ends side by side. `check_page.py` checks that each sentence list has
+exactly as many sentences as its figure has frames, and points out blocks with a long paragraph
+and only a static figure.
+
 ### Choose the base scene's type
 
 | the idea is about | base scene type |
@@ -529,7 +592,9 @@ page teaches? If the page has a comparison table, check every cell against its b
    Start at the conclusion and walk down: does every reason name the blocks it follows from, and
    does every chain end at a fact the page showed, with a way to check it? Does the problem show
    the assumption failing? Does every analogy say where it breaks?
-2. **Figures only, in order.** Flip through every figure and caption from the first ladder block to
+2. **Figures only, in order.** For every narrated figure, step through it and read each sentence
+   with its frame: does the frame change exactly what the sentence names, and does a comparing
+   sentence show the cases side by side? Flip through every figure and caption from the first ladder block to
    the widget. Does it read as one picture growing, one thing per rung? Does any figure start over
    with a new layout, rename an element, or add two ideas at once? For each unit, does the chosen
    technique fit the question's shape? Where a figure shows cases, can you name in one word what

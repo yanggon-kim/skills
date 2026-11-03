@@ -176,6 +176,14 @@ html.js .nojs-only { display: none; }
 .route .f-route-answer { fill: var(--accent); fill-opacity: 0.16; }
 .route a:hover rect, .route a:focus rect { stroke-width: 2.5; }
 .route .diagram-scroll svg { min-width: 0; max-width: 32rem; margin-inline: auto; }
+/* Narrated figure (references/page-structure.md § Narrated figures): the sentence of the current
+   frame lights up; all frames fold under the player */
+.all-frames > summary { cursor: pointer; font-size: var(--step--1); color: var(--ink-soft); margin: 0.4rem 0; }
+.sync-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; }
+.sync-steps li { display: grid; grid-template-columns: 1.8rem 1fr; gap: 0.4rem; padding: 0.45rem 0.6rem; border-left: 3px solid var(--idle); border-radius: 2px; color: var(--ink-soft); cursor: pointer; line-height: 1.55; }
+.sync-steps li:hover { color: var(--ink); }
+.sync-steps li.on { border-left-color: var(--accent); background: var(--paper); color: var(--ink); }
+.sync-tag { font-family: var(--font-mono); color: var(--accent-ink); }
 /* Comparison table: closes a family of versions (references/page-structure.md § The comparison table) */
 .compare-table { margin: 0; display: grid; gap: 0.5rem; }
 .table-scroll { overflow-x: auto; }
@@ -437,6 +445,12 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
     <p id="m-{{last-reason}}" data-part="reason" data-from="c-{{first-concept}} c-{{second-concept}}" data-summary="{{the reason in one plain line}}">{{A reason: "Blocks 1 and 2 give ...", shown working on the figure.}}</p>
     <p data-recalls="c-{{second-concept}}">{{Recall the foreshadow where the mechanism explains it: "This is the difference you saw in block 2: ...", with a link to the block.}}</p>
     <p>{{Step 2 and the name for it, with its own figure if it adds a new thing. Then step 3 if needed.}}</p>
+    <!-- SLOT NOTE: a narrated figure, for a paragraph of three or more sentences that point at parts
+         of one figure (also in ladder blocks and the problem): a timeline figure with the classes
+         "timeline wide-frames narrated", its storyboard folded in <details class="all-frames">, and
+         right after it <ol class="sync-steps"> with one <li><span class="sync-tag">①</span> sentence</li>
+         per frame. A comparison ends on a frame with both cases side by side.
+         references/page-structure.md § Narrated figures. -->
     <!-- SLOT NOTE: if the concept changes over time (a procedure, a process, an algorithm's steps),
          the mechanism's figures become a timeline drawn on the same base scene: a storyboard of
          frames plus a player. Read references/timeline.md. Otherwise delete this note. -->
@@ -790,6 +804,29 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
   window.addEventListener("scroll", ask, { passive: true });
   window.addEventListener("resize", ask);
   update();
+})();
+</script>
+
+<script>
+/* Narrated figures: keep it unchanged. For every ol.sync-steps, finds the timeline figure before it;
+   the list item of the current frame gets .on, and clicking (or Enter on) a sentence jumps the
+   player to that frame. Without JavaScript the list is plain text. */
+(function () {
+  Array.prototype.forEach.call(document.querySelectorAll("ol.sync-steps"), function (list) {
+    var fig = list.previousElementSibling;
+    while (fig && !(fig.classList && fig.classList.contains("timeline"))) fig = fig.previousElementSibling;
+    if (!fig) return;
+    var frames = fig.querySelectorAll(".storyboard .frame"), items = list.querySelectorAll("li");
+    function sync() { Array.prototype.forEach.call(frames, function (f, i) { if (items[i]) items[i].classList.toggle("on", f.classList.contains("is-current")); }); }
+    var mo = new MutationObserver(sync);
+    Array.prototype.forEach.call(frames, function (f) { mo.observe(f, { attributes: true, attributeFilter: ["class"] }); });
+    Array.prototype.forEach.call(items, function (li, i) {
+      li.tabIndex = 0;
+      li.addEventListener("click", function () { if (frames[i]) frames[i].click(); });
+      li.addEventListener("keydown", function (e) { if ((e.key === "Enter" || e.key === " ") && frames[i]) { e.preventDefault(); frames[i].click(); } });
+    });
+    sync();
+  });
 })();
 </script>
 

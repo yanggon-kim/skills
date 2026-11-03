@@ -104,7 +104,10 @@ ideas and should be two units.
 
 These are described in full in `references/page-structure.md`. In short:
 
-- **Picture.** Every unit that teaches a concept has a figure drawn on the base scene.
+- **Picture.** Every unit that teaches a concept has a figure drawn on the base scene. When the
+  unit's paragraph has three or more sentences that point at parts of the figure, the figure is
+  narrated: one frame per sentence, synced with the sentence list (`references/page-structure.md`
+  § Narrated figures).
 - **Concrete example.** Real numbers, real names, one worked case on the figure.
 - **Ladder.** The unit builds on an earlier unit and adds one new thing, in coral.
 - **Show then name.** The reader sees the thing work before the page gives it its name.
