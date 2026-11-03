@@ -387,11 +387,12 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
       </ol>
       <p class="source">{{"Source" or "Check" in the page language}}: {{where the fact comes from, or how the reader can check it. If it is a convention, say so.}}</p>
       <!-- SLOT NOTE: the foreshadow. Put it in the ONE block (two at most per page) whose figure first
-           shows the phenomenon the page's main question is about. One sentence: what this picture
-           already shows about the main question, pointing at something visible in the figure. A
-           hint, never the answer. The mechanism recalls it with data-recalls. Delete it from blocks
-           that do not first show the phenomenon. -->
-      <p class="foreshadow">{{This picture already shows the heart of the main question: ... (the phenomenon, not its cause)}}</p>
+           shows the phenomenon the page's main question is about. Two short sentences: one
+           observation visible in the figure, with its values; a handle (2-4 words) in b.handle; a
+           cue to keep it in mind. No cause, fix or significance; a lean toward the answer only as an
+           open question. The mechanism recalls it with data-recalls and the same handle words.
+           Delete it from blocks that do not first show the phenomenon. -->
+      <p class="foreshadow">{{One observation with its values, visible in this figure.}} {{Keep <b class="handle">this ___</b> in mind.}}</p>
     </div>
 
     <!-- SLOT NOTE: only when three or more blocks teach versions of the same thing (a history, or
@@ -451,7 +452,7 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
     <!-- SLOT NOTE: each mechanism step is a reason. It names, in its text and in data-from, the
          blocks (or earlier reasons) it follows from. No step rests on a fact the ladder did not show. -->
     <p id="m-{{last-reason}}" data-part="reason" data-from="c-{{first-concept}} c-{{second-concept}}" data-summary="{{the reason in one plain line}}">{{A reason: "Blocks 1 and 2 give ...", shown working on the figure.}}</p>
-    <p data-recalls="c-{{second-concept}}">{{Recall the foreshadow where the mechanism explains it: "This is the difference you saw in block 2: ...", with a link to the block.}}</p>
+    <p data-recalls="c-{{second-concept}}">{{Recall the foreshadow by its handle words where the mechanism explains it: "Recall the long trip from block 2: ...", with a link to the block.}}</p>
     <p>{{Step 2 and the name for it, with its own figure if it adds a new thing. Then step 3 if needed.}}</p>
     <!-- SLOT NOTE: a narrated figure, for a paragraph of three or more sentences that point at parts
          of one figure (also in ladder blocks and the problem): a timeline figure with the classes

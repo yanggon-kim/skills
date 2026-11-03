@@ -136,22 +136,47 @@ The skeleton technique that needs the most care, so it gets a full entry.
 - **Where.** At the end of the ladder block whose figure **first** shows the phenomenon the main
   question is about. Usually that is a contrast block, because the difference between its cases is
   the phenomenon.
-- **A hint, never the answer.** Name the phenomenon or the tension that is visible in the figure,
-  not its cause or its fix. Q6: "This picture already shows the heart of Q6: with the same depth,
-  the way you choose cuts changes the number of LUTs" is a phenomenon; "choose a higher cut where a
-  node has slack" is the answer and stays in the mechanism.
-- **Grounded in the figure.** The sentence points at something the reader can see in that block's
+- **Shape: an observation, a handle, a cue.** Two short sentences, three at most.
+  1. **One observation** the reader can check in this block's figure, with its values ("b goes
+     from slot 2 to slot 8"; "bin 3 is over by 3.45, bins 2 and 4 by 0.15").
+  2. **A handle**: a name of two to four words for that observation ("this long trip", "이 먼
+     이동"). Mark it with `<b class="handle">`. The recall uses the same words, so the reader hears
+     the callback.
+  3. **A cue** to keep it: "Keep this in mind." / "기억해 두자." One open question may follow the
+     cue ("Can one push strength suit both?").
+
+  Model: "A에서 B로 가면서 b는 2번 칸에서 8번 칸까지 멀리 간다. 이 <b class="handle">먼 이동</b>을
+  기억해 두자." It does not explain anything. It tells the reader where to look and what to carry
+  forward.
+- **The figure shows; the sentence does not explain.** By default, leave out the cause, the fix and
+  why the observation matters. The mechanism says those things, and the reader feels the click when
+  they connect them. Cut clauses such as "it decides what a one-cell engine can reach": they hand
+  over a conclusion before the reader can see it.
+- **A hint toward the answer is allowed; stating it is not.** Sometimes the best foreshadow leans
+  toward the answer. Write the lean as an open question, or as a side-by-side view that the reader
+  completes ("The pins' x values are 1, 3, 4, and the tree joins at x = 3."; "Is the best dot next
+  to it?"). Never write it as a settled fact ("the join point takes the middle value of each list").
+  The test: could someone who has seen only this figure, and not the mechanism, write the sentence?
+  If not, it states the answer. Turn it back into an observation or a question.
+- **Grounded in the figure.** The observation is something the reader can see in that block's
   figure (the two LUT counts under the two panels). A preview of something not on the page is a
   promise the reader cannot check.
 - **Once or twice per page.** More than that and every block sounds like a trailer; the effect
   fades.
-- **Always recalled.** The mechanism section calls it back by name and links to the block ("This is
-  the difference you saw in block 5"), with `data-recalls` on that element. A foreshadow that is
-  never recalled leaves a loose end.
-- **Example.** ILP page, block 4 (the whole-number rule): "The LP corner (3.5, 1.5) is not a dot.
-  Is the best dot next to it?" Recalled in the problem section, where rounding fails. FlowMap page,
-  block 2 (height and label): "The same y gets a different depth from each cut. What happens if
-  every node takes its shallowest cut?" Recalled in the mechanism's first step.
+- **Always recalled, by its handle.** The mechanism section calls it back with the handle's own
+  words and links to the block ("Recall the long trip from block 1"), with `data-recalls` on that
+  element. A foreshadow that is never recalled leaves a loose end. A recall that renames the
+  observation ("the difference" for "the long trip") makes the reader search for the link.
+- **Examples, good and weak.**
+
+  | foreshadow | verdict |
+  |---|---|
+  | "A에서 B로 가면서 b는 2번 칸에서 8번 칸까지 멀리 간다. 이 **먼 이동**을 기억해 두자." | model: an observation, a handle, a cue |
+  | "The LP corner (3.5, 1.5) is not a dot. Is the best dot next to it?" | good: the lean is an open question |
+  | "…Keep this distance in mind: it decides what an engine that moves one cell at a time can reach." | weak: the last clause gives the reason away; end at "in mind" |
+  | "…The join point takes the middle value of each list." | weak: states the answer (the median); put the numbers side by side and let the reader see it |
+  | "Nothing yet says where the cells go when nothing holds the ends." | weak: nothing concrete to carry; name what is visible (the two pads) |
+  | "This picture already shows the heart of the question: …" | filler opener; start with the observation |
 
 ## 7. Tier 3 — chosen per unit (full entries)
 

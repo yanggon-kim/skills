@@ -50,11 +50,13 @@ fits it, chosen from a toolkit in `references/techniques.md`. The toolkit has th
 - **Defaults, in every unit:** a picture, a concrete example, the ladder, and show before you name.
   They are the user's preferred way to learn and never change.
 - **The page skeleton, in fixed places:** the route map, anchor in the familiar, foreshadow, problem first,
-  predict first, manipulate one input, a transfer question. The foreshadow is one
-  sentence at the end of the ladder block whose figure first shows the main question's phenomenon:
-  a hint of what the mechanism will explain, never the answer, recalled by name in the mechanism.
-  ("This picture already shows the heart of Q6: with the same depth, the way you choose cuts
-  changes the number of LUTs.")
+  predict first, manipulate one input, a transfer question. The foreshadow ("Preview" / "미리
+  보기") ends the ladder block whose figure first shows the main question's phenomenon. It is one
+  observation the reader can check in that figure, a short handle that names it, and a cue to keep
+  it in mind. It adds no cause, fix or significance. It may lean toward the answer as an open
+  question, never state it. The mechanism recalls it by the same handle. ("Between the two rows,
+  b travels from slot 2 to slot 8. Keep this long trip in mind." … later: "Recall the long trip
+  from block 1.")
 - **Chosen per unit, by the shape of the question it answers:** contrast, sweep, extreme cases,
   sequence, cause chain, analogy, numbers and scale. "What is it?" points to contrasting cases;
   "why?" to a cause chain; "what happens step by step?" to a sequence. An analogy is the rare
@@ -378,7 +380,9 @@ teaches.
    the technique fits the shape and sits on the base scene. Where the figure shows cases, name in
    one word what varies between them; if two things vary, or nothing does, fix the figure. Where it
    uses an analogy, check that the page says where the analogy breaks. Check that the foreshadow
-   points at something visible in its figure, stops before the answer, and is recalled.
+   points at something visible in its figure, names it with a handle, adds no cause or
+   significance, could be written by someone who saw only that figure, and is recalled by the same
+   handle.
 3. **Interaction only** — use the widget at its minimum, typical and maximum values; press reset
    twice.
 4. **Without JavaScript** — the predictions still have answers and the comparison still shows.

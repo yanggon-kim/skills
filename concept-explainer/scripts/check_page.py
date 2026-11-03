@@ -311,8 +311,20 @@ def check_ladder(nc, add):
         add("WARN", "foreshadow", "a p.foreshadow sits outside a .concept block; put it at the end of the block whose figure shows the phenomenon")
     later = nc[fam[1]:]
     for b in shadows:
-        if not re.search(r'\bdata-recalls="' + re.escape(b["id"]) + r'"', later):
+        fs = re.search(r'<p\b[^>]*\bclass="(?:[^"]*\s)?foreshadow(?:\s[^"]*)?"[^>]*>(.*?)</p>', b["span"], re.S).group(1)
+        n_sent = len(split_sentences(re.sub(r"<[^>]+>", "", fs)))
+        if n_sent > 3:
+            add("WARN", "foreshadow", f"the foreshadow in {b['id']} has {n_sent} sentences; keep it to an observation, a handle and a cue (two short sentences, three at most)")
+        handle = re.search(r'<b\b[^>]*\bclass="(?:[^"]*\s)?handle(?:\s[^"]*)?"[^>]*>(.*?)</b>', fs, re.S)
+        if not handle:
+            add("WARN", "foreshadow", f"the foreshadow in {b['id']} has no <b class=\"handle\">; name its observation in 2-4 words so the recall can reuse them")
+        recalls = re.findall(r'<(\w+)\b[^>]*\bdata-recalls="' + re.escape(b["id"]) + r'"[^>]*>(.*?)</\1>', later, re.S)
+        if not recalls:
             add("WARN", "foreshadow", f"the foreshadow in {b['id']} is never recalled; add data-recalls=\"{b['id']}\" where the mechanism explains it")
+        elif handle:
+            words = re.sub(r"<[^>]+>", "", handle.group(1)).strip()
+            if not any(words in re.sub(r"<[^>]+>", "", r[1]) for r in recalls):
+                add("WARN", "foreshadow", f"the recall of {b['id']} does not repeat the handle \"{words}\"; call the observation back by the same words")
     mech = section_span(nc, "mechanism")
     ladder_keys = set().union(*(b["keys"] for b in blocks))
     if mech and ladder_keys:

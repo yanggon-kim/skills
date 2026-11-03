@@ -163,9 +163,11 @@ is the most important part of "What you already know", and usually the longest.
   separately but has not seen them side by side. End that run of blocks with one table (§ The
   comparison table).
 - **Foreshadow the main question once.** The block whose figure first shows the phenomenon the
-  page is about ends with one `<p class="foreshadow">` sentence: what this picture already shows
-  about the main question, as a hint, never the answer. The mechanism recalls it by name with
-  `data-recalls`. One per page, two at most (`references/techniques.md` § Foreshadow).
+  page is about ends with one `<p class="foreshadow">`: an observation the reader can check in
+  the figure, a `<b class="handle">` that names it, and a cue to keep it in mind. It adds no cause
+  and no significance. It may lean toward the answer as an open question, but it never states it.
+  The mechanism recalls it with `data-recalls` and the handle's own words. Use one per page, two at
+  most (`references/techniques.md` § Foreshadow).
 
 Markup (the template has it):
 
@@ -175,7 +177,7 @@ Markup (the template has it):
   <p>...</p>
   <figure class="sheet">...one SVG drawn on the base scene...</figure>
   <p class="source">Check: a 3-input LUT has 2^3 = 8 table rows; count the inputs of each cut.</p>
-  <p class="foreshadow">This picture already shows the heart of Q6: with the same depth, ...</p>
+  <p class="foreshadow">Both cuts give y depth 2, yet the left one needs 3 LUTs and the right one 2. Keep <b class="handle">this LUT gap</b> in mind.</p>
 </div>
 ...
 <p class="answer" id="answer" data-part="conclusion" data-from="m-proof p-guess"
