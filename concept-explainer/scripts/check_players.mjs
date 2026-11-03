@@ -4,7 +4,7 @@
 //   - after each "next", the stage shows exactly the matching storyboard frame (classes and text of
 //     every keyed element), so the animation and the storyboard tell the same story;
 //   - for a narrated figure, exactly the current frame's sentence is lit in its ol.sync-steps;
-//   - no visible SVG text runs past its figure's viewBox (a clipped label or readout), in any
+//   - no visible SVG text crosses its figure's viewBox edge (a clipped label or readout), in any
 //     figure on the page: static figures, storyboard frames (folded <details> are opened for this)
 //     and the widget's first render. A long one-line label is the usual cause: split it in two or
 //     make the figure taller.
@@ -93,7 +93,11 @@ const probe = `<script>
         var b; try { b = t.getBBox(); } catch (e) { return; }
         if (!b.width) return;
         var tol = 1.5;
-        if (b.x < vb.x - tol || b.y < vb.y - tol || b.x + b.width > vb.x + vb.width + tol || b.y + b.height > vb.y + vb.height + tol) {
+        var x1 = vb.x + vb.width, y1 = vb.y + vb.height;
+        // a label wholly outside the viewBox is not on screen at all (e.g. a parked panel slot);
+        // only a label that crosses an edge is cut off
+        var inside = b.x < x1 && b.x + b.width > vb.x && b.y < y1 && b.y + b.height > vb.y;
+        if (inside && (b.x < vb.x - tol || b.y < vb.y - tol || b.x + b.width > x1 + tol || b.y + b.height > y1 + tol)) {
           var fig = svg.closest("figure"), cap = fig && fig.querySelector("figcaption");
           var where = (fig && fig.id) || (cap && cap.id) || (svg.closest("[id]") || {}).id || "?";
           clip.push(where + ': "' + t.textContent.trim().slice(0, 50) + '" spans x ' + Math.round(b.x) + "–" + Math.round(b.x + b.width) + ", y " + Math.round(b.y) + "–" + Math.round(b.y + b.height) + " in a " + vb.width + " × " + vb.height + " viewBox");
