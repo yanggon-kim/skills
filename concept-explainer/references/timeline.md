@@ -59,6 +59,36 @@ Write the procedure as a list of states before drawing anything.
   figures. If the base scene is wider than a frame allows, a frame may show the part of the scene
   the procedure touches, at the same relative positions.
 
+### Space first, then time
+
+Many procedures move through **stages**: the levels of a multilevel V-cycle, the stages of a
+pipeline, the depths of a recursion, the layers of a memory hierarchy, the steps of a loop that
+repeats. For these, a frame that shows only the current state tells the reader *what* happens but
+not *where in the procedure* it happens. Lay the procedure out in space first, then let time move
+across it:
+
+1. **Give every stage a fixed place in every frame.** Draw all the stages at once (the three
+   levels stacked, the five pipeline stages in a row), including the ones the procedure has not
+   reached yet; draw those empty or dashed.
+2. **Light the current stage only.** Coral marks the stage this frame works on; the rest keep their
+   idle look. As the frames advance, the light moves through the layout. That motion is the
+   procedure's time.
+3. **Keep earlier results.** A stage that is done keeps its result (its order, its WL, its value)
+   in later frames, so the reader can compare the current stage with the ones before it without
+   stepping back.
+4. **Add a small position map** beside the scene when the path through the stages is not a
+   straight line: the V of a V-cycle, the circle of a loop, a pipeline strip. A dot on it marks the
+   current step. The map answers "where am I?" while the scene answers "what is happening?".
+
+Test: cover the caption of any one frame. Can the reader still say which stage the procedure is in,
+and what the earlier stages produced? If not, the frame shows time without space.
+
+Example: the multilevel-placement page's V-cycle. Each frame shows level 3 (8 cells), level 2
+(4 clusters) and level 1 (2 clusters) on the same 8-slot row, stacked top to bottom. Coarsening
+lights the levels from top to bottom, and placement and refinement light them from bottom to top.
+Each level keeps its WL once it is placed (WL 4, then 10, then 14), and a small V on the right
+carries a dot at the current step.
+
 ## 3. Draw the frames
 
 Each frame is a complete inline SVG. All frames share the same `viewBox` and the same set of keyed
@@ -193,8 +223,10 @@ Then check by eye:
 
 1. **Storyboard only.** Read the frames and captions top to bottom with the player ignored. Is the
    procedure complete?
-2. **Player only.** Play it through, step back and forth, drag the scrubber to the end and back. Does
+2. **Where am I?** For a procedure with stages, take any one frame alone: can you tell which stage
+   it is in and what the earlier stages produced (§ Space first, then time)?
+3. **Player only.** Play it through, step back and forth, drag the scrubber to the end and back. Does
    anything jump, overlap or move the wrong way? Press "next" a few times and compare the stage
    with the matching storyboard frame: they must show the same picture. A storyboard that looks
    right says nothing about the player, because each frame is drawn on its own.
-3. **Same story.** The prose, the captions and the frames name the same steps in the same order.
+4. **Same story.** The prose, the captions and the frames name the same steps in the same order.

@@ -10,7 +10,8 @@ Reports three groups of findings:
   ladder    - the figure ladder: concept blocks in "What you already know", each with a figure that
               builds on an earlier block's figure (shared data-key elements), and mechanism figures
               that continue from the ladder
-  technique - each ladder block names its chosen technique (data-technique) and its markup matches:
+  technique - each ladder block names its chosen technique (data-technique) and its markup matches
+              (passes: data-axis and one narrated figure per pass, on a block or a section tag):
               contrast/sweep/extremes need 2+ g.case panels, analogy a p.breaks sentence (and
               only one, in "What you already know"), cause-chain arrows, sequence a timeline
   foreshadow- one or two p.foreshadow hints in the ladder, each recalled later by data-recalls
@@ -49,7 +50,8 @@ ALLOWED_SCRIPT_HOSTS = (
 )
 ALLOWED_STYLE_HOSTS = ("https://fonts.googleapis.com/",)
 PARTS = {"element", "fact", "reason", "assumption", "convention", "conclusion"}
-TECHNIQUES = {"contrast", "sweep", "extremes", "sequence", "cause-chain", "analogy", "scale"}
+TECHNIQUES = {"contrast", "sweep", "extremes", "sequence", "cause-chain", "analogy", "scale", "passes"}
+PASS_AXES = {"representation", "complexity"}
 EXPECTED_SECTIONS = ["familiar", "problem", "mechanism", "try", "recap", "deeper"]
 PROSE_TAGS = {"p", "li", "dd", "dt", "summary", "figcaption", "h1", "h2", "h3", "blockquote"}
 SKIP_TAGS = {"script", "style", "svg", "code", "pre", "kbd", "title"}
@@ -232,7 +234,7 @@ def keys_in(html):
     return set(re.findall(r'data-key="([^"]+)"', html))
 
 
-def check_technique(techs, html, where, add):
+def check_technique(techs, html, where, add, tag=""):
     """The chosen technique's markup is present: references/techniques.md § Markup and checks."""
     unknown = [t for t in techs if t not in TECHNIQUES]
     if unknown:
@@ -250,6 +252,16 @@ def check_technique(techs, html, where, add):
         add("WARN", "technique", f"{where}: a cause chain needs arrows (marker-end) that mean \"causes\"")
     if "sequence" in techs and not re.search(r'class="[^"]*\btimeline\b', html):
         add("WARN", "technique", f"{where}: a sequence is drawn as a timeline (figure.timeline)")
+    if "passes" in techs:
+        axis = re.search(r'\bdata-axis="([^"]*)"', tag)
+        if not axis or axis.group(1) not in PASS_AXES:
+            add("WARN", "technique", f"{where}: passes need data-axis=\"representation\" or \"complexity\" (references/techniques.md § Passes)")
+        n_nar = len(re.findall(r'<figure\b[^>]*\bclass="[^"]*\bnarrated\b', html))
+        n_lab = len(re.findall(r'<(?:p|h3)\b[^>]*\bclass="(?:[^"]*\s)?pass-label(?:\s[^"]*)?"', html))
+        if not 2 <= n_nar <= 3:
+            add("WARN", "technique", f"{where}: passes are two or three narrated figures, one per pass; found {n_nar}")
+        if n_lab != n_nar:
+            add("WARN", "technique", f"{where}: {n_nar} pass figures but {n_lab} pass labels (p.pass-label, or h3.pass-label in a section); open every pass with its label")
 
 
 def check_ladder(nc, add):
@@ -272,7 +284,7 @@ def check_ladder(nc, add):
         tech = re.search(r'\bdata-technique="([^"]*)"', tag)
         blocks.append({"id": bid.group(1) if bid else f"#{i + 1}", "on": on.group(1) if on else None,
                        "svg": "<svg" in span, "keys": keys_in(span), "span": span,
-                       "tech": tech.group(1).split() if tech else None})
+                       "tech": tech.group(1).split() if tech else None, "tag": tag})
     seen = {}
     for i, b in enumerate(blocks):
         name = b["id"]
@@ -283,7 +295,7 @@ def check_ladder(nc, add):
         if b["tech"] is None:
             add("WARN", "technique", f"block {name} names no technique (data-technique); choose one from references/techniques.md")
         else:
-            check_technique(b["tech"], b["span"], f"block {name}", add)
+            check_technique(b["tech"], b["span"], f"block {name}", add, b["tag"])
         if i > 0 and not b["on"]:
             add("WARN", "ladder", f"block {name} does not say which earlier block it builds on (data-builds-on)")
         if b["on"]:
@@ -325,6 +337,13 @@ def check_ladder(nc, add):
             words = re.sub(r"<[^>]+>", "", handle.group(1)).strip()
             if not any(words in re.sub(r"<[^>]+>", "", r[1]) for r in recalls):
                 add("WARN", "foreshadow", f"the recall of {b['id']} does not repeat the handle \"{words}\"; call the observation back by the same words")
+    for sid in ("problem", "mechanism"):
+        sp = section_span(nc, sid)
+        if sp:
+            stag = re.match(r'<section\b[^>]*>', nc[sp[0]:sp[1]])
+            st = re.search(r'\bdata-technique="([^"]*)"', stag.group(0)) if stag else None
+            if st:
+                check_technique(st.group(1).split(), nc[sp[0]:sp[1]], f"section {sid}", add, stag.group(0))
     mech = section_span(nc, "mechanism")
     ladder_keys = set().union(*(b["keys"] for b in blocks))
     if mech and ladder_keys:

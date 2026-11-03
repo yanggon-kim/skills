@@ -25,6 +25,15 @@
 // without a key must look the same in every frame. The helper calls drawPanel twice per frame:
 // prefix "" for slot A and "B" for slot B. A frame without `b` shows A in the middle and hides B; a
 // frame with `b` shows A on the left and B on the right, so the player slides A aside.
+//
+// Unkeyed elements are keyed for you. A panel moves between the middle (single frame) and the left
+// (comparison frame), so every element in it changes position; narrate() therefore gives each
+// element drawn without a data-key the key "<prefix>~<n>" (in drawing order, the same in every
+// frame) and adds " off" to its class when the panel is hidden. Draw the same elements in the same
+// order in every frame. Escape "<" and "&" in text you draw (esc() below).
+//
+// Passes (references/techniques.md § Passes): call narrate() once per pass with its own id and the
+// same drawPanel; an easy pass hides layers through its panel spec instead of drawing a new picture.
 
 "use strict";
 
@@ -47,6 +56,16 @@ function background(svg) {
   s = s.replace(/<(\w+)\b[^>]*\bdata-key="[^"]*"[^>]*>[^<]*<\/\1>/g, "");
   s = s.replace(/<(\w+)\b[^>]*\bdata-key="([^"]*)"[^>]*>/g, "<$1 key=$2>");
   return s.replace(/\s+/g, " ");
+}
+// key every unkeyed shape or text element (see the header) and hide it with a hidden panel
+function autoKey(svg, prefix, visible) {
+  let n = 0;
+  return svg.replace(/<(rect|text|line|path|circle|ellipse|polygon|polyline)\b(?![^>]*\bdata-key=)([^>]*)>/g, (m, tag, rest) => {
+    let r = rest, selfClose = /\/\s*$/.test(r);
+    if (selfClose) r = r.replace(/\/\s*$/, "");
+    if (!visible) r = /\bclass="/.test(r) ? r.replace(/\bclass="([^"]*)"/, (q, c) => `class="${c} off"`) : r + ' class="off"';
+    return `<${tag} data-key="${prefix}~${n++}"${r}${selfClose ? "/" : ""}>`;
+  });
 }
 function keys(svg) { return [...svg.matchAll(/data-key="([^"]+)"/g)].map((m) => m[1]); }
 
@@ -74,8 +93,9 @@ function narrate(o) {
     const two = !!F.b;
     const head = `<text data-key="tag" x="10" y="22" class="t-case">${esc(F.tag)}</text>`;
     const split = `<line data-key="split" x1="${PW}" y1="40" x2="${PW}" y2="${H - 10}" class="s-grid dashed${off(two)}"></line>`;
-    const A = `<g class="case" data-case="A">${o.drawPanel("", F.a || {}, two ? 0 : (W - PW) / 2, top, true)}</g>`;
-    const B = `<g class="case" data-case="B">${o.drawPanel("B", F.b || F.a || {}, PW, top, two)}</g>`;
+    const draw = (prefix, spec, dx, vis) => (o.autoKey === false ? o.drawPanel(prefix, spec, dx, top, vis) : autoKey(o.drawPanel(prefix, spec, dx, top, vis), prefix, vis));
+    const A = `<g class="case" data-case="A">${draw("", F.a || {}, two ? 0 : (W - PW) / 2, true)}</g>`;
+    const B = `<g class="case" data-case="B">${draw("B", F.b || F.a || {}, PW, two)}</g>`;
     return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="${o.id}${i + 1}-title ${o.id}${i + 1}-desc"><title id="${o.id}${i + 1}-title">${esc(plain(F.tag))}</title><desc id="${o.id}${i + 1}-desc">${esc(plain(F.text))}</desc>${head}${split}${A}${B}</svg>`;
   });
   validate(o.id, frames);
@@ -105,4 +125,4 @@ ${storyboard}
   return { html: figure + "\n" + list, figure, list, frames };
 }
 
-module.exports = { narrate, validate, background, keys, esc, off, plain };
+module.exports = { narrate, validate, background, keys, autoKey, esc, off, plain };

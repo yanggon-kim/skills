@@ -22,7 +22,7 @@ according to the shape of the question each unit answers.
 |---|---|---|
 | **1. Defaults** | picture, concrete example, ladder, show then name | in every unit, always. They are the house method: the reader's favourite way to learn. |
 | **2. Page skeleton** | route map, anchor in the familiar, foreshadow, problem first, predict first, manipulate one input, transfer question | each in its fixed place on the page (`references/page-structure.md` § Section order). Not chosen; the structure provides them. |
-| **3. Chosen per unit** | contrast, sweep, extreme cases, sequence, cause chain, analogy, numbers and scale | one per unit (two at most), picked by the shape of the question the unit answers. |
+| **3. Chosen per unit** | contrast, sweep, extreme cases, sequence, cause chain, analogy, numbers and scale, passes | one per unit (two at most), picked by the shape of the question the unit answers. |
 
 A **unit** is one ladder block, the problem section, one mechanism step, or the widget.
 
@@ -43,6 +43,7 @@ contrast is the strongest general tool.
 | "Why does that happen?" | a cause that leads to an effect | cause chain |
 | "What is this even like?" | an abstract idea with nothing physical to draw, or a first contact with an unfamiliar field | analogy, only in "What you already know" and rarely (see its entry) |
 | "How big is it? Does it matter?" | a size, a cost, a growth rate | numbers and scale |
+| "This is too much at once." (the reader says it is hard, or the unit is dense) | an idea with heavy notation, or with many parts that act on each other | passes: the same unit told three times, easy to hard, on one axis (see its entry) |
 | "How do these versions differ, and what do they share?" | three or more versions of the same thing: a history, or rival answers | the units themselves use contrast; the run of units closes with a comparison table (`references/page-structure.md` § The comparison table) |
 
 Contrast is the strongest candidate, not a rule. Use it whenever the unit's idea is a property
@@ -96,6 +97,7 @@ block first shows the main question's phenomenon, the sentence, and where the me
 | c-ceiling | element | "What is this ceiling?" | abstract | analogy | nothing physical to point at yet | room-and-ceiling picture beside the grid, parts matched |
 | m-corner | reason (from c-area, c-score) | "Why is the best point a corner?" | why | cause chain | the answer is a chain of three facts | the score line on the grid, three arrows |
 | widget | convention (the budget) | "When does rounding work?" | depends on input | sweep + extreme cases | budget is a real input; the small budgets show LP = ILP | the grid with the budget line moving |
+| m-uzawa | reason (from c-bins, c-smooth) | "How does GFD spread the pile?" | procedure in heavy notation | passes (axis: representation) + sequence | the steps are simple; the symbols are what is hard | three narrated figures of the same run on the bin row |
 
 If a cell is hard to fill, the unit is not ready: usually its question is unclear, or it holds two
 ideas and should be two units.
@@ -238,9 +240,57 @@ draw it on the base scene, and an example.
   pipeline.
 - **Avoid it when** the idea is static, or the steps add nothing the reader must see.
 - **On the base scene.** A timeline whose frames are drawn on the base scene, one change per frame.
-  Rules: `references/timeline.md`.
+  Rules: `references/timeline.md`. When the procedure moves through stages (levels, pipeline
+  stages, recursion depths, the steps of a loop), lay the stages out in space and let time move
+  across them: every stage has a fixed place in every frame, the current stage is lit, earlier
+  results stay visible, and a small position map shows where the procedure is
+  (`references/timeline.md` § Space first, then time).
 - **Example.** Branch and bound in eight frames: solve, split on x, solve A, split A on y, best so
   far 11, best so far 14, skip B, done.
+
+### Passes
+
+- **What it does.** Tells the same unit two or three times, easy to hard, and changes only one
+  thing between the passes. The reader meets the hard version after two easier versions of the
+  same thing, so each new word or step names something they have already seen. Education research
+  calls the two forms below *concreteness fading* and *simple-to-complex sequencing*.
+- **Pick the axis by asking why the idea is hard.**
+
+  | axis | what changes between passes | what stays fixed | use it when the hard part is |
+  |---|---|---|---|
+  | `representation` | the way of saying it: (1) the picture only, in plain words the ladder already used; (2) the numbers, said in words ("0.2 times the part above 0.75"); (3) the field's notation, each formula pinned to a frame ("λ<sub>k+1</sub> = λ<sub>k</sub> − α(φ − κ)") | the example, the run, the frames | the notation: the steps are simple once the symbols are known |
+  | `complexity` | the size of the example: (1) the smallest example that shows the core effect, small enough to work out in your head; (2) the page's standard example, where a second effect first appears; (3) the target form, such as the exam-sized case, the slide's case or a variant | the way of saying it: the same words, picture grammar and level of notation | many parts that act on each other: each part is easy, but together they are hard to follow |
+
+- **Rules.**
+  - Change one axis between two passes. A pass that makes the example bigger *and* switches to
+    formulas leaves the reader unable to tell what is new. To use both axes, go in order: first
+    the representation passes on the small example, then hold the notation and grow the example.
+    Never go diagonally.
+  - Every pass is drawn on the base scene with the same drawing function. An easy pass hides
+    layers (a chart, the numbers); it does not draw a different picture.
+  - On the complexity axis, each bigger example must show one effect the smaller one could not.
+    If it shows nothing new, it is the same pass twice: cut it.
+  - The last pass is the target form: the slide's notation, or the exam-sized case.
+  - Each pass is a narrated figure (3–8 sentences, one per frame). It opens with a pass label
+    (`<p class="label pass-label">Pass 1 · picture only</p>`) and may end with one line naming
+    what it left out for the next pass.
+  - Pass 1 adds no new terms: it uses only words the ladder or the plain background already gave.
+    `references/voice.md` § Vocabulary per pass.
+  - Say once, near the top of the page, that the explanations come in passes and that pass 1 alone
+    gives the big picture. A reader who stops after pass 1 should still leave with a true model.
+- **Use it when** the reader asks for an easier version, says the page is hard, or the unit holds
+  three or more new terms, a formula, or a procedure with many parts that act on each other.
+- **Avoid it when** one figure already makes the unit clear, or the passes would repeat without
+  adding. Passes cost length: a unit roughly triples in sentences and frames, so use them on the
+  units that are hard, not on every unit by default (unless the reader asks for that).
+- **On the base scene.** Two or three narrated figures in a row, built with `assets/narrated.js`
+  from one `drawPanel`. The panel takes a flag for the easy pass (plain labels, fewer layers).
+- **Examples.** Axis `representation`, mPL5's GFD placement: pass 1 "a crowded bin pushes its
+  cells out; if it stays crowded, it pushes harder"; pass 2 "each bin adds 0.2 × (its smoothed
+  density − 0.75) to its λ: bin 3 gets 0.29"; pass 3 "λ<sub>k+1</sub> = λ<sub>k</sub> − α(φ − κ),
+  0 − 0.2 × (−2.19 + 0.75) = 0.29". Axis `complexity`, multilevel placement: 4 cells and one
+  coarsening level (just merge and place); then 8 cells and two levels (interpolation appears);
+  then the full V-cycle with refinement at every level.
 
 ### Cause chain
 
@@ -307,15 +357,25 @@ Each unit also names its part with `data-part` (`element`, `fact`, `reason`, `as
 transfer question that changes a convention names it in `data-changes`. The rules and checks are in
 `references/page-structure.md` § The parts.
 
-A foreshadow is `<p class="foreshadow">` inside its ladder block; the element in the mechanism (or
-the problem) that recalls it carries `data-recalls="<block id>"` and links to the block. The checker
-warns when the ladder has no foreshadow, when it has more than two, and when a foreshadow's block
-is never recalled.
+A foreshadow is `<p class="foreshadow">` inside its ladder block, with its handle in
+`<b class="handle">`. The element in the mechanism (or the problem) that recalls it carries
+`data-recalls="<block id>"`, links to the block and repeats the handle's words. The checker warns
+when the ladder has no foreshadow or more than two, when a foreshadow runs past three sentences or
+has no handle, and when a foreshadow's block is never recalled or its recall does not repeat the
+handle.
 
-Allowed values: `contrast`, `sweep`, `extremes`, `sequence`, `cause-chain`, `analogy`, `scale`.
-Two values are separated by a space. `scripts/check_page.py` warns when a ladder block has no
-`data-technique`, when a value is unknown or more than two are given, and when the markup does not
-match the technique:
+Passes name their axis next to the technique, on the unit that holds them: a ladder block, or the
+`<section id="problem">` or `<section id="mechanism">` tag when the whole section is told in passes.
+
+```html
+<div class="concept" id="c-bins" data-technique="passes contrast" data-axis="representation"> ... </div>
+<section id="mechanism" data-technique="passes" data-axis="complexity"> ... </section>
+```
+
+Allowed values: `contrast`, `sweep`, `extremes`, `sequence`, `cause-chain`, `analogy`, `scale`,
+`passes`. Two values are separated by a space. `scripts/check_page.py` warns when a ladder block has
+no `data-technique`, when a value is unknown or more than two are given, and when the markup does
+not match the technique:
 
 | technique | the checker expects |
 |---|---|
@@ -324,3 +384,4 @@ match the technique:
 | cause-chain | arrows in the figure (`marker-end`) |
 | sequence | a timeline (`figure.timeline`) |
 | scale | nothing mechanical; check the numbers by hand |
+| passes | `data-axis` set to `representation` or `complexity`, and two or three narrated figures, each after a pass label (`p.pass-label`, or `h3.pass-label` when a section is split into passes) |

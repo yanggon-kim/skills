@@ -58,10 +58,22 @@ fits it, chosen from a toolkit in `references/techniques.md`. The toolkit has th
   b travels from slot 2 to slot 8. Keep this long trip in mind." … later: "Recall the long trip
   from block 1.")
 - **Chosen per unit, by the shape of the question it answers:** contrast, sweep, extreme cases,
-  sequence, cause chain, analogy, numbers and scale. "What is it?" points to contrasting cases;
-  "why?" to a cause chain; "what happens step by step?" to a sequence. An analogy is the rare
-  exception: only in "What you already know", at most once per page, and only for an abstract idea
-  that no picture on the base scene can show yet.
+  sequence, cause chain, analogy, numbers and scale, passes. "What is it?" points to contrasting
+  cases; "why?" to a cause chain; "what happens step by step?" to a sequence; "this is too much at
+  once" to **passes**. An analogy is the rare exception: only in "What you already know", at most
+  once per page, and only for an abstract idea that no picture on the base scene can show yet.
+
+**Passes tell one hard unit two or three times, easy to hard, and change one axis between the
+passes.** The axis depends on why the unit is hard:
+- **`representation`:** the notation is hard. The example stays the same, and the way of saying it
+  changes: the picture only, then the numbers in words, then the field's formulas pinned to the
+  same frames.
+- **`complexity`:** the interacting parts are hard. The way of saying it stays the same, and the
+  example grows: the smallest case that shows the core effect, then the standard example where a
+  second effect appears, then the target (exam-sized) case.
+
+Each pass is a narrated figure on the base scene. Pass 1 adds no new terms, and a reader who stops
+after it still has a true model.
 
 **Contrast is the strongest candidate**: two to four cases side by side on the same scene, one thing
 changed and the rest fixed, each labelled with its result (a cut with 2, 3 and 4 inputs, where 4
@@ -193,7 +205,11 @@ the base scene. If a row is hard to fill, the unit is unclear or holds two ideas
 unit first. Also decide each unit's form: a **narrated figure** (one short sentence per frame, the
 sentence of the current frame lit under the player) when its paragraph has three or more
 sentences that point at different parts of one figure, and a static figure otherwise
-(`references/page-structure.md` § Narrated figures). If three or more units teach versions of the same thing (a history such as
+(`references/page-structure.md` § Narrated figures). For each unit, also ask why it is hard. If
+the notation is hard, or many parts act on each other, or the reader has said the topic is hard,
+plan **passes** for it. Name the axis (`representation` or `complexity`) and write one line per
+pass saying what that pass adds (`references/techniques.md` § Passes). When the reader asks for
+everything to be easier, every unit gets passes. If three or more units teach versions of the same thing (a history such as
 `__syncthreads()` → `bar.arrive` → `mbarrier`, or rival answers to one need), plan a comparison
 table that closes that run: one column per version, one row per difference the units show, and a
 line on what they all share (`references/page-structure.md` § The comparison table). Add one line for the foreshadow: the block whose figure first shows the main
@@ -284,7 +300,15 @@ average) gets a sentence, not a rung.
 
 **If the concept changes over time, the mechanism's rungs are a timeline.** Ask: is the answer to
 the reader's question a sequence of states ("what happens when ...", "walk me through ...", a
-pipeline, a protocol, an algorithm's steps, a git operation)? If yes, read `references/timeline.md`
+pipeline, a protocol, an algorithm's steps, a git operation)? If the procedure moves through
+stages (levels, pipeline stages, recursion depths, the steps of a loop), lay the stages out in
+space and let time move across them:
+- every stage keeps a fixed place in every frame;
+- only the current stage is lit;
+- earlier results stay visible;
+- a small position map (a V, a loop, a strip) marks the current step.
+
+Either way, read `references/timeline.md`
 and build the storyboard: 3–12 frames, one change per frame, the same layout and the same keyed
 elements in every frame, one caption sentence each, drawn on the page's base scene. You write only
 the storyboard; the template's script builds the player from those frames, so the two views cannot
@@ -383,6 +407,13 @@ teaches.
    points at something visible in its figure, names it with a handle, adds no cause or
    significance, could be written by someone who saw only that figure, and is recalled by the same
    handle.
+   - For a timeline with stages: cover any one frame's caption. Can you still tell where the
+     procedure is and what the earlier stages produced?
+   - For passes: check these four things.
+     - Exactly one axis changes between two passes.
+     - Pass 1 uses no new term.
+     - Each bigger example on the complexity axis shows something new.
+     - The last pass reaches the target form.
 3. **Interaction only** — use the widget at its minimum, typical and maximum values; press reset
    twice.
 4. **Without JavaScript** — the predictions still have answers and the comparison still shows.

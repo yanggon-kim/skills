@@ -119,3 +119,17 @@ one frame. The sentence's job is to make the reader look at one thing in that fr
 6. **The list still reads as a paragraph.** Read the sentences in order without the figure: they
    must still make sense, because without JavaScript they are the text.
 
+
+## Vocabulary per pass
+
+When a unit is told in passes (`references/techniques.md` § Passes), each pass has its own
+vocabulary budget. Write the passes in order and check each against its budget:
+
+| pass | may use | must not use |
+|---|---|---|
+| 1 (easy) | words the plain background or the ladder already gave, and everyday words ("crowded", "push harder", "the left half") | a new term, a symbol, a formula; numbers beyond simple counts |
+| 2 (middle) | on the `representation` axis: the numbers, said in words ("0.2 times the part above 0.75"); the term the pass names, each named once in the sentence where the frame shows it. On the `complexity` axis: pass 1's words, and the one new effect the bigger example shows | the field's notation (subscripts, Greek letters in formulas) on the representation axis |
+| 3 (target) | the field's notation (the slide's or the paper's symbols), each formula pinned to a frame the reader has already seen in an earlier pass | a symbol that no earlier pass showed as a picture or a number |
+
+A sentence in pass 3 that the reader cannot match to a frame from pass 1 or 2 is a new idea, not a
+new name. Move the idea into an earlier pass first, then name it here.

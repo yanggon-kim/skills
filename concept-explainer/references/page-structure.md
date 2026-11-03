@@ -23,7 +23,7 @@ lesson.
 | 0 | **Title + one-sentence answer + route map** | The title names the concept. Under it: the reader's question as an `h1`-adjacent line, then a one-sentence answer that states the central idea. A skimmer gets the idea here in under 20 seconds. Under the answer, the route map: the parts on the way to the answer, as one-line boxes and arrows (§ The route map). | 1 question, 1–2 sentences, 1 map |
 | 1 | **What you already know** | Three parts. (a) The plain background: anchor in something familiar, in prose only. (b) The concept ladder: one block per core concept the mechanism uses, in dependency order, each with a short explanation, one easy figure and one concrete example; each block builds on an earlier one, and its figure is that block's figure plus one new thing. (c) The words this page uses: a definition list (`dl.terms`), one plain line each, as a summary to glance back at. | 2–4 sentences + 2–8 blocks + 4–10 terms |
 | 2 | **The problem** | What goes wrong, or what is hard, without the mechanism. Make the reader feel the cost with a concrete case and, if possible, a number. The assumption fails here, on the base scene. Show it on a ladder figure when you can. | 1 short paragraph (+ figure) |
-| 3 | **The mechanism** | How it works, step by step, with as many figures as the steps need. Each step is a reason and names the blocks it follows from. Each figure climbs from the top rung of the concept ladder and adds one thing. It recalls the ladder's foreshadow where the hinted phenomenon is explained. Show each step working before you name it. | 2–6 short paragraphs + figures |
+| 3 | **The mechanism** | How it works, step by step, with as many figures as the steps need. Each step is a reason and names the blocks it follows from. Each figure climbs from the top rung of the concept ladder and adds one thing. It recalls the ladder's foreshadow where the hinted phenomenon is explained. Show each step working before you name it. A hard mechanism may be told in passes (`references/techniques.md` § Passes): one `h3.pass-label` per pass, each with its narrated figure. | 2–6 short paragraphs + figures |
 | 4 | **Try it** | The interaction: predict, act, compare, explain. Its picture uses the same base scene. Where the parts include a convention, the widget or the transfer question changes it and the reader rebuilds the result. | widget + 2–3 sentences |
 | 5 | **Recap** | Three to five lines, one idea each, in the order the page taught them. The last line names the trade-off: what the mechanism costs for what it buys ("The cost: ..."). | 3–5 bullets + 1 cost line |
 | 6 | **The expert's version of your question** | The reader's request, upgraded: what a top professional would do that the reader did not ask for, the raw material they start from, their methods and tools, and what outside check shows the answer is right. Ends with the request rewritten as a prompt, ready to paste, and the sources you checked. | 1–2 sentences + 4 items + the prompt |
@@ -474,6 +474,25 @@ sentences by `references/voice.md` § Sentences for a narrated figure. `check_pa
 each sentence list has exactly as many sentences as its figure has frames, and points out blocks
 with a long paragraph and only a static figure; `scripts/check_players.mjs` steps through every
 player in a headless browser and confirms the shown frames and the lit sentences.
+
+
+#### Passes: the same unit, two or three narrated figures
+
+A unit told in passes (`references/techniques.md` § Passes) holds two or three narrated figures in
+a row, built from the same `drawPanel`, so every pass shows the same base scene. The figures follow
+the pass order, and each one comes after a pass label:
+
+```html
+<p class="label pass-label">Pass 1 · picture only</p>
+...narrated figure + ol.sync-steps...
+<p class="label pass-label">Pass 2 · with numbers</p>
+...
+```
+
+Give each figure its own `id` in `narrate()` (`b1e`, `b1m`, `b1f`). Easy passes hide layers through
+the panel spec instead of drawing a new picture, so the player can show what pass 2 adds to pass 1.
+Name the passes once near the top of the page (`p.howto`): the explanations come in passes, and pass
+1 alone gives the big picture.
 
 ### Choose the base scene's type
 
