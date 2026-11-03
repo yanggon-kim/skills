@@ -220,6 +220,12 @@ table.family tr.same th, table.family tr.same td { background: var(--paper); bor
 .foreshadow { border-left: 3px solid var(--mustard); padding-left: 0.75rem; }
 .pass-label { margin-top: 1.5rem; color: var(--accent-ink); }
 .howto { border-left: 3px solid var(--teal); padding-left: 0.75rem; }
+/* "Uses" / "Used in" chips under each mechanism step and at the end of each ladder block (script). */
+.uses { display: flex; flex-wrap: wrap; gap: 0.35rem 0.45rem; align-items: baseline; margin: 0.35rem 0 1rem; font-family: var(--font-mono); font-size: 0.78rem; }
+.uses-title { color: var(--pencil); letter-spacing: 0.06em; text-transform: uppercase; margin-right: 0.15rem; }
+.uses a { color: var(--ink-soft); text-decoration: none; border: 1px solid var(--idle); border-radius: 2px; padding: 0.05rem 0.4rem; background: var(--sheet); }
+.uses a:hover, .uses a:focus-visible { color: var(--ink); border-color: var(--accent); }
+.uses-in { margin-top: 0.75rem; }
 .foreshadow::before { content: "Preview"; display: block; font-family: var(--font-mono); font-size: var(--step--1); letter-spacing: 0.08em; text-transform: uppercase; color: var(--mustard); }
 :lang(ko) .foreshadow::before { content: "미리 보기"; }
 .terms { display: grid; grid-template-columns: minmax(7rem, max-content) 1fr; gap: 0.6rem 1.25rem; }
@@ -453,7 +459,7 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
 
     <!-- SLOT NOTE: each mechanism step is a reason. It names, in its text and in data-from, the
          blocks (or earlier reasons) it follows from. No step rests on a fact the ladder did not show. -->
-    <p id="m-{{last-reason}}" data-part="reason" data-from="c-{{first-concept}} c-{{second-concept}}" data-summary="{{the reason in one plain line}}">{{A reason: "Blocks 1 and 2 give ...", shown working on the figure.}}</p>
+    <p id="m-{{last-reason}}" data-part="reason" data-from="c-{{first-concept}} c-{{second-concept}}" data-summary="{{the reason in one plain line}}">{{A reason that opens by naming each block and what it supplies, with links: "<a href=\"#c-...\">Block 1</a> gives ...; <a href=\"#c-...\">block 2</a> gives .... Together: ...", then shown working on the figure. The Uses chips under it are added by the script.}}</p>
     <p data-recalls="c-{{second-concept}}">{{Recall the foreshadow by its handle words where the mechanism explains it: "Recall the long trip from block 2: ...", with a link to the block.}}</p>
     <p>{{Step 2 and the name for it, with its own figure if it adds a new thing. Then step 3 if needed.}}</p>
     <!-- SLOT NOTE: a narrated figure, for a paragraph of three or more sentences that point at parts
@@ -837,6 +843,49 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
       li.addEventListener("keydown", function (e) { if ((e.key === "Enter" || e.key === " ") && frames[i]) { e.preventDefault(); frames[i].click(); } });
     });
     sync();
+  });
+})();
+</script>
+
+<script>
+/* "Uses" and "Used in" chips. Keep it unchanged. Built from data-from, like the route rail, so it
+   cannot drift from the markup. Under every mechanism step (data-part="reason") it shows the ladder
+   blocks and earlier steps the step rests on; at the end of every ladder block it shows the steps
+   that use the block. Each chip links to its part. Without JavaScript, the step's own text names
+   its blocks ("Block 2 gives …"). */
+(function () {
+  var ko = (document.querySelector("main") || document.documentElement).getAttribute("lang") === "ko";
+  var L = ko ? { uses: "이 단계가 쓰는 것", usedIn: "쓰이는 곳", block: "블록" } : { uses: "Uses", usedIn: "Used in", block: "block" };
+  function label(el) {
+    var h = el.querySelector("h3"), m = h && h.textContent.match(/^\s*(\d+)/);
+    var sum = el.getAttribute("data-summary") || (h ? h.textContent : el.id);
+    return (m ? L.block + " " + m[1] + " · " : "") + sum;
+  }
+  function chips(cls, title, targets) {
+    var p = document.createElement("p");
+    p.className = "uses " + cls;
+    var t = document.createElement("span");
+    t.className = "uses-title";
+    t.textContent = title;
+    p.appendChild(t);
+    targets.forEach(function (el) {
+      var a = document.createElement("a");
+      a.href = "#" + el.id;
+      a.textContent = label(el);
+      p.appendChild(a);
+    });
+    return p;
+  }
+  var usedBy = {};
+  Array.prototype.forEach.call(document.querySelectorAll('[data-part~="reason"][data-from][id]'), function (step) {
+    var from = step.getAttribute("data-from").split(/\s+/).map(function (id) { return document.getElementById(id); })
+      .filter(function (el) { return el && el.hasAttribute("data-part") && !/\bassumption\b/.test(el.getAttribute("data-part")); });
+    from.forEach(function (el) { (usedBy[el.id] = usedBy[el.id] || []).push(step); });
+    if (from.length) step.insertAdjacentElement("afterend", chips("uses-from", L.uses, from));
+  });
+  Array.prototype.forEach.call(document.querySelectorAll(".concept[id]"), function (block) {
+    var steps = usedBy[block.id];
+    if (steps && steps.length) block.appendChild(chips("uses-in", L.usedIn, steps));
   });
 })();
 </script>

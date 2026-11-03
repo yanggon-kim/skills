@@ -91,13 +91,18 @@ Before drawing, write one line per unit, for yourself. Then add one line for the
 block first shows the main question's phenomenon, the sentence, and where the mechanism recalls it.
 
 
-| unit | part | question in the reader's words | shape | technique | why it fits | how it sits on the base scene |
-|---|---|---|---|---|---|---|
-| c-area | element + fact | "What does the area limit allow?" | boundary | contrast: example / non-example | the line is the boundary; one plan outside shows it | three plans on the grid, same line |
-| c-ceiling | element | "What is this ceiling?" | abstract | analogy | nothing physical to point at yet | room-and-ceiling picture beside the grid, parts matched |
-| m-corner | reason (from c-area, c-score) | "Why is the best point a corner?" | why | cause chain | the answer is a chain of three facts | the score line on the grid, three arrows |
-| widget | convention (the budget) | "When does rounding work?" | depends on input | sweep + extreme cases | budget is a real input; the small budgets show LP = ILP | the grid with the budget line moving |
-| m-uzawa | reason (from c-bins, c-smooth) | "How does GFD spread the pile?" | procedure in heavy notation | passes (axis: representation) + sequence | the steps are simple; the symbols are what is hard | three narrated figures of the same run on the bin row |
+| unit | part | uses blocks | question in the reader's words | shape | technique | why it fits | how it sits on the base scene |
+|---|---|---|---|---|---|---|---|
+| c-area | element + fact | — | "What does the area limit allow?" | boundary | contrast: example / non-example | the line is the boundary; one plan outside shows it | three plans on the grid, same line |
+| c-ceiling | element | — | "What is this ceiling?" | abstract | analogy | nothing physical to point at yet | room-and-ceiling picture beside the grid, parts matched |
+| m-corner | reason | c-area (the region), c-score (the line) | "Why is the best point a corner?" | why | cause chain | the answer is a chain of three facts | the score line on the grid, three arrows |
+| widget | convention (the budget) | — | "When does rounding work?" | depends on input | sweep + extreme cases | budget is a real input; the small budgets show LP = ILP | the grid with the budget line moving |
+| m-uzawa | reason | c-bins (the overflow), c-smooth (the smoothed density) | "How does GFD spread the pile?" | procedure in heavy notation | passes (axis: representation) + sequence | the steps are simple; the symbols are what is hard | three narrated figures of the same run on the bin row |
+
+The **uses blocks** column names, for each mechanism step, the blocks it rests on and what each one
+supplies. The step's opening sentence says the same in prose ("Block 2 gives …; block 3 gives …;
+together …"), and its `data-from` lists the same ids. Every block should appear in some row; a
+block that appears in none is background the page does not need.
 
 If a cell is hard to fill, the unit is not ready: usually its question is unclear, or it holds two
 ideas and should be two units.

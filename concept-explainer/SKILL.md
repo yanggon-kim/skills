@@ -200,9 +200,13 @@ element, one fact, or an element with its fact), the problem (the assumption), e
 (a reason) and the widget (a convention to change, or the main input). For each one, write the
 question it answers in the reader's words, name the question's shape, and pick one Tier 3 technique
 (two at most) from the shape table; the part's kind suggests a first candidate. Write the plan as a
-small table for yourself: unit, part, question, shape, technique, why it fits, and how it sits on
+small table for yourself: unit, part, uses blocks, question, shape, technique, why it fits, and how it sits on
 the base scene. If a row is hard to fill, the unit is unclear or holds two ideas; fix the
-unit first. Also decide each unit's form: a **narrated figure** (one short sentence per frame, the
+unit first. The **uses blocks** column lists, for each mechanism step, the ladder blocks it
+rests on. Read the column top to bottom and check three things:
+- every block appears in some step's row;
+- every step lists at least one block;
+- the blocks are ordered by first use, so the blocks for the first step come first. Also decide each unit's form: a **narrated figure** (one short sentence per frame, the
 sentence of the current frame lit under the player) when its paragraph has three or more
 sentences that point at different parts of one figure, and a static figure otherwise
 (`references/page-structure.md` § Narrated figures). For each unit, also ask why it is hard. If
@@ -241,7 +245,15 @@ is drawn from these attributes.
 
 The rest of the page climbs the same parts. The problem shows the assumption failing on a concrete
 case. Each mechanism step is a reason and says which blocks it follows from ("Blocks 2 and 3 give
-...") — no step may rest on a fact the ladder did not show. "Try it" or the transfer question
+...") — no step may rest on a fact the ladder did not show. This is how a hard step becomes easy:
+the reader meets it already holding each piece from an easy block. So open every step by naming
+each block **and what it supplies**, then combine them. Link each block number to its block.
+("<a>Block 2</a> gives each operation a deadline, its ALAP; <a>block 3</a> says one adder serves
+one addition per c-step. Together: in each c-step, give the adder to the ready addition with the
+earliest deadline.") A bare "blocks 2 and 3 give the rule" makes the reader scroll back to
+recall what those blocks said. The template's script adds a **Uses** chip strip under every step
+and a **Used in** strip at the end of every block, built from `data-from`, so the link also runs
+from the easy block forward to the step that needs it. "Try it" or the transfer question
 changes a convention and lets the reader rebuild the result.
 
 In a narrated figure, write one short sentence per frame, with the thing that changes in that frame

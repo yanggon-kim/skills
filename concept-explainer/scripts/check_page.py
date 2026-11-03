@@ -17,7 +17,9 @@ Reports three groups of findings:
   foreshadow- one or two p.foreshadow hints in the ladder, each recalled later by data-recalls
   parts     - the conclusion's parts (data-part): facts in the ladder with a p.source line, an
               assumption in the problem, reasons in the mechanism whose data-from
-              points at real ids, and every convention changed in "Try it" (data-changes)
+              points at real ids, and every convention changed in "Try it" (data-changes);
+              each step names its blocks in visible text, every block is used by a step,
+              and every step's chain reaches the ladder
   compare   - comparison tables (figure.compare-table): data-compares names real ids, one column per
               version, a tr.same row (or p.same) for what they share, td.new on each new step
   narrated  - narrated figures: one sentence per frame (ol.sync-steps after the timeline figure), and
@@ -426,6 +428,67 @@ def check_parts(nc, add):
         for cid in c.split():
             if cid not in ids:
                 add("WARN", "parts", f"data-changes names {cid!r}, which is not an id on the page")
+    check_uses(nc, tags, fam, add)
+
+
+def check_uses(nc, tags, fam, add):
+    """Mechanism steps are built from the ladder (references/page-structure.md § The parts):
+    each step names its blocks in visible text, every block is used by some step, and every step's
+    chain reaches the ladder."""
+    if not fam:
+        return
+    body = nc[fam[0]:fam[1]]
+    blocks = {}  # id -> block number from its h3 ("2. ...")
+    for m in re.finditer(r'<div\b[^>]*\bclass="(?:[^"]*\s)?concept(?:\s[^"]*)?"[^>]*>', body):
+        bid = re.search(r'\bid="([^"]+)"', m.group(0))
+        h3 = re.search(r'<h3\b[^>]*>\s*(\d+)', body[m.end():m.end() + 400])
+        if bid:
+            blocks[bid.group(1)] = h3.group(1) if h3 else None
+    if not blocks:
+        return
+    frm, reasons = {}, {}
+    for m in tags:
+        tid = re.search(r'\bid="([^"]+)"', m.group(0))
+        if not tid:
+            continue
+        f = re.search(r'\bdata-from="([^"]*)"', m.group(0)) or re.search(r'\bdata-builds-on="([^"]*)"', m.group(0))
+        frm[tid.group(1)] = f.group(1).split() if f else []
+        if "reason" in m.group(1).split():
+            tag = re.match(r'<([a-z][a-z0-9]*)', m.group(0)).group(1)
+            close = nc.find("</" + tag + ">", m.end())
+            reasons[tid.group(1)] = nc[m.end():close if close != -1 else m.end() + 3000]
+    for bid in blocks:  # blocks without data-part still build on their parent
+        if bid not in frm:
+            on = re.search(r'\bid="' + re.escape(bid) + r'"[^>]*\bdata-builds-on="([^"]*)"', nc)
+            frm[bid] = on.group(1).split() if on else []
+
+    def back(start):
+        seen, stack = set(), list(frm.get(start, []))
+        while stack:
+            v = stack.pop()
+            if v not in seen:
+                seen.add(v)
+                stack.extend(frm.get(v, []))
+        return seen
+
+    used = set()
+    for rid, text in reasons.items():
+        direct = [b for b in frm.get(rid, []) if b in blocks]
+        reach = back(rid)
+        used |= reach & set(blocks)
+        if not reach & set(blocks):
+            add("WARN", "parts", f"reason {rid}: its data-from chain never reaches a ladder block; a step must rest on something \"What you already know\" showed")
+            continue
+        if direct:
+            plain = re.sub(r"<[^>]+>", " ", text)
+            linked = any(('href="#' + b + '"') in text for b in direct)
+            nums = [blocks[b] for b in direct if blocks[b]]
+            named = any(re.search(r'(?i)\bblocks?\b[^.;:]{0,40}?\b' + n + r'\b|블록\s*[0-9–,\s]*?' + n + r'\b', plain) for n in nums)
+            if not (linked or named):
+                add("WARN", "parts", f"reason {rid} follows from {', '.join(direct)} but its text never names them; open the step with \"Block N gives …\" (a link to the block counts)")
+    for bid in blocks:
+        if bid not in used:
+            add("WARN", "parts", f"block {bid} is not used by any mechanism step; cite it in a step's data-from and text, or cut it")
 
 
 def check_route(raw, add):

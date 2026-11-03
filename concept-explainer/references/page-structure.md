@@ -71,9 +71,23 @@ Rules for the parts:
 - **Three to six facts per conclusion.** More means the scope is too wide or the facts are too
   small; merge or cut. An element and the fact about it may share one block, so the parts list does
   not have to make the page longer. The word budget stays the same.
-- **Every reason names its parts.** In its text ("Blocks 2 and 3 give ...") and in its markup
-  (`data-from`). A mechanism step that rests on a fact the ladder never showed is a hole; add the
-  fact to the ladder or cut the step.
+- **Every reason names its parts.** In its text and in its markup (`data-from`). A mechanism
+  step that rests on a fact the ladder never showed is a hole; add the fact to the ladder or cut
+  the step.
+  - **Name what each block supplies, not only its number.** "<a href="#c-asap">Block 2</a>
+    gives each operation a deadline (ALAP); <a href="#c-res">block 3</a> says one adder serves
+    one addition per c-step. Together: …" The reader holds each piece from an easy block, so the
+    hard step reads as a combination of things they already know.
+  - **The link runs both ways.** The template's script builds the links from `data-from`, so
+    nothing extra is written:
+    - a **Uses** chip strip under each step, one chip per block or earlier step it rests on;
+    - a **Used in** strip at the end of each block, listing the steps that need it.
+  - **Order the blocks by first use.** The blocks the first step needs come first, and blocks
+    only the last step needs come last (within the dependency order).
+  - **`check_page.py` warns** when:
+    - a step's text names none of the blocks in its `data-from` (a link to the block counts);
+    - a block is used by no step, directly or through a block that builds on it;
+    - a step's `data-from` chain never reaches a ladder block.
 - **The assumption fails on the page.** The problem section shows it failing on a concrete case on
   the base scene, before the mechanism explains why.
 - **A convention is a lever.** Where the parts hold a convention, the reader changes it in "Try it"
