@@ -3,11 +3,15 @@
 // check_page.py cannot, because it never runs the page:
 //   - after each "next", the stage shows exactly the matching storyboard frame (classes and text of
 //     every keyed element), so the animation and the storyboard tell the same story;
-//   - for a narrated figure, exactly the current frame's sentence is lit in its ol.sync-steps.
+//   - for a narrated figure, exactly the current frame's sentence is lit in its ol.sync-steps;
+//   - no visible SVG text runs past its figure's viewBox (a clipped label or readout), in any
+//     figure on the page: static figures, storyboard frames (folded <details> are opened for this)
+//     and the widget's first render. A long one-line label is the usual cause: split it in two or
+//     make the figure taller.
 //
 // Usage: node check_players.mjs page.html   (slow: about a second of browser time per frame)
 // Needs a Chrome or Chromium binary (set CHROME=/path/to/chrome to choose one). Without one it says
-// so and exits 0: this check is optional. Exit code 1 if any player fails.
+// so and exits 0: this check is optional. Exit code 1 if any player fails or any text is clipped.
 import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -30,7 +34,7 @@ if (!chrome) { console.log("SKIP  no Chrome or Chromium found (set CHROME=...); 
 
 const html = readFileSync(resolve(page), "utf8");
 const frames = (html.match(/<li[^>]*class="[^"]*\bframe\b/g) || []).length;
-if (!/class="[^"]*\btimeline\b/.test(html)) { console.log("OK    no players on this page"); process.exit(0); }
+const hasPlayers = /class="[^"]*\btimeline\b/.test(html);
 
 const probe = `<script>
 (function () {
@@ -76,6 +80,28 @@ const probe = `<script>
       out.push(res);
     }
     document.body.setAttribute("data-player-report", encodeURIComponent(JSON.stringify(out)));
+    // clipped text: open folded storyboards, then measure every visible <text> against its viewBox
+    Array.prototype.forEach.call(document.querySelectorAll("details"), function (d) { d.open = true; });
+    await wait(200);
+    var clip = [];
+    Array.prototype.forEach.call(document.querySelectorAll("svg[viewBox]"), function (svg) {
+      if (svg.closest(".stage")) return;            // the stage is a copy of a storyboard frame
+      var vb = svg.viewBox.baseVal;
+      if (!vb || !vb.width) return;
+      Array.prototype.forEach.call(svg.querySelectorAll("text"), function (t) {
+        if (t.closest(".off") || !t.textContent.trim()) return;
+        var b; try { b = t.getBBox(); } catch (e) { return; }
+        if (!b.width) return;
+        var tol = 1.5;
+        if (b.x < vb.x - tol || b.y < vb.y - tol || b.x + b.width > vb.x + vb.width + tol || b.y + b.height > vb.y + vb.height + tol) {
+          var fig = svg.closest("figure"), cap = fig && fig.querySelector("figcaption");
+          var where = (fig && fig.id) || (cap && cap.id) || (svg.closest("[id]") || {}).id || "?";
+          clip.push(where + ': "' + t.textContent.trim().slice(0, 50) + '" spans x ' + Math.round(b.x) + "–" + Math.round(b.x + b.width) + ", y " + Math.round(b.y) + "–" + Math.round(b.y + b.height) + " in a " + vb.width + " × " + vb.height + " viewBox");
+        }
+      });
+    });
+    var seen = {}; clip = clip.filter(function (c) { if (seen[c]) return false; seen[c] = 1; return true; });
+    document.body.setAttribute("data-clip-report", encodeURIComponent(JSON.stringify(clip)));
   }
   setTimeout(run, 300);
 })();
@@ -93,6 +119,7 @@ const m = dom.match(/data-player-report="([^"]*)"/);
 if (!m) { console.log("ERROR the probe did not finish; a player script may have failed"); process.exit(1); }
 const report = JSON.parse(decodeURIComponent(m[1]));
 let failed = false;
+if (!hasPlayers) console.log("OK    no players on this page");
 for (const r of report) {
   const kind = r.narrated ? "narrated figure" : "timeline";
   const syncBad = r.sync !== "ok" && !(r.sync === "no list" && !r.narrated);
@@ -102,5 +129,15 @@ for (const r of report) {
   } else {
     console.log(`OK    player ${r.index} (${kind}, ${r.frames} frames)${r.sync === "ok" ? ", sentences in sync" : ""}`);
   }
+}
+const mc = dom.match(/data-clip-report="([^"]*)"/);
+const clipped = mc ? JSON.parse(decodeURIComponent(mc[1])) : [];
+if (clipped.length) {
+  failed = true;
+  console.log(`ERROR ${clipped.length} SVG text label${clipped.length === 1 ? "" : "s"} run past the figure's edge (split the line or make the figure larger):`);
+  clipped.slice(0, 20).forEach((c) => console.log("        " + c));
+  if (clipped.length > 20) console.log(`        ... and ${clipped.length - 20} more`);
+} else if (mc) {
+  console.log("OK    no SVG text runs past its figure's edge");
 }
 process.exit(failed ? 1 : 0);

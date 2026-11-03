@@ -374,11 +374,17 @@ parts and what each reason follows from, interaction, sections), and the voice (
 words). It is a report, not a judge. Read its
 warnings and decide.
 
-If the page has a timeline or a narrated figure and a Chrome or Chromium binary is available, run
-`node <skill-dir>/scripts/check_players.mjs <page.html>`. It presses "next" through every player
-and checks that the shown picture equals the matching storyboard frame element by element, and
-that exactly the current sentence is lit. `check_page.py` cannot see this, because it never runs
-the page. It skips itself where no browser exists.
+If a Chrome or Chromium binary is available, run
+`node <skill-dir>/scripts/check_players.mjs <page.html>` on every page, with or without players.
+- **Players:** it presses "next" through every player and checks that the shown picture equals the
+  matching storyboard frame element by element, and that exactly the current sentence is lit.
+- **Clipped text:** it opens every folded storyboard and measures each visible SVG label against
+  its figure's `viewBox`. A label that runs past an edge is cut off on screen, so the script
+  reports it as an error with the figure and the text. The usual cause is a long one-line label or
+  readout; split it into two lines or make the figure larger.
+
+`check_page.py` cannot see either problem, because it never renders the page. The script skips
+itself where no browser exists.
 
 If the interaction computes anything, run its model function once outside the page (for example
 with `node`) at the minimum, typical and maximum inputs, and confirm the first render prints exactly
@@ -453,5 +459,5 @@ to paste. Do not paste the explanation into the chat — the page is the answer.
 | `assets/template.html` | when assembling the page (step 7) — copy it, do not edit it in place |
 | `assets/narrated.js` | when building a narrated figure (step 5): writes the frames, storyboard and sentence list from your panel drawing |
 | `scripts/route_map.py` | after the page is assembled (step 7): draws the route map from the markup |
-| `scripts/check_players.mjs` | after the page is built (step 8), if a browser is available: steps every player and checks the frames and the sentence sync |
+| `scripts/check_players.mjs` | after the page is built (step 8), if a browser is available: steps every player and checks the frames and the sentence sync, and finds SVG text clipped at a figure's edge |
 | `scripts/check_page.py` | after the page is written (step 8) |

@@ -473,7 +473,10 @@ it handles the panel slots and the keys and refuses frames the player cannot sho
 sentences by `references/voice.md` § Sentences for a narrated figure. `check_page.py` checks that
 each sentence list has exactly as many sentences as its figure has frames, and points out blocks
 with a long paragraph and only a static figure; `scripts/check_players.mjs` steps through every
-player in a headless browser and confirms the shown frames and the lit sentences.
+player in a headless browser and confirms the shown frames and the lit sentences. It also measures
+every visible SVG label on the page, frames included, and reports any that run past the figure's
+edge. A readout line under a panel is the usual culprit, so keep panel labels short: two lines
+of about 40 characters beat one line of 80.
 
 
 #### Passes: the same unit, two or three narrated figures
