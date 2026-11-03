@@ -339,44 +339,51 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
       </figure>
     </div>
 
-    <div class="concept" id="c-{{second-concept}}" data-builds-on="c-{{first-concept}}" data-technique="contrast" data-part="element fact" data-summary="{{one plain line}}">
+    <div class="concept" id="c-{{second-concept}}" data-builds-on="c-{{first-concept}}" data-technique="contrast sequence" data-part="element fact" data-summary="{{one plain line}}">
       <h3>{{2. Second core concept}}</h3>
       <p class="label builds-on">{{"Builds on" in the page language}}: {{1. First core concept}}</p>
-      <p>{{Start from the earlier figure ("Take the picture from block 1 ..."), add one thing, and show what it means with one concrete example.}}</p>
-      <figure class="sheet" aria-labelledby="c2-caption">
-        <div class="diagram-scroll">
-          <svg viewBox="0 0 640 200" role="img" aria-labelledby="c2-title c2-desc">
-            <title id="c2-title">{{Figure title}}</title>
-            <desc id="c2-desc">{{The main relationship, what is new compared with block 1, and how the two cases differ.}}</desc>
-            <g class="case" data-case="1">
-              <g data-key="a">
-                <rect x="20" y="50" width="110" height="60" rx="2" class="f-sheet s-ink"></rect>
-                <text x="75" y="85" text-anchor="middle" class="t-label">{{Part A}}</text>
-              </g>
-              <line data-key="ab" x1="135" y1="80" x2="175" y2="80" class="s-accent" marker-end="url(#arrow-accent)"></line>
-              <g data-key="b">
-                <rect x="180" y="50" width="110" height="60" rx="2" class="f-accent s-ink"></rect>
-                <text x="235" y="85" text-anchor="middle" class="t-label">{{Part B}}</text>
-              </g>
-              <text x="155" y="160" text-anchor="middle" class="t-mono">{{result, e.g. depth 2 · area 3}}</text>
-            </g>
-            <line x1="320" y1="30" x2="320" y2="180" class="s-pencil dashed"></line>
-            <g class="case" data-case="2">
-              <g data-key="a">
-                <rect x="350" y="50" width="110" height="60" rx="2" class="f-sheet s-ink"></rect>
-                <text x="405" y="85" text-anchor="middle" class="t-label">{{Part A}}</text>
-              </g>
-              <line data-key="ab" x1="465" y1="80" x2="505" y2="80" class="s-accent dashed" marker-end="url(#arrow-accent)"></line>
-              <g data-key="b">
-                <rect x="510" y="50" width="110" height="60" rx="2" class="f-accent s-ink"></rect>
-                <text x="565" y="85" text-anchor="middle" class="t-label">{{Part B, other choice}}</text>
-              </g>
-              <text x="485" y="160" text-anchor="middle" class="t-mono">{{result, e.g. depth 2 · area 2}}</text>
-            </g>
-          </svg>
+      <!-- SLOT NOTE: a narrated figure (references/page-structure.md § Narrated figures): one short
+           sentence per frame, its subject the thing that changes in that frame. Build the frames with
+           assets/narrated.js from your base scene; it writes this figure and the sentence list below
+           and refuses frames the player cannot show. A comparison ends side by side, as frame 3
+           does here: slot A moves left and slot B appears beside it. Keep a static figure (block 1)
+           for a block of one or two sentences. -->
+      <figure class="timeline wide-frames narrated sheet wide" data-step-word="{{"Frame" in the page language}}" data-of-word="{{"of" in the page language}}" data-hold-ms="4200" aria-labelledby="c2-caption">
+        <div class="player js-only">
+          <div class="stage"></div>
+          <p class="stage-caption" aria-live="polite"></p>
+          <div class="controls">
+            <button type="button" data-act="play" data-play-label="{{"Play" in the page language}}" data-pause-label="{{"Pause"}}">{{"Play"}}</button>
+            <button type="button" data-act="prev" aria-label="{{"Previous frame"}}">←</button>
+            <button type="button" data-act="next" aria-label="{{"Next frame"}}">→</button>
+            <input type="range" class="scrub" min="0" max="1" step="1" value="0" aria-label="{{"Frame"}}">
+            <output class="counter"></output>
+          </div>
         </div>
-        <figcaption id="c2-caption">{{What is new (in coral) compared with block 1; what varies between the cases and what stays fixed; what each arrow means.}}</figcaption>
+        <details class="all-frames">
+          <summary>{{"All frames at once" in the page language}}</summary>
+          <ol class="storyboard">
+            <li class="frame">
+              <svg viewBox="0 0 720 220" role="img" aria-labelledby="n2f1-title n2f1-desc"><title id="n2f1-title">{{① first sentence}}</title><desc id="n2f1-desc">{{Sentence 1: its subject is Part A, the thing this frame shows.}}</desc><text data-key="tag" x="10" y="22" class="t-mono">{{① first sentence}}</text><line data-key="split" x1="360" y1="40" x2="360" y2="210" class="s-pencil dashed off"></line><g class="case" data-case="A"><rect data-key="a" x="210" y="70" width="110" height="60" rx="2" class="f-sheet s-ink"></rect><text data-key="at" x="265" y="105" text-anchor="middle" class="t-label">{{Part A}}</text><line data-key="ab" x1="325" y1="100" x2="385" y2="100" class="s-accent off" marker-end="url(#arrow-accent)"></line><rect data-key="b" x="390" y="70" width="110" height="60" rx="2" class="f-sheet s-ink off"></rect><text data-key="bt" x="445" y="105" text-anchor="middle" class="t-label off">{{Part B}}</text><text data-key="res" x="355" y="180" text-anchor="middle" class="t-mono off">{{result}}</text></g><g class="case" data-case="B"><rect data-key="Ba" x="390" y="70" width="110" height="60" rx="2" class="f-sheet s-ink off"></rect><text data-key="Bat" x="445" y="105" text-anchor="middle" class="t-label off">{{Part A}}</text><line data-key="Bab" x1="505" y1="100" x2="565" y2="100" class="s-accent dashed off" marker-end="url(#arrow-accent)"></line><rect data-key="Bb" x="570" y="70" width="110" height="60" rx="2" class="f-sheet s-ink off"></rect><text data-key="Bbt" x="625" y="105" text-anchor="middle" class="t-label off">{{Part B, other choice}}</text><text data-key="Bres" x="535" y="180" text-anchor="middle" class="t-mono off">{{result of the other case}}</text></g></svg>
+              <p class="frame-caption">{{Sentence 1: its subject is Part A, the thing this frame shows.}}</p>
+            </li>
+            <li class="frame">
+              <svg viewBox="0 0 720 220" role="img" aria-labelledby="n2f2-title n2f2-desc"><title id="n2f2-title">{{② second sentence}}</title><desc id="n2f2-desc">{{Sentence 2: it names Part B, which appears in this frame in coral.}}</desc><text data-key="tag" x="10" y="22" class="t-mono">{{② second sentence}}</text><line data-key="split" x1="360" y1="40" x2="360" y2="210" class="s-pencil dashed off"></line><g class="case" data-case="A"><rect data-key="a" x="210" y="70" width="110" height="60" rx="2" class="f-sheet s-ink"></rect><text data-key="at" x="265" y="105" text-anchor="middle" class="t-label">{{Part A}}</text><line data-key="ab" x1="325" y1="100" x2="385" y2="100" class="s-accent" marker-end="url(#arrow-accent)"></line><rect data-key="b" x="390" y="70" width="110" height="60" rx="2" class="f-accent s-ink"></rect><text data-key="bt" x="445" y="105" text-anchor="middle" class="t-label">{{Part B}}</text><text data-key="res" x="355" y="180" text-anchor="middle" class="t-mono off">{{result}}</text></g><g class="case" data-case="B"><rect data-key="Ba" x="390" y="70" width="110" height="60" rx="2" class="f-sheet s-ink off"></rect><text data-key="Bat" x="445" y="105" text-anchor="middle" class="t-label off">{{Part A}}</text><line data-key="Bab" x1="505" y1="100" x2="565" y2="100" class="s-accent dashed off" marker-end="url(#arrow-accent)"></line><rect data-key="Bb" x="570" y="70" width="110" height="60" rx="2" class="f-sheet s-ink off"></rect><text data-key="Bbt" x="625" y="105" text-anchor="middle" class="t-label off">{{Part B, other choice}}</text><text data-key="Bres" x="535" y="180" text-anchor="middle" class="t-mono off">{{result of the other case}}</text></g></svg>
+              <p class="frame-caption">{{Sentence 2: it names Part B, which appears in this frame in coral.}}</p>
+            </li>
+            <li class="frame">
+              <svg viewBox="0 0 720 220" role="img" aria-labelledby="n2f3-title n2f3-desc"><title id="n2f3-title">{{③ side by side}}</title><desc id="n2f3-desc">{{Sentence 3 compares: both cases side by side, with what the sentence names highlighted in each.}}</desc><text data-key="tag" x="10" y="22" class="t-mono">{{③ side by side}}</text><line data-key="split" x1="360" y1="40" x2="360" y2="210" class="s-pencil dashed"></line><g class="case" data-case="A"><rect data-key="a" x="30" y="70" width="110" height="60" rx="2" class="f-sheet s-ink"></rect><text data-key="at" x="85" y="105" text-anchor="middle" class="t-label">{{Part A}}</text><line data-key="ab" x1="145" y1="100" x2="205" y2="100" class="s-accent" marker-end="url(#arrow-accent)"></line><rect data-key="b" x="210" y="70" width="110" height="60" rx="2" class="f-accent s-ink"></rect><text data-key="bt" x="265" y="105" text-anchor="middle" class="t-label">{{Part B}}</text><text data-key="res" x="175" y="180" text-anchor="middle" class="t-mono">{{result}}</text></g><g class="case" data-case="B"><rect data-key="Ba" x="390" y="70" width="110" height="60" rx="2" class="f-sheet s-ink"></rect><text data-key="Bat" x="445" y="105" text-anchor="middle" class="t-label">{{Part A}}</text><line data-key="Bab" x1="505" y1="100" x2="565" y2="100" class="s-accent dashed" marker-end="url(#arrow-accent)"></line><rect data-key="Bb" x="570" y="70" width="110" height="60" rx="2" class="f-sheet s-ink"></rect><text data-key="Bbt" x="625" y="105" text-anchor="middle" class="t-label">{{Part B, other choice}}</text><text data-key="Bres" x="535" y="180" text-anchor="middle" class="t-mono">{{result of the other case}}</text></g></svg>
+              <p class="frame-caption">{{Sentence 3 compares: both cases side by side, with what the sentence names highlighted in each.}}</p>
+            </li>
+          </ol>
+        </details>
+        <figcaption id="c2-caption">{{What the colours, rings and numbers mean; that the last frame compares the cases side by side.}}</figcaption>
       </figure>
+      <ol class="sync-steps">
+        <li><span class="sync-tag">①</span> {{Sentence 1: its subject is Part A, the thing this frame shows.}}</li>
+        <li><span class="sync-tag">②</span> {{Sentence 2: it names Part B, which appears in this frame in coral.}}</li>
+        <li><span class="sync-tag">③</span> {{Sentence 3 compares: both cases side by side, with what the sentence names highlighted in each.}}</li>
+      </ol>
       <p class="source">{{"Source" or "Check" in the page language}}: {{where the fact comes from, or how the reader can check it. If it is a convention, say so.}}</p>
       <!-- SLOT NOTE: the foreshadow. Put it in the ONE block (two at most per page) whose figure first
            shows the phenomenon the page's main question is about. One sentence: what this picture

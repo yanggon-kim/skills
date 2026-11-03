@@ -99,3 +99,23 @@ Read each sentence and ask:
 3. Is every term already defined above this point? (If not, move the definition up.)
 4. Could the reader explain this sentence with a concrete example? (If not, add the example or cut
    the sentence.)
+
+## Sentences for a narrated figure
+
+A narrated figure (`references/page-structure.md` § Narrated figures) pairs every sentence with
+one frame. The sentence's job is to make the reader look at one thing in that frame. Write it so:
+
+1. **Its subject is the thing that changes in the frame.** "The cut is the set of nodes that ..."
+   while the cut's rings appear; not "We now consider ..." while the rings appear.
+2. **One new thing per sentence.** If the frame has to change two things, the sentence holds two
+   ideas: split it into two sentences and two frames.
+3. **Name things with the words the figure shows.** If the figure labels a node "u", the sentence
+   says "u", not "the first gate". If a colour or a ring marks the thing, the caption says what it
+   means once, and the sentences do not repeat it.
+4. **Short.** About 25 words at most in English, about 15 word units (eojeol) in Korean. The reader
+   reads it while looking at a picture.
+5. **The comparing sentence names both cases.** "Side by side: the cone {w, x, t} has four inputs,
+   the bigger cone {v, w, x, t} three." Its frame shows both.
+6. **The list still reads as a paragraph.** Read the sentences in order without the figure: they
+   must still make sense, because without JavaScript they are the text.
+

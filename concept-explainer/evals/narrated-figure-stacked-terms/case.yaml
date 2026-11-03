@@ -1,0 +1,11 @@
+schema_version: "1.1"
+name: narrated-figure-stacked-terms
+expected_outcome: |
+  One self-contained HTML page in English for a newcomer that explains minimum cuts and the
+  max-flow min-cut theorem on one small network. The ladder blocks whose explanation stacks several
+  parts of one picture (a path, a cut, capacity, flow) are narrated figures: a player whose frames
+  each pair with one short sentence of an ol.sync-steps list right after the figure, with the
+  current sentence lit and each frame changing exactly the thing its sentence names. Every block
+  that compares cases ends on a frame that shows the cases side by side, not on a lone picture.
+  The plain background still shows the example network as a static figure. The page passes
+  check_page.py without errors and, where a browser exists, check_players.mjs.

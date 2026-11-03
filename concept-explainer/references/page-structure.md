@@ -466,9 +466,12 @@ Markup (the template has the script and the CSS):
 
 The frames follow the timeline rules (`references/timeline.md`): the same keyed elements in every
 frame, hidden with `.off` when unused. A narrated block names `sequence` in `data-technique`, with
-`contrast` beside it when it ends side by side. `check_page.py` checks that each sentence list has
-exactly as many sentences as its figure has frames, and points out blocks with a long paragraph
-and only a static figure.
+`contrast` beside it when it ends side by side. Build the frames with `assets/narrated.js` from a function that draws one panel of your base scene;
+it handles the panel slots and the keys and refuses frames the player cannot show. Write the
+sentences by `references/voice.md` § Sentences for a narrated figure. `check_page.py` checks that
+each sentence list has exactly as many sentences as its figure has frames, and points out blocks
+with a long paragraph and only a static figure; `scripts/check_players.mjs` steps through every
+player in a headless browser and confirms the shown frames and the lit sentences.
 
 ### Choose the base scene's type
 

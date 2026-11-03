@@ -263,6 +263,13 @@ Read `references/page-structure.md` § Figures before drawing. Plan the ladder b
    not ready. Mark each ladder block (and each mechanism figure that uses a Tier 3 technique) with
    `data-technique`, and each unit with its part (`data-part`, and `data-from` on a reason).
 
+For a narrated figure, do not hand-write the frames: write one function that draws a panel of the
+base scene and pass it, with the sentences and a panel spec per sentence, to
+`assets/narrated.js` (`narrate({ id, lang, steps, drawPanel, caption })`). It lays out the two
+panel slots (one in the middle, or both side by side for a comparison), writes every frame, the
+folded storyboard, the figure and the synced sentence list, and stops the build if a frame changes
+something the player cannot show. The contract for `drawPanel` is at the top of that file.
+
 Generate every figure from the base scene with one short script (Node or Python) and the same
 drawing function, instead of hand-copying SVG, so positions and names cannot drift. Give each
 drawn element that recurs a `data-key` that stays the same in every figure. Use as many figures as
@@ -341,6 +348,12 @@ parts and what each reason follows from, interaction, sections), and the voice (
 words). It is a report, not a judge. Read its
 warnings and decide.
 
+If the page has a timeline or a narrated figure and a Chrome or Chromium binary is available, run
+`node <skill-dir>/scripts/check_players.mjs <page.html>`. It presses "next" through every player
+and checks that the shown picture equals the matching storyboard frame element by element, and
+that exactly the current sentence is lit. `check_page.py` cannot see this, because it never runs
+the page. It skips itself where no browser exists.
+
 If the interaction computes anything, run its model function once outside the page (for example
 with `node`) at the minimum, typical and maximum inputs, and confirm the first render prints exactly
 the static "other case" text written in the HTML.
@@ -403,5 +416,7 @@ to paste. Do not paste the explanation into the chat — the page is the answer.
 | `references/page-structure.md` | when planning the sections, the figure ladder and the interaction (steps 4–6) |
 | `references/timeline.md` | when a unit's technique is a sequence (step 5) |
 | `assets/template.html` | when assembling the page (step 7) — copy it, do not edit it in place |
+| `assets/narrated.js` | when building a narrated figure (step 5): writes the frames, storyboard and sentence list from your panel drawing |
 | `scripts/route_map.py` | after the page is assembled (step 7): draws the route map from the markup |
+| `scripts/check_players.mjs` | after the page is built (step 8), if a browser is available: steps every player and checks the frames and the sentence sync |
 | `scripts/check_page.py` | after the page is written (step 8) |
