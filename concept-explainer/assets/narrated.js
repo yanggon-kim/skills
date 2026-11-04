@@ -22,9 +22,16 @@
 // Put data-key="<prefix><your key>" on EVERY element that can change between frames, one key per
 // element (keys on leaves, not on groups whose children change). When `visible` is false, draw the
 // same elements with " off" added to their class (the template's CSS hides .off). Elements you draw
-// without a key must look the same in every frame. The helper calls drawPanel twice per frame:
+// without a key must look the same in every frame. In a comparison frame, give each panel a title
+// at its top that names what differs about that case (a `case-title` text), so the two panels can
+// be told apart without the sentence. The helper calls drawPanel twice per frame:
 // prefix "" for slot A and "B" for slot B. A frame without `b` shows A in the middle and hides B; a
 // frame with `b` shows A on the left and B on the right, so the player slides A aside.
+
+//
+// A step whose sentence states a result ("so", "fits", "=", "→") must draw what the result rests on:
+// make some shape appear, move or turn into a route in its frame (the group's outline, the cut's
+// rings, the paths), not only light up a node and change its number. narrate() warns otherwise.
 //
 // Unkeyed elements are keyed for you. A panel moves between the middle (single frame) and the left
 // (comparison frame), so every element in it changes position; narrate() therefore gives each
@@ -69,6 +76,40 @@ function autoKey(svg, prefix, visible) {
 }
 function keys(svg) { return [...svg.matchAll(/data-key="([^"]+)"/g)].map((m) => m[1]); }
 
+// "Draw the reason, not only the result" (page-structure.md § Narrated figures): a frame draws a
+// reason when, against the frame before, some shape appears, moves or changes its outline, or a
+// route (path, line) is restyled. A frame that only lights up nodes and changes text, under a
+// sentence that states a result, shows the result without its reason. check_page.py runs the
+// same test on the finished page.
+const SHAPES = new Set(["path", "circle", "rect", "line", "polygon", "polyline", "ellipse"]);
+const ROUTES = new Set(["path", "line", "polyline", "polygon"]);
+const GEOM = ["d", "cx", "cy", "r", "rx", "ry", "x", "y", "x1", "y1", "x2", "y2", "width", "height", "points", "transform"];
+const RESULT = /\b(so|fits?|needs?|therefore|thus|hence|gives?|must)\b|[→=≤≥<>]|그래서|따라서|므로|이므로|되므로/i;
+function elements(svg) {
+  const out = {};
+  for (const m of svg.matchAll(/<(\w+)\b([^>]*\bdata-key="([^"]+)"[^>]*)>/g)) {
+    const a = {};
+    for (const q of m[2].matchAll(/([\w:-]+)="([^"]*)"/g)) a[q[1]] = q[2];
+    out[m[3]] = { tag: m[1], a, vis: !(a.class || "").split(/\s+/).includes("off") };
+  }
+  return out;
+}
+function drawsReason(prev, cur) {
+  return Object.keys(cur).some((k) => {
+    const c = cur[k], p = prev[k];
+    if (!SHAPES.has(c.tag) || !c.vis || !p) return false;
+    if (!p.vis || GEOM.some((g) => c.a[g] !== p.a[g])) return true;
+    return ROUTES.has(c.tag) && (c.a.class !== p.a.class || c.a["marker-end"] !== p.a["marker-end"]);
+  });
+}
+function bareResults(frames, steps) {
+  const bare = [];
+  for (let i = 1; i < frames.length; i++) {
+    if (RESULT.test(plain(steps[i].text)) && !drawsReason(elements(frames[i - 1]), elements(frames[i]))) bare.push(i + 1);
+  }
+  return bare;
+}
+
 function validate(id, frames) {
   const k0 = keys(frames[0]), bg0 = background(frames[0]);
   const dup = k0.filter((k, i) => k0.indexOf(k) !== i);
@@ -99,6 +140,8 @@ function narrate(o) {
     return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="${o.id}${i + 1}-title ${o.id}${i + 1}-desc"><title id="${o.id}${i + 1}-title">${esc(plain(F.tag))}</title><desc id="${o.id}${i + 1}-desc">${esc(plain(F.text))}</desc>${head}${split}${A}${B}</svg>`;
   });
   validate(o.id, frames);
+  const bare = bareResults(frames, o.steps);
+  if (bare.length) console.warn(`narrated ${o.id}: frame${bare.length > 1 ? "s" : ""} ${bare.join(", ")}: the sentence states a result, but no shape appears, moves or becomes a route (only highlights and text change); draw what the result rests on (the group, its cut, the count), or set the simple rule's result beside the real one`);
   const storyboard = frames.map((svg, i) => `            <li class="frame">\n              ${svg}\n              <p class="frame-caption">${o.steps[i].text}</p>\n            </li>`).join("\n");
   const sentences = o.steps.map((F) => `        <li><span class="sync-tag">${esc(F.mark || F.tag.split(/\s/)[0])}</span> ${F.text}</li>`).join("\n");
   const figure = `      <figure class="timeline wide-frames narrated sheet wide" data-step-word="${L.step}" data-of-word="${L.of}" data-hold-ms="${o.holdMs || 4200}" aria-labelledby="${o.id}-caption">
@@ -125,4 +168,4 @@ ${storyboard}
   return { html: figure + "\n" + list, figure, list, frames };
 }
 
-module.exports = { narrate, validate, background, keys, autoKey, esc, off, plain };
+module.exports = { narrate, validate, background, keys, autoKey, esc, off, plain, bareResults };

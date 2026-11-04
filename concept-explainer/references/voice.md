@@ -99,6 +99,8 @@ Read each sentence and ask:
 3. Is every term already defined above this point? (If not, move the definition up.)
 4. Could the reader explain this sentence with a concrete example? (If not, add the example or cut
    the sentence.)
+5. Does a plural subject share one object, or does each have its own? ("A and B use one port" vs
+   "A and B each use their own port".) Say which.
 
 ## Sentences for a narrated figure
 
@@ -118,6 +120,12 @@ one frame. The sentence's job is to make the reader look at one thing in that fr
    the bigger cone {v, w, x, t} three." Its frame shows both.
 6. **The list still reads as a paragraph.** Read the sentences in order without the figure: they
    must still make sense, because without JavaScript they are the text.
+7. **A result names what it rests on.** "q's LUT holds n and q and reads g1, g2 and e, so q is
+   ready at layer 2", not "q fits on top of g1 and g2, so it needs two layers". Name every member
+   of the group and of its cut, and give the count the rule compares.
+8. **"Each" when each has its own.** "q and y fit in one LUT" reads as one LUT shared by q and y.
+   When two things each get their own (a LUT, a bank, a cycle), write "each of q and y fits in its
+   own LUT", or give each its own sentence.
 
 
 ## Vocabulary per pass

@@ -1,8 +1,8 @@
 # Page structure, figures and interaction
 
 ## Contents
-1. Section order (with the parts, the route map, the concept ladder, the words this page uses, and the expert's
-   version of your question)
+1. Section order (with the parts, the route map, the concept ladder, the comparison and worked tables, the words
+   this page uses, and the expert's version of your question)
 2. Figures: the ladder
 3. Interaction
 4. The four-way review
@@ -38,6 +38,10 @@ real gates differ."). The same holds for wrong beliefs:
 - **A misunderstanding of the mechanism itself** — one a reader can only form after learning it —
   is corrected in one sentence at the mechanism step where it would arise ("This does not make the
   answer approximate: the search keeps only whole plans as answers.").
+- **A surprise** — a step whose result breaks a simple rule the reader probably holds ("q reads n,
+  so q is one layer after n") — is met at that step with a side-by-side frame: the result the
+  simple rule gives next to the real one, each with what produces it (§ Narrated figures, "Stop at
+  the surprise").
 - **The trade-off** — what the mechanism costs for what it buys — is the recap's last line, so the
   reader leaves knowing it is not free.
 
@@ -255,6 +259,24 @@ table that takes it is laid out as a grid with its header out of line.
 `check_page.py` checks that `data-compares` names two or more real ids, that the header has one
 column per version, and that the table says what the versions share.
 
+### The worked table
+
+A procedure that computes one value per item (a label per node, an ASAP time per operation, a
+bound per resource) gets a **worked table** after its last narrated figure: one row per item, one
+column per intermediate value the procedure uses, and the result last.
+
+| node | best cut | height | label |
+|---|---|---|---|
+| q | {g1, g2, e} | 1 | 2 |
+| z | {f, q} | 2 | 3 |
+
+- **Every item, not only the ones the frames showed.** Players pick the interesting nodes; the
+  table covers the rest, so a reader who wonders about one the frames skipped can check it.
+- **The intermediate values, not only the answer.** The reader recomputes any row from its middle
+  columns with the rule the page taught.
+- Use `table.family` inside `div.table-scroll`, introduced by one sentence. On an exam-prep page it
+  is also the answer the reader writes down.
+
 ### The words this page uses
 
 The term list closes "What you already know", after the ladder. The reader has met every core term
@@ -391,6 +413,13 @@ step uses contrast, its figure shows **2–4 cases side by side**, all drawn on 
 - **Vary one thing; hold the rest.** The same network, the same layout, the same scale in every
   case. Only the property the figure teaches changes. If two things change at once, the reader
   cannot tell which one caused the difference.
+- **Title each case.** Above each case, a short title that names what is different about it: its
+  value of the varied thing ("pipelined adder" / "non-pipelined adder", "II = 1" / "II = 3",
+  "cut {v, b}" / "cut {a, b, c, d}"). Add the side when the prose refers to it ("Left · pipelined
+  adder"). Without titles, two panels that look almost alike can only be told apart by reading
+  the paragraph. Draw the title as `<text class="case-title">` inside the case's `<g class="case">`;
+  in a narrated comparison frame, each panel draws its own title. `check_page.py` warns when a
+  contrast, sweep or extremes figure has a case without one.
 - **Label each case with its result.** Under each case, the measured value or the verdict, in the
   terms of the page: "3 inputs ✓", "4 inputs ✗", "depth 2 · area 3". The labels make the contrast
   readable without the prose.
@@ -447,6 +476,21 @@ words refer to, and let the reader set the pace.
   make that thing, and only that, change in its frame (in coral or in a path colour). A sentence
   whose frame changes nothing is not pulling its weight; two sentences that need the same frame
   are one sentence.
+- **Draw the reason, not only the result.** A sentence that states a result ("fits", "needs two
+  layers", "so l(q) = 2") gets a frame that draws what the result comes from: the group, its cut,
+  the count, the path. Lighting up the node and writing its new number is not enough; the reader
+  sees *that* q is 2 but not *why*, and fills the gap with their own rule. Name every member the
+  result depends on, in the sentence and in the frame: "q's LUT holds n and q and reads g1, g2 and
+  e: 3 signals", not "q fits on top of g1 and g2", which drops e and hides the count.
+  `check_page.py` and `narrated.js` warn when a frame's sentence states a result but the frame
+  only highlights shapes and changes text: no shape appears, moves or is drawn as a route.
+- **Stop at the surprise.** Before writing the frames, run the simple rule the reader probably
+  holds on every step ("each gate adds one layer", "more inputs means a bigger cut"). Wherever it
+  gives a different result from the mechanism, that frame becomes a comparison: on the left the
+  simple rule's picture and result ("n in its own LUT → q at layer 3"), on the right the real one
+  ("n inside q's LUT → q at layer 2"), each titled. Add the one-sentence correction under the
+  player ("A label counts LUT layers, not gates."). A surprise passed over in an ordinary frame is
+  where a reader stops understanding without noticing.
 - **3 to 8 frames.** More than eight means the block holds two ideas: split it.
 - **Contrast ends side by side.** When the paragraph compares cases, the frame of the comparing
   sentence shows the cases next to each other, with what the sentence names highlighted in each.
@@ -635,7 +679,9 @@ page teaches? If the page has a comparison table, check every cell against its b
    the assumption failing? Does every analogy say where it breaks?
 2. **Figures only, in order.** For every narrated figure, step through it and read each sentence
    with its frame: does the frame change exactly what the sentence names, and does a comparing
-   sentence show the cases side by side? Flip through every figure and caption from the first ladder block to
+   sentence show the cases side by side? Cover each sentence that states a result: does the frame
+   alone show why (the group, its cut, the count)? Run the reader's simple rule on each step: where
+   it disagrees with the frame, is that frame a side-by-side of the two? Flip through every figure and caption from the first ladder block to
    the widget. Does it read as one picture growing, one thing per rung? Does any figure start over
    with a new layout, rename an element, or add two ideas at once? For each unit, does the chosen
    technique fit the question's shape? Where a figure shows cases, can you name in one word what

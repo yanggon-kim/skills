@@ -71,8 +71,8 @@ and disconnected.
   two shapes (a sweep whose two ends are worth showing as extreme cases).
 - **Change the technique only when the question's shape changes.** If three blocks in a row ask
   "what is it?", all three use contrast. Variety is never a reason.
-- **Keep the same visual grammar.** A contrast is always side-by-side panels with a result label
-  under each; a cause chain always reads in one direction with one arrow meaning "causes". The
+- **Keep the same visual grammar.** A contrast is always side-by-side panels with a title on top
+  and a result label under each; a cause chain always reads in one direction with one arrow meaning "causes". The
   reader learns each format once.
 
 **Failure 2: a broken ladder.** A technique that needs its own picture (an analogy above all)
@@ -201,7 +201,8 @@ draw it on the base scene, and an example.
 - **Avoid it when** the cases would differ in two things at once, or the idea is a procedure (use
   sequence) or a cause (use cause chain).
 - **On the base scene.** Small multiples: equal panels in one row, each `<g class="case">`, the same
-  scene and scale in every panel, one thing varied, a result label under each panel. The caption
+  scene and scale in every panel, one thing varied, a title on top of each panel that names its
+  value of the varied thing (`<text class="case-title">`), and a result label under each panel. The caption
   says what varies and what is fixed. Full rules: `references/page-structure.md` § Show each idea
   in contrasting cases.
 - **Example.** Cuts of node n with 2, 3 and 4 inputs: 2 and 3 fit a 3-input LUT, 4 does not. Two
@@ -281,6 +282,14 @@ draw it on the base scene, and an example.
     what it left out for the next pass.
   - Pass 1 adds no new terms: it uses only words the ladder or the plain background already gave.
     `references/voice.md` § Vocabulary per pass.
+  - An easy pass drops notation, never evidence. Pass 1 still draws what each result rests on (the
+    group, its cut, the count), and only says it in plain words: "q's LUT holds n too, and reads
+    g1, g2 and e: three signals", with the LUT outlined and the three signals ringed. A pass 1
+    frame that only lights a node and writes its number teaches the result without the reason
+    (`references/page-structure.md` § Narrated figures, "Draw the reason").
+  - Every case a pass gives a result for comes back in the last pass, or the last pass says which
+    shown case it works like ("q works like y"). The case that surprised the reader in pass 1 is
+    the one the formal pass must not skip.
   - Say once, near the top of the page, that the explanations come in passes and that pass 1 alone
     gives the big picture. A reader who stops after pass 1 should still leave with a true model.
 - **Use it when** the reader asks for an easier version, says the page is hard, or the unit holds

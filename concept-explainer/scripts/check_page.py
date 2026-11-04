@@ -22,8 +22,10 @@ Reports three groups of findings:
               and every step's chain reaches the ladder
   compare   - comparison tables (figure.compare-table): data-compares names real ids, one column per
               version, a tr.same row (or p.same) for what they share, td.new on each new step
-  narrated  - narrated figures: one sentence per frame (ol.sync-steps after the timeline figure), and
-              blocks whose long paragraph explains a single static figure
+  narrated  - narrated figures: one sentence per frame (ol.sync-steps after the timeline figure),
+              frames whose sentence states a result while the frame draws nothing new (no shape
+              appears, moves or becomes a route: only highlights and text change), and blocks
+              whose long paragraph explains a single static figure
   route     - the route map (advance organizer) under the answer: every part on the route has a
               one-line data-summary, leads to the answer, and the drawn map is up to date
               (scripts/route_map.py draws it)
@@ -248,6 +250,9 @@ def check_technique(techs, html, where, add, tag=""):
     cases = len(re.findall(r'\bclass="(?:[^"]*\s)?case(?:\s[^"]*)?"', html))
     if any(t in ("contrast", "sweep", "extremes") for t in techs) and cases < 2:
         add("WARN", "technique", f"{where}: {'/'.join(t for t in techs if t in ('contrast', 'sweep', 'extremes'))} needs 2-4 side-by-side cases (<g class=\"case\">); found {cases}")
+    titles = len(re.findall(r'\bclass="(?:[^"]*\s)?case-title(?:\s[^"]*)?"', html))
+    if any(t in ("contrast", "sweep", "extremes") for t in techs) and cases >= 2 and titles < cases:
+        add("WARN", "technique", f"{where}: {cases - titles} of {cases} cases have no title; put a <text class=\"case-title\"> on top of each <g class=\"case\"> naming what differs, so the cases read without the paragraph")
     if "analogy" in techs and not re.search(r'<p\b[^>]*\bclass="(?:[^"]*\s)?breaks(?:\s[^"]*)?"', html):
         add("WARN", "technique", f"{where}: an analogy needs a <p class=\"breaks\"> sentence saying where it breaks")
     if "cause-chain" in techs and "marker-end" not in html:
@@ -529,6 +534,39 @@ def check_compare(nc, add):
             add("WARN", "compare", "no td.new: mark the cell where each version brings its new step")
 
 
+# a frame "draws a reason" when, against the frame before, some shape appears, moves or changes
+# its outline, or a route (path, line) is restyled; a node that only lights up and a number that
+# only changes show the result without its reason (page-structure.md § Narrated figures)
+EV_SHAPES = {"path", "circle", "rect", "line", "polygon", "polyline", "ellipse"}
+EV_ROUTES = {"path", "line", "polyline", "polygon"}
+EV_GEOM = ("d", "cx", "cy", "r", "rx", "ry", "x", "y", "x1", "y1", "x2", "y2", "width", "height", "points", "transform")
+EV_RESULT = re.compile(r"\b(so|fits?|needs?|therefore|thus|hence|gives?|must)\b|[→=≤≥<>]|그래서|따라서|므로|이므로|되므로", re.I)
+
+
+def frame_elements(svg):
+    out = {}
+    for m in re.finditer(r'<(\w+)\b([^>]*\bdata-key="([^"]+)"[^>]*)>', svg):
+        a = dict(re.findall(r'([\w:-]+)="([^"]*)"', m.group(2)))
+        out[m.group(3)] = (m.group(1), a, "off" not in a.get("class", "").split())
+    return out
+
+
+def draws_reason(prev, cur):
+    for k, (tag, a, vis) in cur.items():
+        if tag not in EV_SHAPES or not vis or k not in prev:
+            continue
+        _, pa, pvis = prev[k]
+        if not pvis or any(a.get(g) != pa.get(g) for g in EV_GEOM):
+            return True
+        if tag in EV_ROUTES and (a.get("class") != pa.get("class") or a.get("marker-end") != pa.get("marker-end")):
+            return True
+    return False
+
+
+def unescape(s):
+    return s.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&")
+
+
 def check_narrated(nc, add):
     """Narrated figures: references/page-structure.md § Narrated figures."""
     figs = list(re.finditer(r'<figure\b[^>]*\bclass="[^"]*\btimeline\b[^"]*"[^>]*>', nc))
@@ -546,6 +584,21 @@ def check_narrated(nc, add):
                 add("WARN", "narrated", f"a sentence list has {n} sentences but its figure has {frames} frames; keep one sentence per frame")
         elif "narrated" in m.group(0):
             add("WARN", "narrated", "a narrated figure has no <ol class=\"sync-steps\"> right after it")
+        # frames that state a result but draw nothing that shows why
+        bare, prev = [], None
+        for i, li in enumerate(re.findall(r'<li\b[^>]*class="[^"]*\bframe\b[^"]*"[^>]*>(.*?)</li>', nc[m.end():end], re.S)):
+            sv = re.search(r"<svg\b.*?</svg>", li, re.S)
+            if not sv:
+                continue
+            cap = re.search(r'<p\b[^>]*class="[^"]*\bframe-caption\b[^"]*"[^>]*>(.*?)</p>', li, re.S)
+            text = unescape(re.sub(r"<[^>]+>", "", cap.group(1))) if cap else ""
+            cur = frame_elements(sv.group(0))
+            if prev is not None and not draws_reason(prev, cur) and EV_RESULT.search(text):
+                bare.append(i + 1)
+            prev = cur
+        if bare:
+            fid = re.search(r'aria-labelledby="([^"]+)-caption"', m.group(0))
+            add("WARN", "narrated", f"figure {fid.group(1) if fid else '?'}, frame{'s' if len(bare) > 1 else ''} {', '.join(map(str, bare))}: the sentence states a result, but no shape appears, moves or becomes a route (only highlights and text change); draw what the result rests on (the group, its cut, the count), or set the simple rule's result beside the real one")
     # long paragraphs explained by a static figure: candidates for a narrated figure
     fam = section_span(nc, "familiar")
     if fam:

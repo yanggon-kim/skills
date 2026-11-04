@@ -76,8 +76,9 @@ Each pass is a narrated figure on the base scene. Pass 1 adds no new terms, and 
 after it still has a true model.
 
 **Contrast is the strongest candidate**: two to four cases side by side on the same scene, one thing
-changed and the rest fixed, each labelled with its result (a cut with 2, 3 and 4 inputs, where 4
-does not fit). People notice a property when they see it vary while the rest stays still. But it is
+changed and the rest fixed, each with a title on top that names its value of the varied thing
+("3-input cut", "pipelined adder") and its result underneath (a cut with 2, 3 and 4 inputs, where 4
+does not fit). The titles let the reader tell the cases apart from the figure alone. People notice a property when they see it vary while the rest stays still. But it is
 a candidate, not a rule: a procedure is clearer as a sequence and a "why" as a cause chain.
 
 Two rules keep the mix calm. One chosen technique per unit (two at most), changed only when the
@@ -177,6 +178,12 @@ Then make the parts right, and collect what the rest of the page needs:
 - Write down **any common misunderstanding of the mechanism itself** — one that a reader can only
   form after learning it ("the solver uses fractions, so the answer is approximate"). It cannot go
   in the problem, so correct it in one sentence at the mechanism step where it would arise.
+- Write down **the surprises**: run the simplest rule a newcomer would use ("each gate adds one
+  layer", "the node after n is one deeper") over every step of the worked example, and list each
+  step where it gives a different result from the mechanism. Each surprise gets a side-by-side
+  frame at that step, the simple rule's result next to the real one, plus a one-sentence
+  correction (`references/page-structure.md` § Narrated figures, "Stop at the surprise"). These are
+  the places where a reader silently stops understanding.
 - For each fact, ask: do I know this firmly? For recent topics, niche details, exact numbers, or
   anything about the user's own code or paper, check it — search the web or read the file — before
   you print it.
@@ -258,7 +265,12 @@ changes a convention and lets the reader rebuild the result.
 
 In a narrated figure, write one short sentence per frame, with the thing that changes in that frame
 as its subject, so each word points at something the reader can see. When the sentences compare
-cases, the comparing sentence's frame shows the cases side by side. The plain background stays
+cases, the comparing sentence's frame shows the cases side by side. A sentence that states a result
+gets a frame that draws what the result rests on (the group, its cut, the count), not only the new
+number, and names every member of it ("q's LUT holds n and q and reads g1, g2 and e"). At each
+surprise from step 2, the frame shows the simple rule's result beside the real one. A procedure
+that computes a value per item ends with a worked table: every item, its intermediate values and
+its result (`references/page-structure.md` § The worked table). The plain background stays
 prose, but it still shows pictures: at least a static figure of the example the page will use.
 
 Show before you name: each ladder block shows its concept working on its figure before it names
@@ -382,8 +394,9 @@ python3 <skill-dir>/scripts/check_page.py <page.html>
 ```
 
 It checks the page contract, the structure (figures, the concept ladder and its shared keys, the
-parts and what each reason follows from, interaction, sections), and the voice (sentence length, passive-voice suspects in English, filler
-words). It is a report, not a judge. Read its
+parts and what each reason follows from, interaction, sections, and narrated frames whose sentence
+states a result while the frame draws nothing that shows why), and the voice (sentence length,
+passive-voice suspects in English, filler words). It is a report, not a judge. Read its
 warnings and decide.
 
 If a Chrome or Chromium binary is available, run
@@ -415,7 +428,9 @@ teaches.
    walk down: every reason names the blocks it follows from, and every chain ends at a fact the
    page showed and the reader can check.
 2. **Figures only, in order** — step through each narrated figure with its sentences (each frame
-   must change exactly what its sentence names, and a comparison must end side by side). Then flip through the figures and captions from the first ladder block
+   must change exactly what its sentence names, and a comparison must end side by side). Cover
+   each sentence that states a result: the frame alone must show why. At every surprise from
+   step 2, the frame must set the simple rule's result beside the real one. Then flip through the figures and captions from the first ladder block
    to the mechanism. They must read as one story that grows one thing per rung. A figure that
    starts over with a new layout, renames an element, or adds two new ideas at once is a broken
    rung; fix it. For each unit, name the question's shape and the technique you chose; check that
