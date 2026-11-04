@@ -138,7 +138,7 @@ bar" script puts a small rounded bar in the left margin, labelled "understanding
 Korean page). It fills from 0% at the top of the page to 100% when the recap (`section#recap`)
 reaches the middle of the screen, or at the bottom of a page without a recap. It keeps the highest
 point reached, so scrolling back to re-read never empties it. Each time it passes a new 10%, a
-small pop beside the fill ("40% · 40% already ⭐") and a few sparks in the page's coral, teal and
+small pop to the left of the bar, in the empty margin so it never covers the text ("40% · 40% already ⭐"; skipped where the margin is too narrow, as on a phone), and a few sparks in the page's coral, teal and
 mustard celebrate; 100% gets a bigger burst ("100% — you made it! 🎉"). A small round brown mascot stands on top of the bar
 and cheers the reader on. It is drawn after the user's "기분최고" sticker: a wide round head with
 tiny ears, arched brows over dot eyes, pink cheeks, a shiny round nose, a smile with the tongue out,
