@@ -140,9 +140,12 @@ reaches the middle of the screen, or at the bottom of a page without a recap. It
 point reached, so scrolling back to re-read never empties it. Each time it passes a new 10%, a
 small pop beside the fill ("40% · 40% already ⭐") and a few sparks in the page's coral, teal and
 mustard celebrate; 100% gets a bigger burst ("100% — you made it! 🎉"). A small round brown mascot stands on top of the bar
-and cheers the reader on: it breathes, blinks, waves and hums notes while the reader reads, jumps
-with both arms up at every 10%, and dances at 100%. It shows only where the left margin is wide
-enough (68rem). It needs no slot and no
+and cheers the reader on. It is drawn after the user's "기분최고" sticker: a wide round head with
+tiny ears, arched brows over dot eyes, pink cheeks, a shiny round nose, a smile with the tongue out,
+a short body with stub arms and feet, music notes, and "기분최고" in a handwritten font. It breathes,
+blinks, wiggles its tongue and arms and hums notes while the reader reads, jumps and cheers at every
+10%, and dances at 100%. Keep its drawing as it is. It shows only where the left margin is wide
+enough (74rem). It needs no slot and no
 authoring. On narrow screens it is a thin bar without its labels; with reduced motion the sparks
 are left out; without JavaScript nothing is shown.
 

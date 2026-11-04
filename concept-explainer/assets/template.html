@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Noto+Serif+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@700&text=%EA%B8%B0%EB%B6%84%EC%B5%9C%EA%B3%A0&display=swap">
 <style>
 /* Layout: one reading column of ~66ch on a paper field; figures and the widget step out to a wider
    "cutout" sheet. Paper, ink and pencil. Coral marks the one new thing in each figure. */
@@ -219,33 +220,39 @@ table.family tr.same th, table.family tr.same td { background: var(--paper); bor
   background: var(--sheet); border: 1.5px solid var(--accent); border-radius: 999px; padding: 0.05rem 0.45rem;
 }
 @media (max-width: 59.99rem) { .meter-label, .meter-pct { display: none; } }
-/* The cheering mascot: a round brown friend standing on top of the bar. It breathes, blinks, waves
-   and hums little notes; at every 10% it jumps and cheers with both arms, and at 100% it dances.
-   Shown only where the margin is wide enough (68rem); reduced motion keeps it still. */
-.meter-mascot { display: none; position: absolute; bottom: calc(100% + 0.3rem); left: 50%; width: 4.2rem; height: 4.6rem; transform: translateX(-50%); }
-@media (min-width: 68rem) { .meter-mascot { display: block; } }
-.meter-mascot svg { width: 100%; height: 100%; overflow: visible; }
-.meter-mascot .mm-body { transform-box: fill-box; transform-origin: 50% 100%; animation: mm-breathe 2.6s ease-in-out infinite; }
+/* The cheering mascot, drawn after the reader's "기분최고" sticker: a wide round head with two tiny
+   ears, arched brows over dot eyes, pink cheeks, a round black nose with a shine, a wide smile with
+   the tongue out, a smaller body with stub arms and tiny feet, and music notes. It stands on top of
+   the bar: it breathes, blinks, wiggles its tongue and arms and hums notes; at every 10% it jumps
+   and cheers, and at 100% it dances. Shown only where the margin is wide enough (74rem); reduced
+   motion keeps it still. */
+.meter-mascot { display: none; position: absolute; bottom: calc(100% + 0.35rem); left: 50%; width: 6rem; transform: translateX(-50%); text-align: center; }
+@media (min-width: 74rem) { .meter-mascot { display: block; } }
+.meter-mascot svg { display: block; width: 100%; height: auto; overflow: visible; }
+.mm-say { display: inline-block; margin-bottom: 0.1rem; font-family: "Gaegu", var(--font-body); font-size: 1.05rem; font-weight: 700; color: var(--ink); letter-spacing: 0.02em; animation: mm-say 2.6s ease-in-out infinite; }
+.meter-mascot .mm-body { transform-box: view-box; transform-origin: 100px 202px; animation: mm-breathe 2.6s ease-in-out infinite; }
 .meter-mascot .mm-eye { transform-box: fill-box; transform-origin: 50% 50%; animation: mm-blink 4.2s infinite; }
-.meter-mascot .mm-arm-r { transform-box: fill-box; transform-origin: 10% 90%; animation: mm-wave 1.3s ease-in-out infinite alternate; }
-.meter-mascot .mm-arm-l { transform-box: fill-box; transform-origin: 90% 90%; animation: mm-sway 2.6s ease-in-out infinite alternate; }
+.meter-mascot .mm-arm-l { transform-box: fill-box; transform-origin: 95% 40%; animation: mm-arm-l 1.3s ease-in-out infinite alternate; }
+.meter-mascot .mm-arm-r { transform-box: fill-box; transform-origin: 5% 40%; animation: mm-arm-r 1.3s ease-in-out infinite alternate; }
+.meter-mascot .mm-tongue { transform-box: fill-box; transform-origin: 50% 0%; animation: mm-tongue 1.6s ease-in-out infinite; }
 .meter-mascot .mm-note { opacity: 0; transform-box: fill-box; animation: mm-note 3.2s ease-out infinite; }
 .meter-mascot .mm-note.n2 { animation-delay: 1.6s; }
-.meter-mascot .mm-tongue { transform-box: fill-box; transform-origin: 50% 0%; animation: mm-tongue 2.6s ease-in-out infinite; }
 .meter-mascot.is-cheer .mm-body { animation: mm-jump 0.8s cubic-bezier(.3,.7,.4,1) 1; }
-.meter-mascot.is-cheer .mm-arm-r, .meter-mascot.is-cheer .mm-arm-l { animation: mm-hooray 0.2s ease-in-out 4 alternate; }
+.meter-mascot.is-cheer .mm-arm-l, .meter-mascot.is-party .mm-arm-l { animation: mm-arm-l 0.18s ease-in-out 10 alternate; }
+.meter-mascot.is-cheer .mm-arm-r, .meter-mascot.is-party .mm-arm-r { animation: mm-arm-r 0.18s ease-in-out 10 alternate; }
 .meter-mascot.is-cheer .mm-note { animation-duration: 1.2s; }
+.meter-mascot.is-cheer .mm-say, .meter-mascot.is-party .mm-say { animation: mm-shout 0.4s ease-in-out 3; color: var(--accent-ink); }
 .meter-mascot.is-party .mm-body { animation: mm-dance 0.9s ease-in-out 4; }
-.meter-mascot.is-party .mm-arm-r, .meter-mascot.is-party .mm-arm-l { animation: mm-hooray 0.22s ease-in-out 16 alternate; }
-@keyframes mm-breathe { 0%, 100% { transform: translateY(0) scale(1, 1); } 50% { transform: translateY(-1.5px) scale(1.03, 0.97); } }
-@keyframes mm-blink { 0%, 90%, 100% { transform: scaleY(1); } 94% { transform: scaleY(0.1); } }
-@keyframes mm-wave { from { transform: rotate(-18deg); } to { transform: rotate(22deg); } }
-@keyframes mm-sway { from { transform: rotate(-6deg); } to { transform: rotate(8deg); } }
-@keyframes mm-note { 0% { opacity: 0; transform: translate(0, 4px) rotate(-8deg); } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(6px, -16px) rotate(10deg); } }
-@keyframes mm-tongue { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(1.15); } }
-@keyframes mm-jump { 0% { transform: translateY(0) scale(1.08, 0.9); } 35% { transform: translateY(-14px) scale(0.95, 1.06); } 70% { transform: translateY(0) scale(1.1, 0.88); } 100% { transform: translateY(0) scale(1, 1); } }
-@keyframes mm-hooray { from { transform: rotate(-35deg); } to { transform: rotate(35deg); } }
-@keyframes mm-dance { 0%, 100% { transform: translateY(0) rotate(0); } 25% { transform: translateY(-10px) rotate(-10deg); } 50% { transform: translateY(0) rotate(0) scale(1.06, 0.92); } 75% { transform: translateY(-10px) rotate(10deg); } }
+@keyframes mm-breathe { 0%, 100% { transform: translateY(0) scale(1, 1); } 50% { transform: translateY(-2px) scale(1.025, 0.975); } }
+@keyframes mm-blink { 0%, 90%, 100% { transform: scaleY(1); } 94% { transform: scaleY(0.12); } }
+@keyframes mm-arm-l { from { transform: rotate(10deg); } to { transform: rotate(-22deg); } }
+@keyframes mm-arm-r { from { transform: rotate(-10deg); } to { transform: rotate(22deg); } }
+@keyframes mm-tongue { 0%, 100% { transform: scaleY(1) rotate(0); } 30% { transform: scaleY(1.12) rotate(-4deg); } 60% { transform: scaleY(0.95) rotate(4deg); } }
+@keyframes mm-note { 0% { opacity: 0; transform: translate(0, 6px) rotate(-8deg); } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(8px, -22px) rotate(10deg); } }
+@keyframes mm-say { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-2px) rotate(2deg); } }
+@keyframes mm-shout { 50% { transform: scale(1.25); } }
+@keyframes mm-jump { 0% { transform: translateY(0) scale(1.08, 0.9); } 35% { transform: translateY(-22px) scale(0.95, 1.06); } 70% { transform: translateY(0) scale(1.1, 0.88); } 100% { transform: translateY(0) scale(1, 1); } }
+@keyframes mm-dance { 0%, 100% { transform: translateY(0) rotate(0); } 25% { transform: translateY(-16px) rotate(-10deg); } 50% { transform: translateY(0) rotate(0) scale(1.06, 0.92); } 75% { transform: translateY(-16px) rotate(10deg); } }
 .meter.is-bump .meter-track { animation: meter-bump 0.5s ease-out; }
 .meter-pop {
   position: absolute; left: calc(100% + 0.6rem); transform: translateY(50%); white-space: nowrap;
@@ -831,27 +838,8 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
   var mascot = document.createElement("div");
   mascot.className = "meter-mascot";
   mascot.setAttribute("aria-hidden", "true");
-  mascot.innerHTML = '<svg viewBox="0 0 100 110">' +
-    '<g class="mm-note n1"><ellipse cx="88" cy="30" rx="4.2" ry="3.2" fill="#2b1d15"/><path d="M91.6 29V14l6 3" fill="none" stroke="#2b1d15" stroke-width="2.2" stroke-linecap="round"/></g>' +
-    '<g class="mm-note n2"><ellipse cx="9" cy="44" rx="4.2" ry="3.2" fill="#2b1d15"/><path d="M12.6 43V28l6 3" fill="none" stroke="#2b1d15" stroke-width="2.2" stroke-linecap="round"/></g>' +
-    '<g class="mm-body">' +
-      '<ellipse cx="38" cy="103" rx="9" ry="4.5" fill="#b9784b" stroke="#4a3426" stroke-width="2"/>' +
-      '<ellipse cx="62" cy="103" rx="9" ry="4.5" fill="#b9784b" stroke="#4a3426" stroke-width="2"/>' +
-      '<path class="mm-arm-l" d="M19 70 Q8 66 9 56" fill="none" stroke="#4a3426" stroke-width="7" stroke-linecap="round"/>' +
-      '<path class="mm-arm-l" d="M19 70 Q8 66 9 56" fill="none" stroke="#c8895b" stroke-width="3.6" stroke-linecap="round"/>' +
-      '<circle cx="30" cy="22" r="8.5" fill="#c8895b" stroke="#4a3426" stroke-width="2.2"/>' +
-      '<circle cx="70" cy="22" r="8.5" fill="#c8895b" stroke="#4a3426" stroke-width="2.2"/>' +
-      '<path d="M50 16 C76 16 87 38 86 62 C85 86 72 102 50 102 C28 102 15 86 14 62 C13 38 24 16 50 16 Z" fill="#c8895b" stroke="#4a3426" stroke-width="2.4"/>' +
-      '<ellipse cx="29" cy="60" rx="7.5" ry="5" fill="#f4a3ae" opacity="0.85"/>' +
-      '<ellipse cx="71" cy="60" rx="7.5" ry="5" fill="#f4a3ae" opacity="0.85"/>' +
-      '<ellipse class="mm-eye" cx="40" cy="47" rx="2.6" ry="3" fill="#2b1d15"/>' +
-      '<ellipse class="mm-eye" cx="60" cy="47" rx="2.6" ry="3" fill="#2b1d15"/>' +
-      '<ellipse cx="50" cy="56" rx="4.6" ry="3.6" fill="#2b1d15"/>' +
-      '<path d="M41 63 Q50 72 59 63 Q50 66 41 63 Z" fill="#7a2f2f" stroke="#4a3426" stroke-width="1.6" stroke-linejoin="round"/>' +
-      '<ellipse class="mm-tongue" cx="50" cy="69" rx="5.5" ry="5" fill="#ef7d8a" stroke="#4a3426" stroke-width="1.4"/>' +
-      '<path class="mm-arm-r" d="M81 70 Q93 64 94 52" fill="none" stroke="#4a3426" stroke-width="7" stroke-linecap="round"/>' +
-      '<path class="mm-arm-r" d="M81 70 Q93 64 94 52" fill="none" stroke="#c8895b" stroke-width="3.6" stroke-linecap="round"/>' +
-    '</g></svg>';
+  mascot.innerHTML = '<span class="mm-say">기분최고</span>' +
+    '<svg viewBox="8 40 192 166"><defs><radialGradient id="mm-blush"><stop offset="0" stop-color="#fdb8cc"/><stop offset="0.65" stop-color="#fdb8cc" stop-opacity="0.85"/><stop offset="1" stop-color="#fdb8cc" stop-opacity="0"/></radialGradient></defs><g class="mm-note n1"><ellipse cx="176" cy="72" rx="6.4" ry="5" transform="rotate(-20 176 72)" fill="#161210"/><path d="M181.6 70V47q5 7 11 8" fill="none" stroke="#161210" stroke-width="3" stroke-linecap="round"/></g><g class="mm-note n2"><ellipse cx="18" cy="194" rx="6.4" ry="5" transform="rotate(-20 18 194)" fill="#161210"/><ellipse cx="38" cy="190" rx="6.4" ry="5" transform="rotate(-20 38 190)" fill="#161210"/><path d="M23.6 192V172M43.6 188V168" stroke="#161210" stroke-width="3" stroke-linecap="round"/><path d="M23.6 172Q33 166 43.6 168" fill="none" stroke="#161210" stroke-width="4.5" stroke-linecap="round"/></g><g class="mm-body"><path d="M80 198 L86 205 L93 198 Z M113 198 L120 205 L127 198 Z" fill="#b07445" stroke="#161210" stroke-width="1.6" stroke-linejoin="round"/><g class="mm-line" fill="#161210" stroke="#161210" stroke-width="5" stroke-linejoin="round"><circle cx="61" cy="60" r="6.2"/><circle cx="134" cy="59" r="6.2"/><path class="mm-arm-l" d="M62 145 Q46 147 47 155 Q49 162 63 159 Z"/><path class="mm-arm-r" d="M141 144 Q155 145 155 152 Q154 159 140 157 Z"/><path d="M57 138 C55 160 57 180 64 191 Q69 199 80 199 L124 199 Q136 199 140 191 C147 180 148 160 146 138 Z"/><ellipse cx="99" cy="108" rx="60" ry="56"/></g><g class="mm-fill" fill="#e4a06b"><circle cx="61" cy="60" r="6.2"/><circle cx="134" cy="59" r="6.2"/><path class="mm-arm-l" d="M62 145 Q46 147 47 155 Q49 162 63 159 Z"/><path class="mm-arm-r" d="M141 144 Q155 145 155 152 Q154 159 140 157 Z"/><path d="M57 138 C55 160 57 180 64 191 Q69 199 80 199 L124 199 Q136 199 140 191 C147 180 148 160 146 138 Z"/><ellipse cx="99" cy="108" rx="60" ry="56"/></g><path d="M60 76 Q68 68 77 75 M118 73 Q127 66 135 72" fill="none" stroke="#161210" stroke-width="2.4" stroke-linecap="round"/><circle class="mm-eye" cx="66" cy="87" r="3.9" fill="#161210"/><circle class="mm-eye" cx="128" cy="85" r="3.9" fill="#161210"/><circle cx="60" cy="110" r="11" fill="url(#mm-blush)"/><circle cx="136" cy="106" r="11" fill="url(#mm-blush)"/><path class="mm-tongue" d="M92.5 141.5 Q92 160 100.5 160.5 Q109 160 109.5 141 Z" fill="#ff6f5a" stroke="#161210" stroke-width="1.8" stroke-linejoin="round"/><path d="M100.8 145 L100.8 153" stroke="#161210" stroke-width="1.2" stroke-linecap="round"/><path d="M82 134 Q100 150 119 133 M79.5 131 L83.5 135.5 M121.5 130 L117.5 134.5" fill="none" stroke="#161210" stroke-width="2.4" stroke-linecap="round"/><circle cx="99" cy="121" r="7.6" fill="#161210"/><path d="M101.5 115.5 Q104.5 117.5 104.6 121.5" fill="none" stroke="#ffffff" stroke-width="1.7" stroke-linecap="round"/></g></svg>';
   bar.appendChild(mascot);
   bar.appendChild(label);
   bar.appendChild(track);
