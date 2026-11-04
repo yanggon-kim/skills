@@ -39,10 +39,10 @@ for "is needed for". The reader sees which pieces they will understand, in which
 they join, and each box links to its part. The skill thinks in this order and explains in it: it
 takes the conclusion apart into this graph first, the map prints the graph, and the page walks it
 from the top box to the answer. A script draws the map from the page's own markup, so the map and
-the page cannot disagree. On a wide screen the same route stays in the left margin while the reader
-scrolls, as a **route rail**: a subway line of the same one-line summaries, with the part being
-read lit up, so the reader always knows where they are on the route. The template's script builds
-it from the same markup; nothing extra is written.
+the page cannot disagree. While the reader scrolls, an **understanding bar** in the left margin
+fills from 0% at the top of the page to 100% at the recap, with a small celebration at every 10%,
+so the reader always sees how far along they are. The template's script builds it from the page;
+nothing extra is written.
 
 Different ideas are easy in different ways, so the page explains each one with the technique that
 fits it, chosen from a toolkit in `references/techniques.md`. The toolkit has three tiers:

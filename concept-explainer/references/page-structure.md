@@ -133,16 +133,15 @@ explains the graph top down.
 - **The caption** says how to read it, in the page language: top to bottom, what an arrow and a
   dashed arrow mean, and that each box links to its part.
 
-**The route rail** keeps the map with the reader. On screens at least 88rem wide, the template's
-"Route rail" script puts the route in the empty left margin as a subway line: each section heading,
-the one-line summary of every part under it (the same `data-summary` as the map's boxes, the answer
-left out), and one line for each section without parts ("Try it", the recap, the expert's
-version). While the reader scrolls, the part they are reading lights up in coral, the parts above
-it are filled in as read, and the rest stay hollow; each line links to its part. It is deliberately
-simpler than the map — no branches, no arrows — because its job is "you are here", not the
-argument. It needs no slot and no authoring; it appears whenever three or more lines exist, hides
-on narrower screens (where the map at the top does the job), and leaves the page unchanged without
-JavaScript.
+**The understanding bar** goes with the reader instead of the map. The template's "Understanding
+bar" script puts a small rounded bar in the left margin, labelled "understanding" ("이해도" on a
+Korean page). It fills from 0% at the top of the page to 100% when the recap (`section#recap`)
+reaches the middle of the screen, or at the bottom of a page without a recap. It keeps the highest
+point reached, so scrolling back to re-read never empties it. Each time it passes a new 10%, a
+small pop beside the fill ("40% · 40% already ⭐") and a few sparks in the page's coral, teal and
+mustard celebrate; 100% gets a bigger burst ("100% — you made it! 🎉"). It needs no slot and no
+authoring. On narrow screens it is a thin bar without its labels; with reduced motion the sparks
+are left out; without JavaScript nothing is shown.
 
 ### The concept ladder
 

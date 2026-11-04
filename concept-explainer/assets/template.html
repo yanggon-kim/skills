@@ -195,27 +195,50 @@ table.family thead th { font-family: var(--font-mono); font-weight: 500; border-
 table.family tbody th { font-weight: 600; width: 11rem; }
 table.family td.new { color: var(--accent-ink); box-shadow: inset 3px 0 0 var(--accent); }
 table.family tr.same th, table.family tr.same td { background: var(--paper); border-bottom: none; }
-/* Route rail: on wide screens the route map's parts stay in the left margin as a subway line, and
-   the part being read lights up. Built by the "Route rail" script from data-summary; no slot. */
-.rail { display: none; }
-@media (min-width: 88rem) {
-  .js .rail {
-    display: block; position: fixed; z-index: 5; top: 5rem; width: 14rem;
-    left: max(1rem, env(safe-area-inset-left, 0px), calc(50vw - 27rem - 16rem));
-    max-height: calc(100vh - 7rem); overflow-y: auto; font-size: var(--step--1);
-  }
+/* Understanding bar: a small bar in the left margin that fills from 0% to 100% as the reader moves
+   from the top of the page to the recap, with a small celebration at every 10%. Built by the
+   "Understanding bar" script; no slot. Narrow screens get a thin bar without the labels. */
+.meter { display: none; }
+.js .meter {
+  display: block; position: fixed; z-index: 6; top: 20vh; height: 60vh; width: 6px; pointer-events: none;
+  left: calc(env(safe-area-inset-left, 0px) + 5px);
 }
-.rail-title { margin: 0 0 0.6rem; font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
-.rail ol { list-style: none; margin: 0; padding: 0; position: relative; }
-.rail ol::before { content: ""; position: absolute; left: 0.3rem; top: 0.6rem; bottom: 0.6rem; border-left: 1.5px solid var(--idle); }
-.rail .rail-band { position: relative; margin: 0.8rem 0 0.25rem; padding-left: 1.4rem; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--pencil); }
-.rail .rail-band:first-child { margin-top: 0; }
-.rail a { display: grid; grid-template-columns: 0.75rem 1fr; gap: 0.65rem; align-items: start; padding: 0.2rem 0; line-height: 1.35; color: var(--ink-soft); text-decoration: none; }
-.rail a:hover { color: var(--ink); }
-.rail-dot { position: relative; z-index: 1; width: 0.62rem; height: 0.62rem; margin-top: 0.32em; border-radius: 50%; border: 1.5px solid var(--pencil); background: var(--paper); }
-.rail a.is-read .rail-dot { background: var(--ink-soft); border-color: var(--ink-soft); }
-.rail a[aria-current] { color: var(--ink); font-weight: 600; }
-.rail a[aria-current] .rail-dot { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 3px var(--paper), 0 0 0 4.5px var(--accent); }
+@media (min-width: 60rem) {
+  .js .meter { width: 14px; left: max(1.5rem, calc(env(safe-area-inset-left, 0px) + 1.5rem), calc(50vw - 27rem - 5rem)); }
+}
+.meter-track { position: absolute; inset: 0; border-radius: 999px; background: var(--idle); overflow: hidden; }
+.meter-fill {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 0%; border-radius: 999px;
+  background: linear-gradient(to top, var(--teal), var(--accent)); transition: height 0.4s ease-out;
+}
+.meter.is-full .meter-fill { background: linear-gradient(to top, var(--teal), var(--mustard), var(--accent)); }
+.meter-label, .meter-pct { position: absolute; left: 50%; white-space: nowrap; font-family: var(--font-mono); }
+.meter-label { bottom: 100%; transform: translate(-50%, -0.55rem); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
+.meter-pct {
+  top: 100%; transform: translate(-50%, 0.55rem); font-size: 0.8rem; font-weight: 600; color: var(--accent-ink);
+  background: var(--sheet); border: 1.5px solid var(--accent); border-radius: 999px; padding: 0.05rem 0.45rem;
+}
+@media (max-width: 59.99rem) { .meter-label, .meter-pct { display: none; } }
+.meter.is-bump .meter-track { animation: meter-bump 0.5s ease-out; }
+.meter-pop {
+  position: absolute; left: calc(100% + 0.6rem); transform: translateY(50%); white-space: nowrap;
+  font-family: var(--font-mono); font-size: 0.82rem; font-weight: 600; color: var(--accent-ink);
+  background: var(--sheet); border: 1.5px solid var(--accent); border-radius: 999px; padding: 0.15rem 0.6rem;
+  box-shadow: 3px 3px 0 var(--shadow); animation: meter-pop 2.2s ease-out forwards;
+}
+.meter-spark { position: absolute; left: 50%; width: 7px; height: 7px; border-radius: 50%; transform: translate(-50%, 50%); animation: meter-spark 0.95s ease-out forwards; }
+@keyframes meter-bump { 35% { transform: scaleX(1.45); } }
+@keyframes meter-pop {
+  0% { opacity: 0; transform: translate(-6px, 50%) scale(0.6); }
+  14% { opacity: 1; transform: translate(0, 50%) scale(1.1); }
+  24% { transform: translate(0, 50%) scale(1); }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translate(0, -10%); }
+}
+@keyframes meter-spark {
+  from { opacity: 1; transform: translate(-50%, 50%) scale(1); }
+  to { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(50% + var(--dy))) scale(0.3); }
+}
 [data-summary][id], section[id] { scroll-margin-top: 1.5rem; }
 .concept .source { font-family: var(--font-mono); font-size: var(--step--1); color: var(--ink-soft); }
 .foreshadow { border-left: 3px solid var(--mustard); padding-left: 0.75rem; }
@@ -753,74 +776,80 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
 </script>
 
 <script>
-/* Route rail: keep it unchanged. On wide screens it lists the route map's parts (every element with
-   an id and a data-summary, except the answer) under their section headings, plus one line for
-   each section without parts, as a subway line in the left margin. While the reader scrolls, the
-   part being read lights up and the parts above it are marked as read. It needs no slot: it
-   reads the page. Without JavaScript, or on a narrow screen, nothing changes. */
+/* Understanding bar: keep it unchanged. A bar in the left margin fills from 0% at the top of the
+   page to 100% when the recap (section#recap) reaches the middle of the screen; without a recap,
+   at the bottom of the page. It keeps the highest point reached, so scrolling back up never
+   empties it. Every time it passes a new 10%, a small pop and a few sparks celebrate at the top of
+   the fill; 100% gets a bigger one. Reduced motion: no sparks. It needs no slot: it reads the
+   page. Without JavaScript nothing is shown. */
 (function () {
   var main = document.querySelector("main") || document.body;
   var ko = /^ko/.test(main.getAttribute("lang") || document.documentElement.lang || "");
-  var items = [], list = document.createElement("ol");
-  function add(el, text, isBand) {
-    var li = document.createElement("li");
-    if (isBand) {
-      li.className = "rail-band";
-      li.textContent = text;
-    } else {
-      var a = document.createElement("a"), dot = document.createElement("span"), t = document.createElement("span");
-      a.href = "#" + el.id;
-      dot.className = "rail-dot";
-      t.textContent = text;
-      a.appendChild(dot);
-      a.appendChild(t);
-      li.appendChild(a);
-      items.push({ el: el, a: a });
-    }
-    list.appendChild(li);
+  var end = document.getElementById("recap");
+  var reduce = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  var bar = document.createElement("div"), track = document.createElement("div"), fill = document.createElement("div");
+  var label = document.createElement("span"), pct = document.createElement("span");
+  bar.className = "meter";
+  bar.setAttribute("role", "progressbar");
+  bar.setAttribute("aria-label", ko ? "이해도" : "Understanding");
+  bar.setAttribute("aria-valuemin", "0");
+  bar.setAttribute("aria-valuemax", "100");
+  track.className = "meter-track";
+  fill.className = "meter-fill";
+  label.className = "meter-label";
+  label.textContent = ko ? "이해도" : "understanding";
+  pct.className = "meter-pct";
+  track.appendChild(fill);
+  bar.appendChild(label);
+  bar.appendChild(track);
+  bar.appendChild(pct);
+  document.body.appendChild(bar);
+  var CHEER = ko
+    ? ["좋은 출발 🌱", "계속 가요 ✨", "몸풀기 끝 💪", "벌써 40% ⭐", "절반 왔어요! 🎈", "술술 풀려요 🍀", "감 잡았다 💡", "거의 다 왔어요 🚀", "조금만 더 🔥", "100% 다 이해했어요! 🎉"]
+    : ["nice start 🌱", "keep going ✨", "warmed up 💪", "40% already ⭐", "halfway! 🎈", "on a roll 🍀", "getting it 💡", "almost there 🚀", "so close 🔥", "100% — you made it! 🎉"];
+  var COLORS = ["var(--accent)", "var(--teal)", "var(--mustard)"];
+  var best = 0, shown = -1, pending = false;
+  function progress() {
+    var doc = document.documentElement, y = window.scrollY || doc.scrollTop;
+    if (window.innerHeight + y >= doc.scrollHeight - 2) return 1;
+    var stop = end ? end.getBoundingClientRect().top + y - window.innerHeight * 0.5 : doc.scrollHeight - window.innerHeight;
+    return stop <= 0 ? 1 : Math.max(0, Math.min(1, y / stop));
   }
-  ["familiar", "problem", "mechanism", "try", "recap", "deeper"].forEach(function (id) {
-    var sec = document.getElementById(id);
-    if (!sec) return;
-    var h = sec.querySelector("h2"), name = h ? h.textContent.trim() : id;
-    var parts = Array.prototype.filter.call(sec.querySelectorAll("[data-summary][id]"), function (el) {
-      return !/\bconclusion\b/.test(el.getAttribute("data-part") || "");
-    });
-    if (parts.length) {
-      add(null, name, true);
-      parts.forEach(function (el) { add(el, el.getAttribute("data-summary"), false); });
-    } else {
-      add(sec, name, false);
+  function cheer(step, at) {
+    Array.prototype.forEach.call(bar.querySelectorAll(".meter-pop"), function (el) { el.remove(); });
+    var pop = document.createElement("span");
+    pop.className = "meter-pop";
+    pop.setAttribute("aria-hidden", "true");
+    pop.style.bottom = at + "%";
+    pop.textContent = (step < 10 ? step * 10 + "% · " : "") + CHEER[step - 1];
+    bar.appendChild(pop);
+    window.setTimeout(function () { pop.remove(); }, 2300);
+    bar.classList.remove("is-bump");
+    void bar.offsetWidth;
+    bar.classList.add("is-bump");
+    if (reduce) return;
+    var n = step === 10 ? 26 : 10;
+    for (var i = 0; i < n; i++) {
+      var sp = document.createElement("span"), ang = Math.random() * Math.PI * 2, r = (step === 10 ? 40 : 22) + Math.random() * 28;
+      sp.className = "meter-spark";
+      sp.style.bottom = at + "%";
+      sp.style.background = COLORS[i % COLORS.length];
+      sp.style.setProperty("--dx", (Math.cos(ang) * r + 10).toFixed(1) + "px");
+      sp.style.setProperty("--dy", (Math.sin(ang) * r).toFixed(1) + "px");
+      bar.appendChild(sp);
+      (function (el) { window.setTimeout(function () { el.remove(); }, 1000); })(sp);
     }
-  });
-  if (items.length < 3) return;
-  var nav = document.createElement("nav"), title = document.createElement("p");
-  nav.className = "rail";
-  nav.setAttribute("aria-label", ko ? "읽는 위치" : "Where you are");
-  title.className = "rail-title";
-  title.textContent = ko ? "이해 경로" : "The route";
-  nav.appendChild(title);
-  nav.appendChild(list);
-  main.insertBefore(nav, main.firstChild);
-  var pending = false, current = -2;
+  }
   function update() {
     pending = false;
-    var line = window.innerHeight * 0.35, cur = -1;
-    for (var i = 0; i < items.length; i++) {
-      if (items[i].el.getBoundingClientRect().top < line) cur = i;
-    }
-    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) cur = items.length - 1;
-    if (cur === current) return;
-    current = cur;
-    items.forEach(function (it, i) {
-      it.a.classList.toggle("is-read", i < cur);
-      if (i === cur) it.a.setAttribute("aria-current", "location");
-      else it.a.removeAttribute("aria-current");
-    });
-    if (cur >= 0) {
-      var a = items[cur].a, top = a.offsetTop, h = a.offsetHeight;
-      if (top < nav.scrollTop || top + h > nav.scrollTop + nav.clientHeight) nav.scrollTop = top - nav.clientHeight / 2;
-    }
+    best = Math.max(best, progress());
+    var p = Math.round(best * 100), step = Math.floor(p / 10);
+    fill.style.height = p + "%";
+    pct.textContent = p + "%";
+    bar.setAttribute("aria-valuenow", String(p));
+    bar.classList.toggle("is-full", p >= 100);
+    if (shown < 0) { shown = step; return; }   // no celebration for where the page opened
+    if (step > shown) { shown = step; cheer(step, p); }
   }
   function ask() { if (!pending) { pending = true; window.requestAnimationFrame(update); } }
   window.addEventListener("scroll", ask, { passive: true });
@@ -853,7 +882,7 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
 </script>
 
 <script>
-/* "Uses" and "Used in" chips. Keep it unchanged. Built from data-from, like the route rail, so it
+/* "Uses" and "Used in" chips. Keep it unchanged. Built from data-from, like the route map, so it
    cannot drift from the markup. Under every mechanism step (data-part="reason") it shows the ladder
    blocks and earlier steps the step rests on; at the end of every ladder block it shows the steps
    that use the block. Each chip links to its part. Without JavaScript, the step's own text names
