@@ -139,7 +139,10 @@ Korean page). It fills from 0% at the top of the page to 100% when the recap (`s
 reaches the middle of the screen, or at the bottom of a page without a recap. It keeps the highest
 point reached, so scrolling back to re-read never empties it. Each time it passes a new 10%, a
 small pop beside the fill ("40% · 40% already ⭐") and a few sparks in the page's coral, teal and
-mustard celebrate; 100% gets a bigger burst ("100% — you made it! 🎉"). It needs no slot and no
+mustard celebrate; 100% gets a bigger burst ("100% — you made it! 🎉"). A small round brown mascot stands on top of the bar
+and cheers the reader on: it breathes, blinks, waves and hums notes while the reader reads, jumps
+with both arms up at every 10%, and dances at 100%. It shows only where the left margin is wide
+enough (68rem). It needs no slot and no
 authoring. On narrow screens it is a thin bar without its labels; with reduced motion the sparks
 are left out; without JavaScript nothing is shown.
 

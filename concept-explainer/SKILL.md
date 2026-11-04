@@ -40,7 +40,8 @@ they join, and each box links to its part. The skill thinks in this order and ex
 takes the conclusion apart into this graph first, the map prints the graph, and the page walks it
 from the top box to the answer. A script draws the map from the page's own markup, so the map and
 the page cannot disagree. While the reader scrolls, an **understanding bar** in the left margin
-fills from 0% at the top of the page to 100% at the recap, with a small celebration at every 10%,
+fills from 0% at the top of the page to 100% at the recap, with a small celebration at every 10%
+and a little mascot on top of it that cheers the reader on,
 so the reader always sees how far along they are. The template's script builds it from the page;
 nothing extra is written.
 

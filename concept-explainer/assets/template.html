@@ -213,12 +213,39 @@ table.family tr.same th, table.family tr.same td { background: var(--paper); bor
 }
 .meter.is-full .meter-fill { background: linear-gradient(to top, var(--teal), var(--mustard), var(--accent)); }
 .meter-label, .meter-pct { position: absolute; left: 50%; white-space: nowrap; font-family: var(--font-mono); }
-.meter-label { bottom: 100%; transform: translate(-50%, -0.55rem); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
+.meter-label { top: 100%; transform: translate(-50%, 2.4rem); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
 .meter-pct {
   top: 100%; transform: translate(-50%, 0.55rem); font-size: 0.8rem; font-weight: 600; color: var(--accent-ink);
   background: var(--sheet); border: 1.5px solid var(--accent); border-radius: 999px; padding: 0.05rem 0.45rem;
 }
 @media (max-width: 59.99rem) { .meter-label, .meter-pct { display: none; } }
+/* The cheering mascot: a round brown friend standing on top of the bar. It breathes, blinks, waves
+   and hums little notes; at every 10% it jumps and cheers with both arms, and at 100% it dances.
+   Shown only where the margin is wide enough (68rem); reduced motion keeps it still. */
+.meter-mascot { display: none; position: absolute; bottom: calc(100% + 0.3rem); left: 50%; width: 4.2rem; height: 4.6rem; transform: translateX(-50%); }
+@media (min-width: 68rem) { .meter-mascot { display: block; } }
+.meter-mascot svg { width: 100%; height: 100%; overflow: visible; }
+.meter-mascot .mm-body { transform-box: fill-box; transform-origin: 50% 100%; animation: mm-breathe 2.6s ease-in-out infinite; }
+.meter-mascot .mm-eye { transform-box: fill-box; transform-origin: 50% 50%; animation: mm-blink 4.2s infinite; }
+.meter-mascot .mm-arm-r { transform-box: fill-box; transform-origin: 10% 90%; animation: mm-wave 1.3s ease-in-out infinite alternate; }
+.meter-mascot .mm-arm-l { transform-box: fill-box; transform-origin: 90% 90%; animation: mm-sway 2.6s ease-in-out infinite alternate; }
+.meter-mascot .mm-note { opacity: 0; transform-box: fill-box; animation: mm-note 3.2s ease-out infinite; }
+.meter-mascot .mm-note.n2 { animation-delay: 1.6s; }
+.meter-mascot .mm-tongue { transform-box: fill-box; transform-origin: 50% 0%; animation: mm-tongue 2.6s ease-in-out infinite; }
+.meter-mascot.is-cheer .mm-body { animation: mm-jump 0.8s cubic-bezier(.3,.7,.4,1) 1; }
+.meter-mascot.is-cheer .mm-arm-r, .meter-mascot.is-cheer .mm-arm-l { animation: mm-hooray 0.2s ease-in-out 4 alternate; }
+.meter-mascot.is-cheer .mm-note { animation-duration: 1.2s; }
+.meter-mascot.is-party .mm-body { animation: mm-dance 0.9s ease-in-out 4; }
+.meter-mascot.is-party .mm-arm-r, .meter-mascot.is-party .mm-arm-l { animation: mm-hooray 0.22s ease-in-out 16 alternate; }
+@keyframes mm-breathe { 0%, 100% { transform: translateY(0) scale(1, 1); } 50% { transform: translateY(-1.5px) scale(1.03, 0.97); } }
+@keyframes mm-blink { 0%, 90%, 100% { transform: scaleY(1); } 94% { transform: scaleY(0.1); } }
+@keyframes mm-wave { from { transform: rotate(-18deg); } to { transform: rotate(22deg); } }
+@keyframes mm-sway { from { transform: rotate(-6deg); } to { transform: rotate(8deg); } }
+@keyframes mm-note { 0% { opacity: 0; transform: translate(0, 4px) rotate(-8deg); } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(6px, -16px) rotate(10deg); } }
+@keyframes mm-tongue { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(1.15); } }
+@keyframes mm-jump { 0% { transform: translateY(0) scale(1.08, 0.9); } 35% { transform: translateY(-14px) scale(0.95, 1.06); } 70% { transform: translateY(0) scale(1.1, 0.88); } 100% { transform: translateY(0) scale(1, 1); } }
+@keyframes mm-hooray { from { transform: rotate(-35deg); } to { transform: rotate(35deg); } }
+@keyframes mm-dance { 0%, 100% { transform: translateY(0) rotate(0); } 25% { transform: translateY(-10px) rotate(-10deg); } 50% { transform: translateY(0) rotate(0) scale(1.06, 0.92); } 75% { transform: translateY(-10px) rotate(10deg); } }
 .meter.is-bump .meter-track { animation: meter-bump 0.5s ease-out; }
 .meter-pop {
   position: absolute; left: calc(100% + 0.6rem); transform: translateY(50%); white-space: nowrap;
@@ -780,7 +807,8 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
    page to 100% when the recap (section#recap) reaches the middle of the screen; without a recap,
    at the bottom of the page. It keeps the highest point reached, so scrolling back up never
    empties it. Every time it passes a new 10%, a small pop and a few sparks celebrate at the top of
-   the fill; 100% gets a bigger one. Reduced motion: no sparks. It needs no slot: it reads the
+   the fill and the mascot on top of the bar jumps and cheers; 100% gets a bigger burst and a little
+   dance. Reduced motion: no sparks, and the mascot stays still. It needs no slot: it reads the
    page. Without JavaScript nothing is shown. */
 (function () {
   var main = document.querySelector("main") || document.body;
@@ -800,6 +828,31 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
   label.textContent = ko ? "이해도" : "understanding";
   pct.className = "meter-pct";
   track.appendChild(fill);
+  var mascot = document.createElement("div");
+  mascot.className = "meter-mascot";
+  mascot.setAttribute("aria-hidden", "true");
+  mascot.innerHTML = '<svg viewBox="0 0 100 110">' +
+    '<g class="mm-note n1"><ellipse cx="88" cy="30" rx="4.2" ry="3.2" fill="#2b1d15"/><path d="M91.6 29V14l6 3" fill="none" stroke="#2b1d15" stroke-width="2.2" stroke-linecap="round"/></g>' +
+    '<g class="mm-note n2"><ellipse cx="9" cy="44" rx="4.2" ry="3.2" fill="#2b1d15"/><path d="M12.6 43V28l6 3" fill="none" stroke="#2b1d15" stroke-width="2.2" stroke-linecap="round"/></g>' +
+    '<g class="mm-body">' +
+      '<ellipse cx="38" cy="103" rx="9" ry="4.5" fill="#b9784b" stroke="#4a3426" stroke-width="2"/>' +
+      '<ellipse cx="62" cy="103" rx="9" ry="4.5" fill="#b9784b" stroke="#4a3426" stroke-width="2"/>' +
+      '<path class="mm-arm-l" d="M19 70 Q8 66 9 56" fill="none" stroke="#4a3426" stroke-width="7" stroke-linecap="round"/>' +
+      '<path class="mm-arm-l" d="M19 70 Q8 66 9 56" fill="none" stroke="#c8895b" stroke-width="3.6" stroke-linecap="round"/>' +
+      '<circle cx="30" cy="22" r="8.5" fill="#c8895b" stroke="#4a3426" stroke-width="2.2"/>' +
+      '<circle cx="70" cy="22" r="8.5" fill="#c8895b" stroke="#4a3426" stroke-width="2.2"/>' +
+      '<path d="M50 16 C76 16 87 38 86 62 C85 86 72 102 50 102 C28 102 15 86 14 62 C13 38 24 16 50 16 Z" fill="#c8895b" stroke="#4a3426" stroke-width="2.4"/>' +
+      '<ellipse cx="29" cy="60" rx="7.5" ry="5" fill="#f4a3ae" opacity="0.85"/>' +
+      '<ellipse cx="71" cy="60" rx="7.5" ry="5" fill="#f4a3ae" opacity="0.85"/>' +
+      '<ellipse class="mm-eye" cx="40" cy="47" rx="2.6" ry="3" fill="#2b1d15"/>' +
+      '<ellipse class="mm-eye" cx="60" cy="47" rx="2.6" ry="3" fill="#2b1d15"/>' +
+      '<ellipse cx="50" cy="56" rx="4.6" ry="3.6" fill="#2b1d15"/>' +
+      '<path d="M41 63 Q50 72 59 63 Q50 66 41 63 Z" fill="#7a2f2f" stroke="#4a3426" stroke-width="1.6" stroke-linejoin="round"/>' +
+      '<ellipse class="mm-tongue" cx="50" cy="69" rx="5.5" ry="5" fill="#ef7d8a" stroke="#4a3426" stroke-width="1.4"/>' +
+      '<path class="mm-arm-r" d="M81 70 Q93 64 94 52" fill="none" stroke="#4a3426" stroke-width="7" stroke-linecap="round"/>' +
+      '<path class="mm-arm-r" d="M81 70 Q93 64 94 52" fill="none" stroke="#c8895b" stroke-width="3.6" stroke-linecap="round"/>' +
+    '</g></svg>';
+  bar.appendChild(mascot);
   bar.appendChild(label);
   bar.appendChild(track);
   bar.appendChild(pct);
@@ -827,6 +880,10 @@ svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
     bar.classList.remove("is-bump");
     void bar.offsetWidth;
     bar.classList.add("is-bump");
+    mascot.classList.remove("is-cheer", "is-party");
+    void mascot.offsetWidth;
+    mascot.classList.add(step === 10 ? "is-party" : "is-cheer");
+    window.setTimeout(function () { mascot.classList.remove("is-cheer", "is-party"); }, step === 10 ? 3800 : 900);
     if (reduce) return;
     var n = step === 10 ? 26 : 10;
     for (var i = 0; i < n; i++) {
