@@ -56,6 +56,7 @@ import tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from svg_shapes import Unmapped, bounds, parse_svg, unkeyed_counts  # noqa: E402
+import svg_shapes  # noqa: E402
 
 try:
     from bs4 import BeautifulSoup
@@ -156,7 +157,9 @@ def svg_css():
             ".s-ink{stroke:#57585B}.s-pencil{stroke:#898989}.s-c2,.s-teal{stroke:#2774AE}.s-c3,.s-mustard{stroke:#8AB8E8}"
             "rect.s-accent,circle.s-accent,ellipse.s-accent,path.s-accent,polygon.s-accent{stroke:#00375B}line.s-accent,polyline.s-accent{stroke:#FFC72B}[class*='s-']{stroke-width:1.5}.thick{stroke-width:2.5}.dashed{stroke-dasharray:5 4}"
             ".t-label{fill:#57585B;font-size:15px}.t-mono{fill:#57585B;font-size:13px}.t-head,.t-accent{fill:#00375B;font-size:15px;"
-            "font-weight:700}.t-onbar{fill:#fff;font-size:13px}.off{opacity:0}")
+            "font-weight:700}.t-onbar{fill:#fff;font-size:13px}.off{opacity:0}"
+            ".f-k1{fill:#2774AE}.f-k2{fill:#C25E00}.f-k3{fill:#7B3FA0}.s-k1{stroke:#2774AE}.s-k2{stroke:#C25E00}.s-k3{stroke:#7B3FA0}"
+            ".t-k1,.t-k2,.t-k3{font-size:15px;font-weight:700}.t-k1{fill:#2774AE}.t-k2{fill:#C25E00}.t-k3{fill:#7B3FA0}")
 
 
 def svg_to_png(svgtext, work):
@@ -320,6 +323,7 @@ def crossing_report(items, lint, work):
 
 
 def parse(path, png=False, work="."):
+    svg_shapes.IMG_BASE = os.path.dirname(os.path.abspath(path))  # <image href> paths are relative to the prototype
     src = open(path, encoding="utf-8").read()
     svgs = []
 
@@ -623,7 +627,7 @@ def parse(path, png=False, work="."):
         items = []
         for a in appx:
             src = next((s for s in out if s.get("see") == a["appendix"]), None)
-            items.append([a.get("title", ""), f"from slide {first[id(src)]}" if src else "", a["appendix"]])
+            items.append([a.get("title", ""), "", a["appendix"]])  # no "from slide N": slides cite no slide numbers (rule 8)
         script = "The appendix holds the details behind the main slides: " + "; ".join(
             f"{m} {t}" + (f", {f}" if f else "") for t, f, m in items) + "."
         out.append({"kind": "appendix-index", "part": "Appendix", "notes": script, "appendix": "index", "items": items})

@@ -99,6 +99,8 @@ function createDeck(opts = {}) {
   const COL = {
     ink: C.text1, inksoft: C.text1, black: C.text1, white: C.background1, c2: C.accent1, c3: C.accent4,
     pencil: C.accent2, idle: C.accent3, accent: C.accent5, accentink: C.accent6, tint: C.accent5,
+    // key colours: match numbered items across a figure (problem ① ↔ answer ①); text, badges and outlines only
+    k1: "2774AE", k2: "C25E00", k3: "7B3FA0",
   };
   const NAVY = C.accent6, GOLD = C.accent5;
   const HEX = { line: "8AB8E8" }; // table borders (a hex-only option): accent4 of Brand-01
@@ -204,6 +206,10 @@ function createDeck(opts = {}) {
     for (const sh of shapes) {
       const base = sh._id || (sh.name ? sh.name : `u${un++}`);
       const objectName = opt.morph ? `!!${base}` : `${id}:${base}`;
+      if (sh.t === "image") { // a picture inside the figure (e.g. a typeset equation), scaled with it
+        slide.addImage({ data: sh.data, x: r2(X(sh.x)), y: r2(Y(sh.y)), w: r2(sh.w * s), h: r2(sh.h * s), objectName });
+        continue;
+      }
       if (sh.t === "rect" || sh.t === "circle" || sh.t === "ellipse") {
         const o = { objectName };
         let b;

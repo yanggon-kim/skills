@@ -97,6 +97,14 @@ def PL(points, cls="s-ink f-none", key=None, arrow=False):
     return f'<polyline{_k(key)} points="{pts}" class="{cls}"{m}></polyline>'
 
 
+def IMG(x, y, w, h, href, key=None):
+    """A picture inside a figure: a PNG/JPG path relative to the prototype (or a data: URI). Use it for what the
+    shape vocabulary cannot draw, above all a typeset equation (render it with LaTeX, then place it here); the
+    deck embeds it at this box, scaled with the figure, so the prototype and the deck show the same thing.
+    Labels inside the picture are not checked by QA: give it a font that reads at 12 pt on the slide."""
+    return f'<image x="{_n(x)}" y="{_n(y)}" width="{_n(w)}" height="{_n(h)}" href="{E_(href)}"{_k(key)}/>'
+
+
 def C(cx, cy, r, cls="f-white s-ink", key=None):
     return f'<circle{_k(key)} cx="{_n(cx)}" cy="{_n(cy)}" r="{_n(r)}" class="{cls}"></circle>'
 

@@ -5,7 +5,8 @@ Library (imported by html_to_spec.py and by deck builders), and a small CLI for 
     python3 svg_shapes.py FIGURE.svg            -> prints the parsed record and its content bounds
 
 A figure is drawn in a small vocabulary (references/html-prototype.md): <rect>, <circle>, <ellipse>,
-<line>, <polyline> (unfilled), <text> and <g transform="translate(x y)">, coloured only through classes:
+<line>, <polyline> (unfilled), <text>, <image> (a picture file, e.g. a typeset equation: proto.IMG) and
+<g transform="translate(x y)">, coloured only through classes:
   fills    f-paper f-sheet f-white | f-idle | f-ink | f-accent | f-tint | f-c2 (alias f-teal) |
            f-c3 (alias f-mustard) | f-pencil | f-none
   strokes  s-ink | s-pencil | s-accent | s-c2 (s-teal) | s-c3 (s-mustard); "thick", "dashed"; "grid" on a
@@ -23,27 +24,45 @@ every frame keeps Morph's placement stable), so the deck can drop empty margins 
 fill its area. apply_edits() holds the deck-only label edits a builder may need (drop or shorten a
 label, add a legend line, scale dense labels).
 """
+import base64
 import html
 import json
+import mimetypes
+import os
 import re
 import sys
 import xml.etree.ElementTree as ET
 
 FILL = {"f-paper": "white", "f-sheet": "white", "f-white": "white", "f-idle": "idle", "f-ink": "ink",
         "f-accent": "accent", "f-tint": "tint", "f-c2": "c2", "f-teal": "c2", "f-c3": "c3", "f-mustard": "c3",
-        "f-pencil": "pencil", "f-none": None}
+        "f-pencil": "pencil", "f-none": None, "f-k1": "k1", "f-k2": "k2", "f-k3": "k3"}
 STROKE = {"s-ink": "ink", "s-pencil": "pencil", "s-accent": "accent", "s-c2": "c2", "s-teal": "c2",
-          "s-c3": "c3", "s-mustard": "c3"}
+          "s-c3": "c3", "s-mustard": "c3", "s-k1": "k1", "s-k2": "k2", "s-k3": "k3"}
 # text class -> (colour slot, size in px, bold, size inside a storyboard frame)
 TEXT = {"t-label": ("ink", 15, False, 15), "t-mono": ("inksoft", 13, False, 15),
         "t-accent": ("accentink", 15, True, 15), "t-head": ("ink", 15, True, 15),
-        "t-onbar": ("white", 13, False, 15)}
+        "t-onbar": ("white", 13, False, 15),
+        "t-k1": ("k1", 15, True, 15), "t-k2": ("k2", 15, True, 15), "t-k3": ("k3", 15, True, 15)}
 SVGNS = "{http://www.w3.org/2000/svg}"
 _ENT = re.compile(r"&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[0-9a-fA-F]+);)(\w+);")
 
 
 class Unmapped(Exception):
     pass
+
+
+IMG_BASE = "."  # folder that relative <image href> paths resolve against (html_to_spec sets it to the prototype's folder)
+
+
+def _image_data(href):
+    """An <image href> as the deck builder's data string ("image/png;base64,...")."""
+    if href.startswith("data:"):
+        return href[5:]
+    path = href if os.path.isabs(href) else os.path.join(IMG_BASE, href)
+    if not os.path.isfile(path):
+        raise Unmapped(f"image file {href!r} not found (relative paths resolve against the prototype's folder)")
+    mime = mimetypes.guess_type(path)[0] or "image/png"
+    return mime + ";base64," + base64.b64encode(open(path, "rb").read()).decode()
 
 
 def _f(v):
@@ -99,7 +118,11 @@ def parse_svg(svgtext, timeline=False):
                 fill, stroke, sw = "tint", "accent", 2.5
             if ctx.get("pend") and tag == "rect":
                 fill, stroke = "idle", "pencil"
-        if tag == "rect":
+        if tag == "image":
+            href = el.get("href") or el.get("{http://www.w3.org/1999/xlink}href") or ""
+            shapes.append(dict(t="image", x=_f(el.get("x", 0)) + dx, y=_f(el.get("y", 0)) + dy, w=_f(el.get("width")),
+                               h=_f(el.get("height")), src=href, data=_image_data(href), name=name))
+        elif tag == "rect":
             shapes.append(dict(t="rect", x=_f(el.get("x", 0)) + dx, y=_f(el.get("y", 0)) + dy, w=_f(el.get("width")),
                                h=_f(el.get("height")), fill=fill, stroke=stroke, sw=sw, dash=dashed, name=name))
         elif tag == "circle":
@@ -114,7 +137,7 @@ def parse_svg(svgtext, timeline=False):
                 return
             tcls = next((c for c in cls if c in TEXT), None)
             if tcls is None:
-                raise Unmapped(f"text class {cls} (use t-label, t-mono, t-head, t-accent or t-onbar)")
+                raise Unmapped(f"text class {cls} (use t-label, t-mono, t-head, t-accent, t-onbar or t-k1..t-k3)")
             col, size, bold, tsize = TEXT[tcls]
             size = tsize if timeline else size
             if el.get("font-size"):
@@ -145,7 +168,7 @@ def parse_svg(svgtext, timeline=False):
                                    # a polyline segment: [index, segments, arrowhead], so crossings.js tells a curve from a leader
                                    **({"poly": [i, n, int(arrow)]} if tag == "polyline" else {})))
         else:
-            raise Unmapped(f"element <{tag}> (supported: rect, circle, ellipse, line, polyline, text, g)")
+            raise Unmapped(f"element <{tag}> (supported: rect, circle, ellipse, line, polyline, text, image, g)")
 
     for ch in root:
         walk(ch, {"dx": 0.0, "dy": 0.0, "key": None})
@@ -203,7 +226,7 @@ def bounds(frames, pad=6.0):
     xs, ys = [], []
     for f in frames:
         for s in f["shapes"]:
-            if s["t"] == "rect":
+            if s["t"] in ("rect", "image"):
                 xs += [s["x"], s["x"] + s["w"]]
                 ys += [s["y"], s["y"] + s["h"]]
             elif s["t"] == "circle":

@@ -518,6 +518,8 @@ def main():
                     warns["lines"].append(f"s{no}: line {ln_nm} crosses {texts[i][1][:28]!r}")
             # a label that runs out of the shape it sits in (partly inside, partly outside by > OVERLAP_MIN)
             for r, bnm in boxes:
+                if bnm == "band-rule-cover":  # a hairline cover drawn under the figure, not a container
+                    continue
                 ix = min(a[2], r[2]) - max(a[0], r[0])
                 iy = min(a[3], r[3]) - max(a[1], r[1])
                 out_ = max(r[0] - a[0], a[2] - r[2], r[1] - a[1], a[3] - r[3])

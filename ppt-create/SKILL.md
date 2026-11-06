@@ -57,14 +57,14 @@ package check; plain `soffice`).
    In a paper talk, the **Motivation** part shows that the problem is real (one slide), then states the
    goal, lists the problems in its way and gives a short, high-level preview of the design that answers
    each, so the Design part reads as the details of a promise already made.
-   **Keep a concept ledger** (rule 15): for every slide, the concepts its figure first shows and the ones it
+   **Budget the slides to the talk's length** (rule 22) before drawing any; give each problem and its answer one number and colour (rule 17); credit the paper only for its own steps (rule 18); plan the Design part as the paper's subsections, each asked as a design question and opened by a summary slide (rule 19). **Keep a concept ledger** (rule 15): for every slide, the concepts its figure first shows and the ones it
    relies on (`introduces=`, `uses=`); a concept used before any slide shows it on screen needs a slide first.
 3. **Write the prototype** with `scripts/proto.py` (Python API, recommended: its SVG helpers keep figures
    inside the vocabulary) or by hand from `assets/prototype-template.html`. The format, every slide kind and
    the figure vocabulary are in **references/html-prototype.md** — read it before writing.
    ```python
    import sys; sys.path.insert(0, f"{SK}/scripts")
-   from proto import Deck, Frame, Table, svg, R, T, L, PL, C, E, G
+   from proto import Deck, Frame, Table, svg, R, T, L, PL, C, E, G, IMG
    d = Deck("Title", subject="...", author="...", paper="A. Author et al., ...")  # part 1, "Summary", is built in
    d.preliminary(sub="optional: presenter's primer, not the paper")   # only when asked: always part 2
    d.part("Background", "Background", "the paper's Section II, in its order")
@@ -113,7 +113,7 @@ $PY $SK/scripts/audit_skeleton.py talk.pptx talk-audit.md --source "..."  # star
    that collide after being raised to 12 pt, a moved label that now reads as another curve's, arrows over
    text, white space a figure leaves, a highlight on the wrong element, an element drawn on top of another
    (a chip that wrapped onto a box). LibreOffice shows Morph as a fade; that is expected.
-   Then **read the deck as a newcomer** (rules 14–16) — QA passing says nothing about these:
+   Then **read the deck as a newcomer** (rules 14–22) — QA passing says nothing about these:
    - **The chain:** does each slide answer a question the one before raised? Is the goal and the problem
      on screen before the design, and the reason for each design part, not only what it is?
    - **Concepts:** is every term and picture this slide relies on shown on an earlier slide's screen (not
@@ -122,6 +122,14 @@ $PY $SK/scripts/audit_skeleton.py talk.pptx talk-audit.md --source "..."  # star
      about? Would a student recognise every label, or is it the paper's internal name?
    - **Layout:** does position say the relationship (source left, derived right; containment for
      hierarchy; near and far measured from one reference)? Does any element only repeat another slide?
+   - **Words and numbers** (rules 20–21): one term per concept on every slide; every acronym spelled out on
+     screen once; no symbol (f, W_r) that no slide defined; a legend that says what its bars are; a process
+     slide that follows one concrete number from start to end.
+   - **Credit and colour** (rules 17–18): does every pipeline label credit the paper only for its own
+     contribution? Does each problem colour mean the same thing on every slide?
+   - **After any change**, search the whole deck (slides, figures, notes) for the old wording and re-read the
+     slides on both sides of the one you changed: a fix often leaves a neighbour stale ("the last slide",
+     a renamed term, a deleted symbol).
 4. **Tighten and fact-check** (rule 11, references/audit.md): every slide and its notes against the
    source, item by item, in the audit file; fix every error in the prototype and rebuild.
 5. Report: the .pptx path, slide count, QA result, the crossings fixed, the renders, the audit counts, and
@@ -139,13 +147,16 @@ Each rule exists because a reviewer of an earlier deck asked for it; the reason 
    **Every deck's first part is "Summary"**: the whole talk on one slide, titled "Summary: <core
    message>" (one 20 pt line: shorten the message, the full sentence goes to the notes), so a listener
    who keeps only one slide keeps the right one. **The title slide carries only the title, subtitle,
-   authors / venue, presenter / date and the logo — never the summary points**: the key points live only
+   authors / venue, presenter / date and the logo — never the summary points**; in a paper talk the title is
+   the method's short name and the subtitle is **the paper's exact title**, word for word, not a summary line: the key points live only
    on the Summary slide, so the opening is not duplicated two slides apart (the lint stops on a point list
    on the title slide; QA fails on list or badge shapes there). The outline slide doubles as the Summary divider (it
    lists every part with Summary highlighted, "Next: part 1 of N"), so the deck never shows two outline
    slides in a row; the later dividers read "part k of N". One or two **methodology / setup** slides come
    before any results (how numbers were produced decides whether they can be trusted); mark them
-   `data-role="method"` and results `data-role="result"`. The closing slide, **"Questions and Summary"**,
+   `data-role="method"` and results `data-role="result"`. When the setup is one point (a held-out split, one
+   baseline), it may instead be the first bullet of the first result slide, and the lint's "results without
+   methodology" warning is accepted. The closing slide, **"Questions and Summary"**,
    repeats the Summary's big picture (`d.closing(figure=…)`) so the room leaves with the chain in view;
    discussion questions go there only when the user asks for them, never invented filler. The translator adds a missing outline or divider, with a warning; a missing summary slide stops it.
 3. **Figure or table first.** On a normal slide the figure, table, numbers or cards fill the content area
@@ -156,7 +167,10 @@ Each rule exists because a reviewer of an earlier deck asked for it; the reason 
    explanation goes in the speaker notes, written as a script** (what to say, in order, referring to what
    is on screen: "the gold box", "the blue curve"), typically 100–250 words per slide. An **all-picture
    slide** (the big-picture Summary, its closing repeat) may drop the bullets: the figure then takes the
-   band's height too (8.5 × 4.4 in) and the band's hairline is hidden.
+   band's height too (8.5 × 4.4 in) and the band's hairline is hidden. A **formula is shown typeset, never
+   as a line of plain text**: render it with LaTeX (colour its key terms, label each part with a leader in the
+   audience's words), and place the PNG in the figure with `IMG` (references/html-prototype.md), so the
+   prototype and the deck show the same picture without any step after the build.
 4. **Appendix for detail.** Main slides carry only the simple, clean facts needed for the argument.
    Detailed facts (full tables, extra numbers, derivations, per-case breakdowns, ablations) go on appendix
    slides **after the closing slide**, behind an "Appendix" index slide. A main slide points to its
@@ -176,18 +190,26 @@ Each rule exists because a reviewer of an earlier deck asked for it; the reason 
 7. **Title at the very top, footer at the very bottom.** One title line at 20 pt (box y 0.22–0.58 in,
    anchored at its bottom), the header rule at y 0.64 in; the footer is only the logo and the page number
    (y ≈ 5.30 in), with no footer text. This gives the content area every inch the template allows.
-8. **No stray source sentences on slides.** "Redrawn from…", "Adapted from…", "Source: …", "schematic"
-   go in the speaker notes (the prototype's `.source` line is appended to the notes as "Figure: …").
-   A short citation in a bullet, "(Fig. 9)", "(§III-B)", is fine; a sentence about provenance is not.
+8. **No sources or numbers to look up on slides.** "Redrawn from…", "Adapted from…", "Source: …",
+   "schematic", and also short citations ("(Fig. 9)", "(§III-B)", "Table II", "[12]", "Eq. 2") and slide
+   numbers ("slide 6", "from slide N") go in the speaker notes; the prototype's `.source` line is appended to
+   the notes as "Figure: …", and the appendix index lists titles only. The spoken script names a figure by
+   what it shows ("the paper's overview"), not by its number. An appendix pointer ("→ appendix A3") stays:
+   it is a place in this deck. Why: the reviewer removed every visible citation; on screen they are noise
+   the audience cannot use during the talk.
 9. **UCLA theme by default.** 10 × 5.625 in; Brand-01 colours (Brand-03 on the dark master); Helvetica
    headings, Arial body; the one highlight is a **gold fill with a 00375B (navy) outline**, its text navy,
    never gold text on white. The deck is built by **transplanting** the raw slides onto the template
    package (its masters, layouts, logo and notes master), because pptxgenjs cannot open a template.
    Details and the template parts relied on: references/theme.md.
-10. **Mark your own reasoning.** Facts taken from the source and the author's own inferences, opinions or
-    depictions are kept visibly apart: a tag on the slide (one tag per deck, e.g. "[our reading]") and a
-    sentence in the notes ("this is my reading, not the paper's claim"). Schematic drawings say so in the
-    notes. Why: a talk about someone else's work must not put words in their mouth.
+10. **Mark your own reasoning, without clutter.** Facts taken from the source and the presenter's own
+    inferences, measurements or depictions are kept apart. On screen, say it in the figure's own words where
+    it matters ("our run: 4 passes, 24 orders", "only 11 edits apart*" with a one-line key); keep generic
+    tags such as "[our reading]" off the slides unless the user asks for them. In the notes, always say it:
+    "this is my reading, not the paper's claim", "these numbers are made up to show the step". The audit
+    marks each such row "author's reading". Why: a talk about someone else's work must not put words in its
+    mouth, but the reviewer removed the on-slide tags three times: the notes and the figure's wording carry
+    the distinction without a label on every slide.
 11. **Tighten and fact-check after the build.** Check every slide and its notes against the source
     material, claim by claim, in an audit file with one row per claim: slide, claim, source location,
     status (ok · fixed · author's reading · preliminary · other source). Fix every error found in the prototype, rebuild,
@@ -205,6 +227,8 @@ Each rule exists because a reviewer of an earlier deck asked for it; the reason 
     in both Background and Motivation. Why: a deck once labelled a presenter-requested DRAM primer
     "Background" and left out the paper's own §II, so the audience could not tell the paper's background
     from the presenter's, and the paper's LLM, PIM and quantization background never reached them.
+    Before making a Preliminary Note, check whether the paper itself covers the material (its overview figure,
+    its background text): if it does, the slide belongs in Background, cited to the paper, and needs no tag.
     `proto.py` places the part (`d.preliminary()`), the lint stops on a misplaced Preliminary Note or a
     paper deck without Background and warns when a Preliminary slide cites the paper as its source, and QA
     `structure` checks the sections and the tag on every Preliminary slide.
@@ -225,7 +249,11 @@ Each rule exists because a reviewer of an earlier deck asked for it; the reason 
     which problem it answers and why it is needed ("why must similar programs get close vectors? because
     the agent is a smooth function of them"), not only what it computes. Why: a reviewer could not find the
     problem in a deck built section by section from the paper, and asked three times for the reason behind a
-    part that the slides only described.
+    part that the slides only described. State the **problem as a tension**, "X is needed, but Y makes it hard"
+    ("each design needs its own order, but a full search is too slow"), never as a bare difference ("designs
+    differ"), which leaves the answer nothing to solve. Motivation's bullets state **the paper's lessons** as
+    takeaways ("order changes performance and differs by program"; "data flow and control flow need different
+    treatment"), not a description of the figure above them.
 15. **A concept is on screen before a slide relies on it.** The speaker notes do not count: the audience
     sees only the slides. Keep the ledger (`introduces=` / `uses=` on `d.content` and `d.story`); the lint
     stops on a concept used before any slide introduced it, and the fix is a slide (or a figure on an earlier
@@ -242,6 +270,48 @@ Each rule exists because a reviewer of an earlier deck asked for it; the reason 
     badges already shown elsewhere), and keep the simpler example the audience already understood over a
     more precise but harder one: fill a gap with its own slide, not with more detail on this one. Why: every
     one of these passed QA and was found by a reviewer reading the slides as a student would.
+
+17. **Number and colour each problem with its answer, and keep the code deck-wide.** When the Summary lists
+    problems and the parts that answer them, give each pair one number and one colour (① blue · ② orange · ③
+    purple: the `f-k1..3`, `s-k1..3`, `t-k1..3` classes), and repeat the same code wherever the pair appears:
+    the Summary, the Motivation, the Design part's dividers and overview, the Limitations. A colour then means
+    one thing in the whole deck: do not reuse a problem's colour for an unrelated element (an edge kind, an
+    equation term). Why: the reviewer asked for problems and answers matched by number and colour, so the
+    audience can follow each promise from the Summary to its slide.
+18. **Credit the paper only for its own contribution.** A pipeline label shows the work done by existing
+    tools (the compiler, an earlier paper's estimator) as an input, not as the paper's step: "LLVM IR graph →
+    vector", not "program → graph → vector", when the compiler makes the IR and the paper learns the vector.
+    Check every Summary and overview label against the paper's own contribution list (its introduction), and
+    say "prior work, extended" where the paper extends someone else's tool. Each design slide also says, in one
+    line, **what earlier work did** and where this design differs ("earlier work treats all edges alike"),
+    because a design's choice is only visible against the alternative. Why: the reviewer found "program →
+    graph" credited to the paper on several slides, and asked for the contrast with earlier work.
+19. **The Design part follows the paper's subsections, asked as design questions.** Group the paper's design
+    subsections into the few parts the answer has (for example, Part 1 = the representation, Part 2 = the
+    agent), open each part with one summary slide that names its pieces, and phrase each piece as the
+    question it answers: "Input: what goes in?" · "Processor: what turns it into a vector?" · "Criterion: what
+    is it trained to match?". Rebuild the part from the plan, not by reshuffling old slides. Why: the reviewer
+    restructured a section-by-section Design into this form so each subsection's role was obvious.
+20. **One name per concept, every name defined on screen.** Use one term for one concept on every slide,
+    figure and note ("close vectors" everywhere once chosen, not "close numbers" on some slides); when a term
+    changes, search the whole deck. Spell out every acronym on screen where it first matters ("Graph Edit
+    Distance (GED)"). Show no symbol a slide has not defined (a model called "f", a matrix "W_r") — use the
+    plain name ("Part 1's network"). A chart legend says what its bars are in plain words ("designs it
+    practiced on (training)" vs "held-out designs, 1 try"), not the paper's shorthand. Why: each of these
+    reached the reviewer as "I don't understand this line".
+21. **A process slide follows one concrete number from start to end.** Explain a step-by-step update with a
+    worked value that each box hands to the next (score 51.8 − the critic's guess 40 = +11.8 → the chosen
+    pass's odds 0.20 → 0.26, at most ×1.3), not with pronouns and parentheses ("better than guessed → pick it
+    more often (capped)"). Made-up values are fine when the notes say they are made up. Why: the reviewer
+    could not tell what a box of rules meant until it carried a number.
+22. **Fit the deck to the talk, and cut by value.** Budget the main slides to the talk's length (about one
+    slide per 35–45 s, so 25–35 for 20 minutes) and cut before polishing: delete a slide that makes the
+    presenter's side argument rather than the paper's, merge two slides that make the same point (a
+    measurement and the case study it motivates), fold a one-point method slide into the first result,
+    drop a slide that only repeats an earlier one (a "payoff" after the overview already showed it). If the
+    user asks "what does slide N mean?", the slide is unclear: say its point in one sentence and fix the slide
+    to say it, or cut it if no one sentence fits. Why: the reviewer cut a 48-slide deck to 44 this way, and
+    each question about a slide's meaning led to a rewrite or a cut.
 
 ## When QA or the render shows a problem
 

@@ -168,6 +168,7 @@ the theme and can be keyed for Morph. Only this vocabulary converts:
 | `<circle cx cy r>`, `<ellipse cx cy rx ry>` | drawn as ovals |
 | `<line x1 y1 x2 y2>`, `<polyline points>` | unfilled; `marker-end="url(#arrow)"` = arrowhead (markers: `arrow`, `arrow-accent`, `arrow-c2`, `arrow-pencil`) |
 | `<text x y text-anchor class>` | one line; `font-size="18"` overrides the class size |
+| `<image x y width height href>` | a PNG/JPG (path relative to the prototype, or a `data:` URI), embedded at this box and scaled with the figure; `proto.IMG(x, y, w, h, "eq/eq2.png")`. For what shapes cannot draw, above all a **typeset equation** (rule 3); QA cannot read its labels, so typeset them to land at 12 pt or more |
 | `<g transform="translate(x y)">` | groups; `class="hot"` (highlighted) / `class="pend"` (to come) restyle its rects and text |
 
 Colour only through classes (no inline colours): fills `f-white` (`f-paper`, `f-sheet`) · `f-idle`
@@ -197,7 +198,7 @@ Drawing rules (each saves a re-layout later):
 - **One highlight.** Gold marks the single thing the slide is about; categories use c2 / c3.
 - **Legends inside the figure** ("gold = …, blue = …") rather than a caption under it.
 - **No provenance in the figure** ("after Fig. 3", "schematic"): that goes to `.source`.
-- Outside the vocabulary (paths, polygons, gradients, images) the translator stops; `--png-fallback`
+- Outside the vocabulary (paths, polygons, gradients) the translator stops; `--png-fallback`
   embeds such a figure as a picture as a last resort (no type-floor check, no theme colours, no Morph).
 
 ## Notes and provenance
