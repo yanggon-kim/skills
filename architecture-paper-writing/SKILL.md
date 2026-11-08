@@ -56,7 +56,7 @@ each is self-contained and ends with a worked example and a set of guard checks.
 
 | section you are writing | open | its reader test, in one line | paper to open for a model |
 |---|---|---|---|
-| Abstract | `references/03_abstract.md` | seven moves in order, ≤ 200 words, every number also printed in the body | Tensor Casting, LazyDP |
+| Abstract | `references/03_abstract.md` | the moves in one of the two accepted orders, no word limit, every number also printed in the body | Tensor Casting, LazyDP, SmartSAGE |
 | Introduction | `references/04_introduction.md` | eight-move arc; landscape opener; claim-first paragraphs; verb-led contribution list | SmartSAGE, PACT'20 vision |
 | Background / motivation / workload characterization | `references/09_motivation_and_characterization.md` | five-role reader test; ~one sentence in three carries a number; at most one mention of your own system, placed last | IEEE CAL (the archetype), LazyDP, Mesorasi |
 | Design — any named mechanism | `references/05_design.md`, **then** `references/08_design_section_lessons.md` | name → definition → validity → payoff → figure → implementation → cost; every sentence explainable with a concrete example | Mesorasi, Tensor Casting, SmartSAGE |
@@ -140,6 +140,11 @@ a section guide disagree, `11` wins. Hold this list in mind while drafting, in t
 - **Every clause has a subject and a finite verb**; no equation stands as a clause; at most one fronted setting (F1, `01` §5.1).
 - **Name, don't point** (F2): repeat the noun instead of "the two", "both", "it", "this".
 - **No questions to the reader** (F3). **Cite at the proper noun** (F4, `12`): "AttAcc~\cite{attacc} runs …".
+- **Keep word order** (F5): subject, verb and object stay together; no appositive between subject and verb, no ", but X …,
+  where Y …" switch of subject mid-sentence.
+- **Join or split by the logical flow** (F6): join an action and what it shows, a cause and its consequence, a name and its
+  parts; split where a new fact or phase begins ("However, …", a new finding, analysis → design, a new platform).
+- **The main clause carries the core message** (F7); context and history go in a subordinate clause after it.
 - **The banned list**, absent from all six reference papers in the relevant sections: rhetorical questions; italic "Key
   takeaways:" labels; "clearly"; "it is interesting to note"; "up to N"; "compared to" (use "against"); sentence-initial
   "So"; "forever".
@@ -156,8 +161,12 @@ a section guide disagree, `11` wins. Hold this list in mind while drafting, in t
 
 **H. Section-specific**
 - **Introduction** (H1, `04`): landscape opener, subject-first claims, symbols out of §1, verb-led contributions.
-- **Abstract** (H2–H4, `03`): open on the problem, join every move to the last, follow the move order, and state the positive
-  finding rather than negating an alternative the reader has not met.
+- **Abstract** (H2–H6, `03`): open on the problem, join every move to the last, follow one of the two move orders
+  (characterization-led, techniques in the order of the root causes; or substrate-led), and state the positive finding rather
+  than negating an alternative the reader has not met or a property the paper relies on. Build the problem move from
+  adoption in a strong tone, persistence as a concession ("Although …, … remain …") and the baseline's design origin (H5).
+  State each result with its comparison, its condition and its number, without the configuration behind it (H6). No word
+  limit.
 
 ## The reference papers
 

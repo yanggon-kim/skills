@@ -12,9 +12,9 @@ These are the corrections the author made on rendered drafts, stated as rules. W
 | C | Openers: how each kind of paragraph starts (one decision table) | C1–C7 |
 | D | Content: what a paragraph must claim, and how truthfully | D1–D10 |
 | E | Brevity: what to cut | E1–E5 |
-| F | Sentences: grammar, references to things, citations | F1–F4 |
+| F | Sentences: grammar, word order, joining and splitting, references to things, citations | F1–F7 |
 | G | Numbers and figures | G1–G7 |
-| H | Section-specific: introduction and abstract | H1–H4 |
+| H | Section-specific: introduction and abstract | H1–H6 |
 
 **Entry format.** Each entry has a **Rule**, a **Why** (with the author's words where they exist) and an **Example**
 (before → after). Examples are labelled by the paper they come from: *SPLEX* (ASPLOS submission), *DAC* (DAC draft of CoDe) or
@@ -71,6 +71,9 @@ part of SKILL.md's contract, and add a row to the index below.
 | F2 | Name, don't point |
 | F3 | No questions to the reader |
 | F4 | Cite at the proper noun |
+| F5 | Keep word order: no insertion between subject and verb, no mid-sentence switch of subject |
+| F6 | Join sentences that continue one idea; split where a new fact or phase begins |
+| F7 | The main clause carries the core message; context goes in a subordinate clause |
 | G1 | Pace the numbers: one or two per sentence, description after each |
 | G2 | A series the figure carries is printed at its endpoints |
 | G3 | A figure citation says what to see |
@@ -82,6 +85,8 @@ part of SKILL.md's contract, and add a row to the index below.
 | H2 | The abstract opens on the problem and joins every move to the last |
 | H3 | The abstract's move order |
 | H4 | An abstract or section opening states the positive finding |
+| H5 | The abstract's problem move: adoption, persistence, the baseline's design origin |
+| H6 | The abstract states each result, not the configuration behind it |
 
 ---
 
@@ -642,6 +647,58 @@ Full rules: `12` §B; check: `scripts/check_prose.py --cite`.
 **Example** *(DAC)*. "AttAcc runs batched FC layers on the xPU and attention on PIM~\cite{attacc}." →
 "AttAcc~\cite{attacc} runs batched FC layers on the xPU and attention on PIM."
 
+### F5. Keep word order: no insertion between subject and verb, no mid-sentence switch of subject
+
+**Rule.** Keep subject, verb and object together. Do not wedge an appositive or a participle phrase between the subject and its
+verb (", now widely used for …,"), and do not change the subject halfway through a sentence with ", but X …, where Y …". If the
+modifier is a fact of its own, give it its own clause or sentence. Then the reader can parse each clause in one pass. Joining
+two sentences is still allowed (F6); what F5 forbids is scrambling the order inside one sentence.
+
+**Why.** The author: "Don't twist the sentences; write them neatly. There is no need to modify in the middle of a sentence."
+The parenthetical forced the reader to hold the subject open across a second fact.
+
+**Example** *(CoDe abstract)*. "Speculative decoding and small-batch serving, now widely used for large language model decoding
+on mobile platforms and edge servers, turn its GEMVs into skinny GEMMs" → "Speculative decoding and small-batch serving are
+widely used for large language model decoding on mobile platforms and edge servers, and both turn decoding's GEMVs into skinny
+GEMMs." Likewise "PIM offers the bandwidth, but stock PIM was built for GEMVs, where each weight meets one token and …" →
+"Such GEMMs suit DRAM processing-in-memory (PIM), which offers the bandwidth they need. However, stock PIM was designed for
+GEMVs, so …".
+
+### F6. Join sentences that continue one idea; split where a new fact or phase begins
+
+**Rule.** Decide each sentence boundary by the logical flow. **Join** with a relative clause, "and", "so", or a colon when the
+next sentence continues the same idea:
+- an action and what it shows ("we first conduct a detailed characterization of X, which shows that …");
+- a cause and its consequence;
+- a statement and the property that leads to the next one ("Such GEMMs suit PIM, which offers the bandwidth they need");
+- a name and its parts ("we propose NAME, which … with two techniques: A …, and B …");
+- two results on one platform.
+
+**Split** where a new fact or a new phase begins: a turn to the problem ("However, …"), a new finding, the move from analysis
+to design ("Based on this characterization, …"), a new platform or baseline. A run of short one-fact sentences reads as a list.
+One sentence carrying two phases reads as a tangle. Join within a phase and split between phases.
+
+**Why.** The author, on an abstract cut into one-fact sentences: "The sentences are broken off one by one again. Connect what
+should be connected and split what should be split. If it fits the logical flow, connecting at a natural level is good; when a
+new fact or phase starts, break the sentence."
+
+**Example** *(CoDe abstract)*. "In this work, we first characterize stock PIM's GEMM time on LPDDR5 and HBM2. Useful MACs fill
+only 14.1–19.1 % of that time." → "In this work, we first conduct a detailed characterization of stock PIM's GEMM time, which
+shows that useful MACs fill only 14.1–19.1 % of that time." The next finding stays its own sentence: "Two root causes take the
+rest: …".
+
+### F7. The main clause carries the core message; context goes in a subordinate clause
+
+**Rule.** Put the sentence's core claim in the main clause. Background, history or justification goes in a subordinate clause
+or a trailing appositive. A colon sentence whose head is the context ("X comes from the GEMV design: a command paces every
+MAC") reverses the weight. Make the claim the head and attach the context after it.
+
+**Why.** The author: "'A DRAM command paces every MAC' is the center. The GEMV design should come in as the subordinate part,
+not the main one."
+
+**Example** *(CoDe abstract)*. "Both causes come from the GEMV design: a DRAM command paces every MAC." → "Both causes arise
+because a DRAM command paces every MAC, a choice that suits GEMVs but not GEMMs."
+
 ---
 
 ## G. Numbers and figures
@@ -734,9 +791,18 @@ move connects to the one before it with a connective ("Custom HBM changes this: 
 
 ### H3. The abstract's move order
 
-**Rule.** Problem → substrate as an alternative (one sentence) → the requirement it creates → system → characterization →
-mechanism → results. The technique prior approaches are built on is introduced by the characterization sentence before any later
-sentence leans on it. Model: the SPLEX abstract in `03`.
+**Rule.** Two orders are accepted; choose by what the design answers.
+- **Characterization-led** (the Rhu papers: [TC], [LazyDP], [SS]; the CoDe abstract), when the design answers root causes
+  that the paper measures: setting and its adoption → the problem that persists → the substrate that suits it → why the
+  existing substrate falls short (H5) → "In this work, we first conduct a detailed characterization of …, which shows that …"
+  → the root causes with their shares → their common origin → "Based on this characterization, we propose NAME, which …
+  with N techniques: …" → results. Name the techniques **in the same order as the root causes**, and make each one answer
+  one cause.
+- **Substrate-led** (the SPLEX abstract in `03`), when a new substrate is the novelty: problem → substrate as an alternative
+  (one sentence) → the requirement it creates → system → characterization → mechanism → results.
+
+In both orders, the characterization sentence introduces the technique that prior approaches are built on before any later
+sentence leans on it.
 
 ### H4. An abstract or section opening states the positive finding
 
@@ -744,5 +810,45 @@ sentence leans on it. Model: the SPLEX abstract in `03`.
 the reader has not met. Negated alternatives belong where the alternative has been introduced (the motivation). The *problem*
 move must still be explicit.
 
+Never negate a property the paper's own argument relies on, either: "its MAC throughput, not its bandwidth, is the limit"
+contradicts the memory-bound premise one sentence earlier, so the reader stops to reconcile the two.
+
 **Example** *(SPLEX)*. "placement between the tiers, not the LPDDR wire rate, sets the delivered bandwidth" → "placement between
-the tiers sets the delivered bandwidth".
+the tiers sets the delivered bandwidth". *(CoDe)* "its MAC throughput, not its bandwidth, becomes the limit" → "its MAC
+throughput falls short on skinny GEMMs". The author: "Don't mention 'not its bandwidth'. It is memory-bound anyway."
+
+### H5. The abstract's problem move: adoption, persistence, the baseline's design origin
+
+**Rule.** In a characterization-led abstract (H3), build the problem move from three facts, each its own sentence or clause:
+1. **Adoption, stated strongly.** The opener says how widely the setting is used ("are widely used for …", "one of the most
+   widely deployed …", [TC]) and joins it to the effect that creates the problem. A neutral "X runs Y" undersells why the
+   problem matters.
+2. **Persistence, as a concession.** A change that might seem to remove the problem is stated with "Although …, … remain(s)
+   …" ("Although each weight matrix now meets 2 to 32 tokens, these GEMMs remain memory-bound on the host"). A flat "and"
+   hides the tension.
+3. **The baseline's design origin.** Say why the existing substrate falls short by naming what it was designed for ("stock
+   PIM was designed for GEMVs, so its MAC throughput falls short on skinny GEMMs"). This explains the limit without blaming
+   anyone, and it sets up the root-cause sentence (F7).
+
+**Why.** The author asked for these three moves: emphasize the popularity "in a stronger tone like 'widely used'"; "tokens
+grow from 2 to 32, but it is still memory-bound"; "PIM offers the bandwidth, but because stock PIM was designed for GEMV, the
+problem for skinny GEMMs is that MAC throughput falls short."
+
+**Example** *(CoDe abstract)*. "…runs skinny GEMMs: with speculative decoding or small batches, each weight matrix meets 2 to 32
+tokens, and the host stays memory-bound." → "Speculative decoding and small-batch serving are widely used for … , and both turn
+decoding's GEMVs into skinny GEMMs. Although each weight matrix now meets 2 to 32 tokens, these GEMMs remain memory-bound on the
+host."
+
+### H6. The abstract states each result, not the configuration behind it
+
+**Rule.** A result sentence in the abstract gives the comparison, the condition a reader needs to judge it ("at about the same
+logic area", "a batch of 8") and the number. It leaves out the configuration that defines a variant ("built as published, with
+one unit per two banks"), the explanation of why a baseline is the right one ("which P3-LLM falls back to at that batch") and
+any provenance label ("published design"). Those belong in the evaluation paragraph that reports the number, and the number
+must appear there with the same value.
+
+**Why.** The author: those clauses "are too much detail" for the abstract.
+
+**Example** *(CoDe abstract)*. "built as published, with one unit per two banks, LP-Spec-style takes 0.96× CoDe's logic, and
+CoDe decodes 1.49× faster" → "and decodes 1.49× faster at about the same logic area"; "1.28× faster than NPU only, which P3-LLM
+falls back to at that batch" → "1.28× faster than NPU only".

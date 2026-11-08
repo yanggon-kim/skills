@@ -40,7 +40,7 @@ quoted from an earlier draft. When the two disagree, the lessons file is the lat
   the species to delete (drum-roll, praise, meta, restatement, personification), what to keep, and the direct-claim-colon-facts merge.
 - `02_structure_and_figures.md` — the narrative spine and section anatomy learned from the five papers (§1–2) and the figure
   system adopted from LazyDP (§3, F1–F7: luminance ramp, sky-blue for what the system adds, red only for marks, four spines, no hatches).
-- `03_abstract.md` — the seven moves of the six reference abstracts, the diction table, the ≤ 200-word target.
+- `03_abstract.md` — the seven moves of the six reference abstracts, the diction table, the two accepted move orders (no word limit).
 - `04_introduction.md` — the eight-move arc of the six introductions (landscape opening, claim-first paragraphs, the contribution list).
 - `05_design.md` — the move order for a named mechanism (name → definition → validity → payoff → figure → implementation → cost),
   the section anatomy, alternative-then-reason, costs in place, the diction table, the never-list, and the worked design-section mapping with its guard classes.

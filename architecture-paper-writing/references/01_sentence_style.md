@@ -1,6 +1,6 @@
 # Sentence-style tips — the sentence-level contract
 
-Part of the architecture-paper-writing skill. Governs: every sentence in every section. Read with: references/11_writing_lessons.md (the later word; E1–E2 and F1–F4 extend this file).
+Part of the architecture-paper-writing skill. Governs: every sentence in every section. Read with: references/11_writing_lessons.md (the later word; E1–E2 and F1–F7 extend this file: F5 word order, F6 joining and splitting sentences, F7 main clause carries the message).
 
 Distilled from the user's feedback on the v4 §2/§3 rhetoric pass (2026-08-31). This is the
 sentence-level companion to `02_structure_and_figures.md` (which governs structure, figures, and argument

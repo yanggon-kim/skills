@@ -11,7 +11,10 @@ abstract is that arc in miniature, A1–A7 there ↔ moves 1–7 here), and the 
 `01_sentence_style.md`. Every rule carries a sentence quoted verbatim from a named paper; where the
 2026-09-05 plan's quote differed from the page, the page wins and the difference is noted.
 
-Shape: 5–9 sentences, 128–233 words, one paragraph ([M] breaks it into two). Target: 170–200 words.
+Shape: one paragraph ([M] breaks it into two). The six run 5–9 sentences and 128–233 words. **No word limit:** the length is
+whatever the moves need once each sentence passes the sentence test (`11` E1) and the sentence boundaries follow the logical
+flow (`11` F6). The author removed the former 200-word target, because a characterization-led abstract with joined sentences
+runs about 230 words, like [SS] (230) and [PVF] (233).
 
 ---
 
@@ -116,7 +119,10 @@ no move 4–6. The moves themselves are common to all six, and none opens on the
 | "Compared to", "compared to state-of-the-art approaches" | [LazyDP], [TC] | move 6 opener: "Compared to PCIe and NVLink-C2C offload" |
 | "while retaining / while also ensuring" | [M], [LazyDP] | "within 0.1 % of an infinite-HBM oracle" |
 | "we demonstrate / we show that" | [LazyDP], [PVF] | not needed — the result sentence is declarative |
-| "opening up opportunities" | [SS] | the close, if space allows (dropped at 200 words) |
+| "opening up opportunities" | [SS] | the close, if space allows (dropped in SPLEX) |
+| "Although …, … remain(s) …" | — | the persistence move of a characterization-led abstract (`11` H5); CoDe: "Although each weight matrix now meets 2 to 32 tokens, these GEMMs remain memory-bound on the host." |
+| "In this work, we first conduct a detailed characterization of …, which shows that …" | [SS], [TC] | CoDe: the characterization and its first finding joined in one sentence (`11` F6) |
+| "Based on this characterization, we propose NAME, which … with two techniques: A …, and B …" | [LazyDP], [SS] | CoDe: techniques listed in the same order as the root causes (`11` H3) |
 | "state-of-the-art" | [TC], [SS], [LazyDP] | not used; baselines are named (PCIe, NVLink-C2C, HBM-only) |
 
 ## C. Tone
@@ -150,11 +156,26 @@ Guards as run on the SPLEX abstract before every commit:
 
 `\TBD` 0 · "cross-layer" 0 · "runtime" as a noun 0 · "first" exactly once · no `$h`, `f_avail`, `B =`,
 `k`, `\times` outside a result · no "?" · no "we believe", "novel", "significantly" without a number ·
-170–200 words (counter: macros and cites stripped, punctuation-only tokens dropped) · every number
+the 170–200-word target SPLEX ran (since removed) · every number
 greps in `sections/03-motivation.tex` or `06-evaluation.tex` with the same value · the `\keywords`
 line untouched · vocabulary: the policy decides, the base-die engine enforces / moves, the serving
 framework commits (never "the runtime decides"; "hardware–software", never "cross-layer", because
 "layer" is a decoder layer everywhere in the paper).
+
+## Worked example (CoDe, ISCA submission): the characterization-led order
+
+The author-approved abstract (2026-11-08), sentence by sentence, with the rule each one follows (`11` H3, H5, H6, F5–F7):
+
+1. Speculative decoding and small-batch serving are widely used for large language model decoding on mobile platforms and edge servers, and both turn decoding's GEMVs into skinny GEMMs. *(adoption in a strong tone, joined to its effect: H5.1, F6)*
+2. Although each weight matrix now meets 2 to 32 tokens, these GEMMs remain memory-bound on the host. *(persistence as a concession: H5.2)*
+3. Such GEMMs suit DRAM processing-in-memory (PIM), which offers the bandwidth they need. *(the substrate that suits it, joined by "Such": F6)*
+4. However, stock PIM was designed for GEMVs, so its MAC throughput falls short on skinny GEMMs. *(new phase, so a new sentence; the baseline's design origin; no "not its bandwidth": H5.3, H4)*
+5. In this work, we first conduct a detailed characterization of stock PIM's GEMM time, which shows that useful MACs fill only 14.1–19.1 % of that time. *(action and what it shows in one sentence: F6)*
+6. Two root causes take the rest: non-MAC DRAM commands that stall every MAC (23.4–43.7 %) and idle MAC beats (42.2–57.4 %). *(a new finding, so a new sentence)*
+7. Both causes arise because a DRAM command paces every MAC, a choice that suits GEMVs but not GEMMs. *(claim in the main clause, context after it: F7)*
+8. Based on this characterization, we propose CoDe (Command-Decoupled PIM), which decouples MACs from DRAM commands with two techniques: row reuse lets a tile of tokens share one row sweep and pay its row-switch commands once, and beat filling computes the tile's tokens in the PU beats that DRAM timing leaves idle, without adding multipliers. *(techniques in the order of the root causes: H3)*
+9. On a mobile platform, CoDe matches LP-Spec-style's decoding speed with 0.539× its logic area and decodes 1.49× faster at about the same logic area. *(two results on one platform, joined; no variant configuration: H6)*
+10. On an HBM2 edge server, CoDe decodes a batch of 8 1.68× faster than P3-LLM-style and 1.28× faster than NPU only. *(new platform, so a new sentence; no explanation of why NPU only is the right baseline: H6)*
 
 ## Guard classes
 
@@ -166,7 +187,6 @@ Run on the abstract's source before every commit; the SPLEX instantiation is the
 - **Priority claim:** "first" exactly once.
 - **Symbols and questions:** no variable the reader has not met (no `$h`, `f_avail`, `B =`, `k`, `\times` outside a result); no "?".
 - **Hedges and unquantified praise:** no "we believe", "novel", "significantly" without a number.
-- **Length:** within the target band (counter: macros and cites stripped, punctuation-only tokens dropped).
 - **Numbers:** grep every number in the abstract against the motivation and evaluation sections' source; the same value must appear.
 - **Metadata:** the `\keywords` line untouched.
 - **Negated alternatives.** Grep the abstract for " not " / "rather than" / "instead of": a negation that names
